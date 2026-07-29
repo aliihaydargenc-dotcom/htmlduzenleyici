@@ -1,0 +1,2406 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Regnum Evrensel HTML Editörü V3.2</title>
+  <style>
+    :root {
+      --bg: #09120f;
+      --surface: #101c18;
+      --surface-2: #15241f;
+      --surface-3: #1a2d26;
+      --line: #2b4339;
+      --line-soft: #20372e;
+      --text: #eef7f3;
+      --muted: #91a99f;
+      --green: #4bd3a0;
+      --green-2: #24664f;
+      --gold: #d3b56d;
+      --blue: #5cb8ff;
+      --red: #ff7878;
+      --orange: #ffae62;
+      --shadow: 0 18px 48px rgba(0,0,0,.28);
+      --top-h: 58px;
+      --side-w: 348px;
+      --log-h: 124px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body {
+      color: var(--text);
+      background: var(--bg);
+      font: 13px/1.45 Inter, "Segoe UI", Arial, sans-serif;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { opacity: .42; cursor: not-allowed; }
+    [hidden] { display: none !important; }
+
+    .app {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template:
+        "top top top" var(--top-h)
+        "left main right" minmax(0,1fr)
+        "left log right" var(--log-h)
+        / var(--side-w) minmax(0,1fr) var(--side-w);
+    }
+    .app.left-closed { grid-template-columns: 0 minmax(0,1fr) var(--side-w); }
+    .app.right-closed { grid-template-columns: var(--side-w) minmax(0,1fr) 0; }
+    .app.left-closed.right-closed { grid-template-columns: 0 minmax(0,1fr) 0; }
+    .app.log-closed { grid-template-rows: var(--top-h) minmax(0,1fr) 0; }
+
+    .topbar {
+      grid-area: top;
+      z-index: 30;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 11px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(120deg, #101f1a, #132921);
+      box-shadow: 0 5px 20px rgba(0,0,0,.2);
+      overflow-x: auto;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: max-content;
+      margin-right: 5px;
+    }
+    .brand-mark {
+      width: 31px; height: 31px;
+      display: grid; place-items: center;
+      border: 1px solid rgba(211,181,109,.58);
+      border-radius: 9px;
+      color: var(--gold);
+      background: rgba(211,181,109,.08);
+      font-family: Georgia, serif;
+      font-size: 17px;
+    }
+    .brand strong { display: block; font-size: 12px; letter-spacing: .02em; }
+    .brand small { display: block; color: var(--muted); font-size: 9px; }
+    .sep { width: 1px; height: 27px; flex: 0 0 auto; background: var(--line); margin: 0 2px; }
+    .spacer { flex: 1; }
+
+    .btn {
+      min-height: 32px;
+      padding: 6px 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--text);
+      background: var(--surface-2);
+      white-space: nowrap;
+      font-size: 11px;
+      font-weight: 700;
+      transition: .15s ease;
+    }
+    .btn:hover:not(:disabled) { border-color: #47685a; background: var(--surface-3); }
+    .btn.primary { color: #07130f; border-color: var(--green); background: var(--green); }
+    .btn.primary:hover:not(:disabled) { background: #6bdeb3; }
+    .btn.gold { color: #1c1608; border-color: var(--gold); background: var(--gold); }
+    .btn.danger { color: #ffdede; border-color: rgba(255,120,120,.4); background: rgba(255,120,120,.1); }
+    .btn.ghost { border-color: transparent; background: transparent; color: var(--muted); }
+    .btn.icon { width: 32px; padding: 0; }
+    .btn.active { border-color: var(--green); color: var(--green); background: rgba(75,211,160,.11); }
+    .btn.small { min-height: 28px; padding: 4px 8px; font-size: 10px; }
+
+    .side {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      overflow: hidden;
+      transition: opacity .16s ease;
+    }
+    .side.left { grid-area: left; border-right: 1px solid var(--line); }
+    .side.right { grid-area: right; border-left: 1px solid var(--line); }
+    .left-closed .side.left, .right-closed .side.right { opacity: 0; pointer-events: none; }
+    .side-head {
+      min-height: 44px;
+      padding: 8px 11px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface-2);
+    }
+    .side-head strong { font-size: 11px; }
+    .side-head span { color: var(--muted); font-size: 9px; }
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface-2);
+      overflow-x: auto;
+    }
+    .tab {
+      min-height: 34px;
+      padding: 6px 10px;
+      flex: 1;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      background: transparent;
+      font-size: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .tab.active { color: var(--green); border-bottom-color: var(--green); }
+    .pane { display: none; min-height: 0; flex: 1; overflow: auto; padding: 11px; }
+    .pane.active { display: block; }
+
+    .group {
+      margin-bottom: 11px;
+      border: 1px solid var(--line-soft);
+      border-radius: 10px;
+      background: rgba(255,255,255,.018);
+      overflow: hidden;
+    }
+    .group-title {
+      min-height: 34px;
+      padding: 7px 9px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border-bottom: 1px solid var(--line-soft);
+      color: var(--gold);
+      background: rgba(255,255,255,.018);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+    .group-body { padding: 9px; }
+    .hint { margin: 0 0 8px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .field { display: grid; gap: 5px; margin-bottom: 8px; }
+    .field:last-child { margin-bottom: 0; }
+    .field > span {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+    .field > span em { color: var(--green); font-style: normal; text-transform: none; letter-spacing: 0; font-weight: 600; }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      color: var(--text);
+      background: #0b1713;
+      outline: none;
+    }
+    input, select { height: 32px; padding: 0 8px; }
+    textarea { min-height: 84px; padding: 8px; resize: vertical; font-family: Consolas, "SFMono-Regular", monospace; font-size: 10px; line-height: 1.45; }
+    input:focus, select:focus, textarea:focus { border-color: var(--green-2); box-shadow: 0 0 0 3px rgba(75,211,160,.07); }
+    input[type="color"] { height: 32px; padding: 3px; }
+    input[type="checkbox"] { width: 15px; height: 15px; padding: 0; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .row.three { grid-template-columns: repeat(3,1fr); }
+    .button-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .button-row .btn.grow { flex: 1; }
+    .nudge-grid {
+      width: 118px;
+      margin: 9px auto 5px;
+      display: grid;
+      grid-template-columns: repeat(3, 34px);
+      grid-template-rows: repeat(3, 30px);
+      place-content: center;
+      gap: 4px;
+    }
+    .nudge-grid .btn { min-width: 0; min-height: 0; padding: 0; font-size: 14px; }
+    .nudge-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 9px;
+    }
+    .nudge-toolbar select { width: 76px; height: 28px; }
+    .nudge-center {
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line-soft);
+      border-radius: 7px;
+      color: var(--muted);
+      background: #0b1713;
+      font-size: 8px;
+    }
+    .check-row { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 10px; }
+
+    .selected-card {
+      padding: 9px;
+      border: 1px solid rgba(75,211,160,.32);
+      border-radius: 9px;
+      background: rgba(75,211,160,.06);
+    }
+    .selected-card.empty { border-color: var(--line); background: transparent; color: var(--muted); }
+    .selected-tag { color: var(--green); font: 700 11px Consolas, monospace; overflow-wrap: anywhere; }
+    .selected-meta { margin-top: 5px; color: var(--muted); font-size: 9px; overflow-wrap: anywhere; }
+    .selector-box {
+      margin-top: 7px;
+      padding: 7px;
+      border-radius: 7px;
+      color: #cce9de;
+      background: #08110e;
+      font: 9px/1.45 Consolas, monospace;
+      overflow-wrap: anywhere;
+      user-select: all;
+    }
+    .risk { margin-top: 7px; color: var(--orange); font-size: 9px; }
+    .risk.safe { color: var(--green); }
+
+    .context {
+      max-height: 265px;
+      overflow: auto;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: #c7d9d1;
+      background: #07100d;
+      font: 9px/1.52 Consolas, monospace;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .context mark { color: #171005; background: var(--gold); }
+
+    .operation {
+      margin-bottom: 7px;
+      padding: 8px;
+      border: 1px solid var(--line-soft);
+      border-radius: 8px;
+      background: rgba(255,255,255,.02);
+    }
+    .operation.off { opacity: .47; }
+    .operation-head { display: flex; align-items: center; justify-content: space-between; gap: 7px; }
+    .operation-head strong { color: var(--gold); font-size: 10px; }
+    .operation-head span { color: var(--muted); font-size: 9px; }
+    .operation code { display: block; margin-top: 5px; color: #c8ded5; font-size: 9px; overflow-wrap: anywhere; }
+    .operation p { margin: 5px 0 0; color: var(--muted); font-size: 9px; }
+    .operation-actions { margin-top: 7px; display: flex; gap: 5px; }
+    .empty-list { padding: 18px 8px; color: var(--muted); text-align: center; font-size: 10px; }
+
+    .main {
+      grid-area: main;
+      min-width: 0;
+      min-height: 0;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      background:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px),
+        #0c1612;
+      background-size: 20px 20px;
+      overflow: hidden;
+    }
+    .canvas-toolbar {
+      min-height: 42px;
+      padding: 6px 9px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(16,28,24,.95);
+    }
+    .status-badge {
+      min-height: 25px;
+      padding: 4px 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: var(--surface);
+      font-size: 9px;
+    }
+    .status-badge.ready { border-color: rgba(75,211,160,.34); color: var(--green); }
+    .viewport-buttons { display: flex; gap: 4px; }
+    .viewport-buttons .btn { min-width: 34px; }
+    .canvas {
+      min-height: 0;
+      flex: 1;
+      position: relative;
+      display: grid;
+      place-items: center;
+      overflow: auto;
+      padding: 14px;
+    }
+    .frame-shell {
+      width: 100%;
+      height: 100%;
+      min-width: 320px;
+      min-height: 420px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #345046;
+      border-radius: 8px;
+      background: white;
+      box-shadow: var(--shadow);
+      transition: width .2s ease;
+    }
+    iframe { width: 100%; height: 100%; display: block; border: 0; background: white; }
+    .welcome {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      display: grid;
+      place-items: center;
+      padding: 30px;
+      text-align: center;
+      background: #0d1814;
+    }
+    .welcome-card { max-width: 520px; }
+    .welcome-mark {
+      width: 66px; height: 66px;
+      margin: 0 auto 16px;
+      display: grid; place-items: center;
+      border: 1px solid rgba(211,181,109,.5);
+      border-radius: 18px;
+      color: var(--gold);
+      background: rgba(211,181,109,.06);
+      font: 32px Georgia, serif;
+    }
+    .welcome h1 { margin: 0; font: 400 26px Georgia, serif; }
+    .welcome p { margin: 10px auto 18px; color: var(--muted); font-size: 11px; line-height: 1.65; }
+
+    .log {
+      grid-area: log;
+      min-height: 0;
+      border-top: 1px solid var(--line);
+      background: #07100d;
+      overflow: hidden;
+    }
+    .log-head {
+      height: 28px;
+      padding: 4px 9px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line-soft);
+      color: var(--muted);
+      font-size: 9px;
+    }
+    .log-body {
+      height: calc(100% - 28px);
+      padding: 6px 9px;
+      overflow: auto;
+      font: 9px/1.5 Consolas, monospace;
+    }
+    .log-line { display: grid; grid-template-columns: 58px 1fr; gap: 8px; }
+    .log-time { color: #60776d; }
+    .log-info { color: #bcd1c8; }
+    .log-ok { color: var(--green); }
+    .log-warn { color: var(--orange); }
+    .log-error { color: var(--red); }
+
+    .toast-host { position: fixed; z-index: 9999; right: 14px; bottom: 14px; display: grid; gap: 7px; pointer-events: none; }
+    .toast {
+      max-width: 380px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      color: var(--text);
+      background: #13241e;
+      box-shadow: var(--shadow);
+      font-size: 10px;
+      animation: toast-in .18s ease;
+    }
+    .toast.ok { border-color: rgba(75,211,160,.4); }
+    .toast.error { border-color: rgba(255,120,120,.55); }
+    @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+      background: rgba(0,0,0,.72);
+      backdrop-filter: blur(4px);
+    }
+    .modal {
+      width: min(780px,100%);
+      max-height: calc(100vh - 44px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: var(--surface);
+      box-shadow: 0 28px 80px rgba(0,0,0,.5);
+    }
+    .modal-head {
+      min-height: 50px;
+      padding: 10px 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface-2);
+    }
+    .modal-head h2 { margin: 0; font-size: 13px; }
+    .modal-body { min-height: 0; padding: 13px; overflow: auto; }
+    .modal-foot { padding: 10px 13px; display: flex; justify-content: flex-end; gap: 7px; border-top: 1px solid var(--line); }
+
+    @media (max-width: 1100px) {
+      :root { --side-w: 310px; }
+      .app { grid-template:
+        "top top" var(--top-h)
+        "main right" minmax(0,1fr)
+        "log right" var(--log-h)
+        / minmax(0,1fr) var(--side-w); }
+      .side.left { display: none; }
+      .topbar .brand small { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">R</div>
+        <div><strong>Evrensel HTML Editörü</strong><small>Kaynak-korumalı V3.2</small></div>
+      </div>
+      <div class="sep"></div>
+      <input id="htmlFileInput" type="file" accept=".html,.htm,text/html" hidden>
+      <button class="btn primary" id="openHtmlButton">HTML Aç</button>
+      <button class="btn" id="pasteHtmlButton">Kaynak Yapıştır</button>
+      <button class="btn active" id="designModeButton" disabled>Seçim Modu Açık</button>
+      <button class="btn" id="selectParentButton" disabled>Üst Öğeyi Seç</button>
+      <div class="sep"></div>
+      <button class="btn" id="undoButton" disabled>↶ Geri</button>
+      <button class="btn" id="redoButton" disabled>↷ İleri</button>
+      <button class="btn" id="validateButton" disabled>Doğrula</button>
+      <div class="spacer"></div>
+      <button class="btn gold" id="exportHtmlButton" disabled>Çalışan HTML İndir</button>
+      <button class="btn" id="exportProjectButton" disabled>Proje Kaydet</button>
+      <input id="projectFileInput" type="file" accept=".json,application/json" hidden>
+      <button class="btn icon" id="importProjectButton" title="Proje JSON aç">⇧</button>
+      <button class="btn icon" id="toggleLeftButton" title="Sol panel">◧</button>
+      <button class="btn icon" id="toggleRightButton" title="Sağ panel">◨</button>
+      <button class="btn icon" id="toggleLogButton" title="Konsol">⌄</button>
+      <button class="btn icon" id="helpButton" title="Kullanım yardımı">?</button>
+    </header>
+
+    <aside class="side left">
+      <div class="side-head">
+        <div><strong>Kaynak ve Bağlam</strong><br><span id="sourceMeta">HTML yüklenmedi</span></div>
+        <button class="btn small" id="copyContextButton" disabled>Kopyala</button>
+      </div>
+      <div class="tabs" data-tab-group="left">
+        <button class="tab active" data-pane="sourcePane">Kaynak</button>
+        <button class="tab" data-pane="contextPane">Bağlam</button>
+        <button class="tab" data-pane="riskPane">Risk</button>
+      </div>
+      <section class="pane active" id="sourcePane">
+        <div class="group">
+          <div class="group-title">Orijinal Kaynak</div>
+          <div class="group-body">
+            <p class="hint">Bu alan yalnızca görüntüleme içindir. Editör hedef HTML’nin mevcut CSS ve JavaScript kodlarını yeniden yazmaz.</p>
+            <textarea id="sourceViewer" readonly spellcheck="false" style="height:calc(100vh - 240px);resize:none"></textarea>
+          </div>
+        </div>
+      </section>
+      <section class="pane" id="contextPane">
+        <div class="group">
+          <div class="group-title">Seçili Öğenin Kaynak Bağlamı</div>
+          <div class="group-body">
+            <p class="hint">Satır numarası, üst ve alt bağlam ile birlikte gösterilir. Bu çıktı değişiklik raporuna da eklenir.</p>
+            <div class="context" id="sourceContext">Bir öğe seçin.</div>
+          </div>
+        </div>
+        <div class="group">
+          <div class="group-title">Değişiklik Talimatı</div>
+          <div class="group-body">
+            <textarea id="instructionOutput" readonly spellcheck="false" style="height:180px">Henüz işlem seçilmedi.</textarea>
+          </div>
+        </div>
+      </section>
+      <section class="pane" id="riskPane">
+        <div class="group">
+          <div class="group-title">JavaScript Bağlantı Taraması</div>
+          <div class="group-body">
+            <div id="riskResults" class="empty-list">Bir öğe seçildiğinde kimlik ve sınıf kullanımları taranır.</div>
+          </div>
+        </div>
+        <div class="group">
+          <div class="group-title">Kaynak Koruma Özeti</div>
+          <div class="group-body">
+            <p class="hint">Dışa aktarımda orijinal dosyaya yalnızca bir CSS yama bloğu ve dinamik işlemler için bir çalışma zamanı manifesti eklenir.</p>
+            <div id="integritySummary" class="selected-card empty">Henüz doğrulama yapılmadı.</div>
+          </div>
+        </div>
+      </section>
+    </aside>
+
+    <main class="main">
+      <div class="canvas-toolbar">
+        <span class="status-badge" id="frameStatus">HTML bekleniyor</span>
+        <div class="viewport-buttons">
+          <button class="btn small active" data-viewport="100%">Masaüstü</button>
+          <button class="btn small" data-viewport="1024px">Tablet Y</button>
+          <button class="btn small" data-viewport="768px">Tablet D</button>
+          <button class="btn small" data-viewport="390px">Telefon</button>
+        </div>
+        <div class="spacer"></div>
+        <span class="status-badge" id="selectionStatus">Öğe seçilmedi</span>
+      </div>
+      <div class="canvas">
+        <div class="frame-shell" id="frameShell">
+          <iframe id="targetFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-downloads"></iframe>
+          <div class="welcome" id="welcome">
+            <div class="welcome-card">
+              <div class="welcome-mark">R</div>
+              <h1>Kaynak-korumalı düzenleme</h1>
+              <p>Bir HTML dosyası açın. Öğeleri görsel alandan seçin; gizleme, boyutlandırma, metin düzenleme ve dinamik taşıma işlemleri orijinal scriptler değiştirilmeden yama olarak kaydedilsin.</p>
+              <button class="btn primary" id="welcomeOpenButton">HTML Dosyası Aç</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="side right">
+      <div class="side-head">
+        <div><strong>Düzenleme Araçları</strong><br><span id="operationCount">0 değişiklik</span></div>
+        <button class="btn small" id="clearOperationsButton" disabled>Sıfırla</button>
+      </div>
+      <div class="tabs" data-tab-group="right">
+        <button class="tab active" data-pane="elementPane">Öğe</button>
+        <button class="tab" data-pane="movePane">Taşı</button>
+        <button class="tab" data-pane="excelPane">Excel Test</button>
+        <button class="tab" data-pane="changesPane">Değişiklikler</button>
+      </div>
+
+      <section class="pane active" id="elementPane">
+        <div class="group">
+          <div class="group-title">Seçili Öğe</div>
+          <div class="group-body">
+            <div class="selected-card empty" id="selectedCard">Önizlemeden bir başlık, buton, kart, tablo veya grafik alanı seçin.</div>
+            <div class="button-row" style="margin-top:8px">
+              <button class="btn small grow" id="hideButton" disabled>Güvenli Gizle</button>
+              <button class="btn small grow" id="editTextButton" disabled>Metni Düzenle</button>
+            </div>
+            <div class="nudge-toolbar">
+              <label for="nudgeStep">Ok butonu adımı</label>
+              <select id="nudgeStep" aria-label="Ok butonlarının hareket miktarı">
+                <option value="1">1 px</option>
+                <option value="5" selected>5 px</option>
+                <option value="10">10 px</option>
+                <option value="25">25 px</option>
+              </select>
+            </div>
+            <div class="nudge-grid" aria-label="Seçili öğeyi oklarla taşı">
+              <span></span><button class="btn" data-nudge="0,-1" title="5 px yukarı" disabled>↑</button><span></span>
+              <button class="btn" data-nudge="-1,0" title="5 px sola" disabled>←</button><span class="nudge-center" id="nudgeStepLabel">5 px</span><button class="btn" data-nudge="1,0" title="5 px sağa" disabled>→</button>
+              <span></span><button class="btn" data-nudge="0,1" title="5 px aşağı" disabled>↓</button><span></span>
+            </div>
+            <p class="hint" style="text-align:center;margin:0">Serbest taşıma: yeşil çerçevedeki <strong>TAŞI</strong> tutamacını sürükleyin.</p>
+            <p class="hint" style="text-align:center;margin:4px 0 0">Klavye: Ok = 1 px · Shift + Ok = seçilen adım</p>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-title">Kutu ve Yerleşim</div>
+          <div class="group-body">
+            <div class="row">
+              <label class="field"><span>Genişlik</span>
+                <select id="widthPreset">
+                  <option value="">Değiştirme</option>
+                  <option value="auto">Otomatik</option>
+                  <option value="25%">%25</option>
+                  <option value="33.333%">%33</option>
+                  <option value="50%">%50</option>
+                  <option value="66.667%">%66</option>
+                  <option value="75%">%75</option>
+                  <option value="100%">%100</option>
+                </select>
+              </label>
+              <label class="field"><span>Özel genişlik <em>px</em></span><input id="customWidth" type="number" min="1" placeholder="örn. 720"></label>
+            </div>
+            <div class="row">
+              <label class="field"><span>Maks. genişlik <em>px</em></span><input id="maxWidth" type="number" min="1" placeholder="örn. 900"></label>
+              <label class="field"><span>Yükseklik <em>px</em></span><input id="heightValue" type="number" min="1" placeholder="otomatik"></label>
+            </div>
+            <div class="row">
+              <label class="field"><span>Grid genişliği</span>
+                <select id="gridSpan"><option value="">Değiştirme</option></select>
+              </label>
+              <label class="field"><span>Sıralama</span><input id="orderValue" type="number" placeholder="örn. 2"></label>
+            </div>
+            <div class="row">
+              <label class="field"><span>İç boşluk <em>px</em></span><input id="paddingValue" type="number" min="0" placeholder="değiştirme"></label>
+              <label class="field"><span>Dış boşluk <em>px</em></span><input id="marginValue" type="number" min="0" placeholder="değiştirme"></label>
+            </div>
+            <div class="row">
+              <label class="field"><span>Taşma</span>
+                <select id="overflowValue">
+                  <option value="">Değiştirme</option><option value="auto">Otomatik kaydır</option><option value="visible">Görünür</option><option value="hidden">Gizli</option>
+                </select>
+              </label>
+              <label class="field"><span>Hizalama</span>
+                <select id="alignSelfValue">
+                  <option value="">Değiştirme</option><option value="auto">Otomatik</option><option value="start">Başlangıç</option><option value="center">Orta</option><option value="end">Son</option><option value="stretch">Esnet</option>
+                </select>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-title">Yazı ve Görünüm</div>
+          <div class="group-body">
+            <div class="row">
+              <label class="field"><span>Yazı boyutu <em>px</em></span><input id="fontSizeValue" type="number" min="1" placeholder="değiştirme"></label>
+              <label class="field"><span>Satır yüksekliği</span><input id="lineHeightValue" type="number" min=".5" max="4" step=".05" placeholder="örn. 1.2"></label>
+            </div>
+            <div class="row">
+              <label class="field"><span>Metin davranışı</span>
+                <select id="whiteSpaceValue">
+                  <option value="">Değiştirme</option><option value="normal">Alt satıra geçir</option><option value="nowrap">Tek satır</option><option value="pre-wrap">Biçimi koru</option>
+                </select>
+              </label>
+              <label class="field"><span>Köşe <em>px</em></span><input id="radiusValue" type="number" min="0" placeholder="değiştirme"></label>
+            </div>
+            <div class="row">
+              <label class="field"><span>Yazı rengi</span><input id="colorValue" type="color" value="#18362f"></label>
+              <label class="field"><span>Arka plan</span><input id="backgroundValue" type="color" value="#ffffff"></label>
+            </div>
+            <div class="row">
+              <label class="check-row"><input id="useColor" type="checkbox"> Yazı rengini uygula</label>
+              <label class="check-row"><input id="useBackground" type="checkbox"> Arka planı uygula</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-title">Uygulama Kapsamı</div>
+          <div class="group-body">
+            <label class="field"><span>Ekran</span>
+              <select id="styleScope">
+                <option value="all">Tüm ekranlar</option>
+                <option value="desktop">Yalnızca masaüstü (1201px+)</option>
+                <option value="tablet">Tablet (601–1200px)</option>
+                <option value="mobile">Telefon (600px ve altı)</option>
+                <option value="print">PDF / Yazdırma</option>
+              </select>
+            </label>
+            <button class="btn primary" id="applyStyleButton" disabled style="width:100%">Boyut ve Görünümü Uygula</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="pane" id="movePane">
+        <div class="group">
+          <div class="group-title">Ana Ekrana / Başka Alana Taşı</div>
+          <div class="group-body">
+            <p class="hint">Grafiği kopyalamaz; çalışan gerçek öğeyi hedef konuma taşır. Böylece aynı kimlik iki kez oluşmaz.</p>
+            <div class="field"><span>Kaynak öğe</span><div class="selector-box" id="portalSourceBox">Belirlenmedi</div></div>
+            <button class="btn" id="markPortalSourceButton" disabled style="width:100%;margin-bottom:8px">Seçili Öğeyi Kaynak Yap</button>
+            <div class="field"><span>Hedef öğe</span><div class="selector-box" id="portalTargetBox">Belirlenmedi</div></div>
+            <button class="btn" id="markPortalTargetButton" disabled style="width:100%;margin-bottom:8px">Seçili Öğeyi Hedef Yap</button>
+            <div class="field"><span>Tetikleyici buton <em>isteğe bağlı</em></span><div class="selector-box" id="portalTriggerBox">Belirlenmedi</div></div>
+            <div class="button-row" style="margin-bottom:8px">
+              <button class="btn grow" id="markPortalTriggerButton" disabled>Seçili Öğeyi Tetikleyici Yap</button>
+              <button class="btn" id="clearPortalTriggerButton">Temizle</button>
+            </div>
+            <label class="field"><span>Yerleştirme</span>
+              <select id="portalPosition">
+                <option value="inside-start">Hedefin içine, en başa</option>
+                <option value="inside-end">Hedefin içine, en sona</option>
+                <option value="before">Hedeften önce</option>
+                <option value="after">Hedeften sonra</option>
+              </select>
+            </label>
+            <label class="check-row" style="margin-bottom:9px"><input id="portalForceVisible" type="checkbox" checked> Taşınan öğedeki hidden/display:none durumunu kaldır</label>
+            <button class="btn primary" id="createPortalButton" disabled style="width:100%">Taşıma Kuralı Oluştur</button>
+          </div>
+        </div>
+        <div class="group">
+          <div class="group-title">Dinamik Grafik Notu</div>
+          <div class="group-body">
+            <p class="hint">Excel veya buton tıklaması sonrasında oluşan grafikler için kural beklemeye devam eder. Öğe oluştuğunda hedefe taşınır ve ECharts, Chart.js veya Plotly yeniden boyutlandırılmaya çalışılır.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="pane" id="excelPane">
+        <div class="group">
+          <div class="group-title">Gerçek Test Dosyası</div>
+          <div class="group-body">
+            <p class="hint">Seçtiğiniz dosya yalnızca açık önizlemeye aktarılır; dışa aktarılan HTML’ye eklenmez.</p>
+            <input id="testExcelFile" type="file" accept=".xlsx,.xls,.xlsb,.csv">
+            <label class="field" style="margin-top:8px"><span>Hedef yükleme alanı</span><select id="uploadTargetSelect"><option value="">Önce HTML yükleyin</option></select></label>
+            <div class="button-row">
+              <button class="btn grow" id="scanUploadTargetsButton" disabled>Alanları Tara</button>
+              <button class="btn primary grow" id="injectRealFileButton" disabled>Dosyayı Enjekte Et</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-title">Hayalet XLSX Üret</div>
+          <div class="group-body">
+            <p class="hint">Başlıkları virgülle veya her satıra bir tane gelecek şekilde girin.</p>
+            <label class="field"><span>Sütun başlıkları</span><textarea id="ghostHeaders" spellcheck="false">ID,Kategori,Deger</textarea></label>
+            <div class="row">
+              <label class="field"><span>Satır sayısı</span><input id="ghostRows" type="number" min="1" max="2000" value="25"></label>
+              <label class="field"><span>Sayfa adı</span><input id="ghostSheet" value="Veri"></label>
+            </div>
+            <button class="btn primary" id="injectGhostButton" disabled style="width:100%">Hayalet Excel Fırlat</button>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-title">Tetikleme Sonucu</div>
+          <div class="group-body"><div class="context" id="excelResult" style="max-height:180px">Henüz test yapılmadı.</div></div>
+        </div>
+      </section>
+
+      <section class="pane" id="changesPane">
+        <div class="button-row" style="margin-bottom:9px">
+          <button class="btn small grow" id="copyManifestButton" disabled>Manifesti Kopyala</button>
+          <button class="btn small grow" id="downloadReportButton" disabled>Raporu İndir</button>
+        </div>
+        <div id="operationsList"><div class="empty-list">Henüz değişiklik yok.</div></div>
+      </section>
+    </aside>
+
+    <section class="log">
+      <div class="log-head"><span>İşlem Konsolu</span><button class="btn ghost small" id="clearLogButton">Temizle</button></div>
+      <div class="log-body" id="logBody"></div>
+    </section>
+  </div>
+
+  <div class="toast-host" id="toastHost"></div>
+
+  <div class="modal-backdrop" id="pasteModal" hidden>
+    <section class="modal">
+      <div class="modal-head"><h2>HTML Kaynağını Yapıştır</h2><button class="btn icon" data-close-modal="pasteModal">×</button></div>
+      <div class="modal-body">
+        <textarea id="pasteSource" style="height:50vh" spellcheck="false" placeholder="<!doctype html> ..."></textarea>
+      </div>
+      <div class="modal-foot"><button class="btn" data-close-modal="pasteModal">İptal</button><button class="btn primary" id="loadPastedSourceButton">Yükle</button></div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="textModal" hidden>
+    <section class="modal" style="width:min(560px,100%)">
+      <div class="modal-head"><h2>Metni Düzenle</h2><button class="btn icon" data-close-modal="textModal">×</button></div>
+      <div class="modal-body">
+        <p class="hint" id="textEditHint">Seçili öğenin doğrudan metni değiştirilecektir.</p>
+        <textarea id="textEditValue" style="height:160px"></textarea>
+      </div>
+      <div class="modal-foot"><button class="btn" data-close-modal="textModal">İptal</button><button class="btn primary" id="applyTextButton">Metni Uygula</button></div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="helpModal" hidden>
+    <section class="modal" style="width:min(680px,100%)">
+      <div class="modal-head"><h2>Kısa Kullanım Rehberi</h2><button class="btn icon" data-close-modal="helpModal">×</button></div>
+      <div class="modal-body">
+        <div class="group">
+          <div class="group-title">Temel Akış</div>
+          <div class="group-body">
+            <ol style="margin:0;padding-left:19px;color:var(--muted);font-size:11px;line-height:1.75">
+              <li><strong style="color:var(--text)">HTML Aç</strong> ile düzenleyeceğiniz tek dosyalı raporu yükleyin.</li>
+              <li>Rapor Excel’den sonra oluşuyorsa <strong style="color:var(--text)">Excel Test</strong> sekmesinden gerçek dosyayı veya Hayalet XLSX’i enjekte edin.</li>
+              <li><strong style="color:var(--text)">Seçim Modu Açık</strong> iken hedef öğeye tıklayın.</li>
+              <li>Seçili öğeyi yeşil çerçevenin üzerindeki TAŞI tutamacıyla serbestçe sürükleyin; oklarla ince ayar yapın.</li>
+              <li>Çerçevenin yeşil kenar ve köşe tutamaçlarıyla öğeyi daraltıp büyütün.</li>
+              <li>Öğe sekmesinden genişlik, yükseklik, grid kolonu, yazı ve boşluk ayarlarını uygulayın.</li>
+              <li>Bir alanı kaldırmak için <strong style="color:var(--text)">Güvenli Gizle</strong> kullanın.</li>
+              <li>Grafiği butonlu panelden çıkarmak için Taşı sekmesinde sırasıyla kaynak, hedef ve gerekiyorsa tetikleyici butonu belirleyin.</li>
+              <li>Butonları normal biçimde denemek için seçim modunu kapatın.</li>
+              <li><strong style="color:var(--text)">Doğrula</strong> sonrasında Çalışan HTML’i indirin. Daha sonra düzenlemeye devam etmek için Proje Kaydet seçeneğini de kullanın.</li>
+            </ol>
+          </div>
+        </div>
+        <p class="hint">Editör mevcut scriptleri yeniden yazmaz. CSS değişiklikleri yama bloğu, metin ve taşıma işlemleri çalışma zamanı manifesti olarak eklenir.</p>
+      </div>
+      <div class="modal-foot"><button class="btn primary" data-close-modal="helpModal">Anladım</button></div>
+    </section>
+  </div>
+
+  <script>
+  'use strict';
+
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+  const VOID_TAGS = new Set(['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr']);
+  const PATCH_STYLE_ID = 'regnum-visual-editor-patches';
+  const PATCH_RUNTIME_ID = 'regnum-visual-editor-runtime';
+  const PATCH_MANIFEST_MARKER = 'REGNUM_VISUAL_EDITOR_MANIFEST:';
+  const PROJECT_VERSION = '3.2';
+
+  const state = {
+    originalSource: '',
+    sourceName: '',
+    sourceHash: '',
+    frameUrl: '',
+    frameLoaded: false,
+    designMode: true,
+    selectedEl: null,
+    selectedSelector: '',
+    hoveredEl: null,
+    operations: [],
+    history: [],
+    historyIndex: -1,
+    portalSource: '',
+    portalTarget: '',
+    portalTrigger: '',
+    testFile: null,
+    uploadTargets: [],
+    previewTriggers: new Set(),
+    frameErrors: [],
+    viewport: '100%'
+  };
+
+  const Logger = {
+    add(message, type = 'info') {
+      const line = document.createElement('div');
+      line.className = 'log-line';
+      const time = new Date().toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      line.innerHTML = '<span class="log-time">' + escapeHtml(time) + '</span><span class="log-' + type + '">' + escapeHtml(message) + '</span>';
+      $('#logBody').appendChild(line);
+      $('#logBody').scrollTop = $('#logBody').scrollHeight;
+    },
+    info(message) { this.add(message, 'info'); },
+    ok(message) { this.add(message, 'ok'); },
+    warn(message) { this.add(message, 'warn'); },
+    error(message) { this.add(message, 'error'); }
+  };
+
+  function toast(message, type = 'ok', duration = 2600) {
+    const item = document.createElement('div');
+    item.className = 'toast ' + type;
+    item.textContent = message;
+    $('#toastHost').appendChild(item);
+    setTimeout(() => item.remove(), duration);
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+
+  function cssEscape(value) {
+    if (window.CSS && typeof CSS.escape === 'function') return CSS.escape(String(value));
+    return String(value).replace(/[^a-zA-Z0-9_-]/g, ch => '\\' + ch.codePointAt(0).toString(16) + ' ');
+  }
+
+  function hashText(text) {
+    let h = 2166136261;
+    for (let i = 0; i < text.length; i++) {
+      h ^= text.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return (h >>> 0).toString(16).padStart(8, '0');
+  }
+
+  function downloadText(filename, text, type = 'text/plain;charset=utf-8') {
+    const blob = new Blob([text], {type});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast('Panoya kopyalandı');
+    } catch (_) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      toast('Panoya kopyalandı');
+    }
+  }
+
+  function openModal(id) { $('#' + id).hidden = false; }
+  function closeModal(id) { $('#' + id).hidden = true; }
+
+  function frameWindow() {
+    try { return $('#targetFrame').contentWindow; } catch (_) { return null; }
+  }
+  function frameDocument() {
+    try { return $('#targetFrame').contentDocument; } catch (_) { return null; }
+  }
+
+  function resetSelection() {
+    if (state.hoveredEl) {
+      state.hoveredEl.removeAttribute('data-rve-hover');
+      state.hoveredEl = null;
+    }
+    if (state.selectedEl) state.selectedEl.removeAttribute('data-rve-selected');
+    const overlay = frameDocument()?.getElementById('rve-selection-overlay');
+    if (overlay) overlay.style.display = 'none';
+    state.selectedEl = null;
+    state.selectedSelector = '';
+    $('#selectionStatus').textContent = 'Öğe seçilmedi';
+    $('#selectedCard').className = 'selected-card empty';
+    $('#selectedCard').textContent = 'Önizlemeden bir başlık, buton, kart, tablo veya grafik alanı seçin.';
+    $('#sourceContext').textContent = 'Bir öğe seçin.';
+    $('#instructionOutput').value = 'Henüz işlem seçilmedi.';
+    $('#riskResults').innerHTML = '<div class="empty-list">Bir öğe seçildiğinde kimlik ve sınıf kullanımları taranır.</div>';
+    ['hideButton','editTextButton','applyStyleButton','markPortalSourceButton','markPortalTargetButton','markPortalTriggerButton','selectParentButton','copyContextButton'].forEach(id => $('#' + id).disabled = true);
+    $$('[data-nudge]').forEach(button => button.disabled = true);
+  }
+
+  function sourceWithoutPreviousPatches(source) {
+    let output = source;
+    const styleRe = new RegExp("<style\\b[^>]*id=[\"']" + PATCH_STYLE_ID + "[\"'][^>]*>[\\s\\S]*?<\\/style\\s*>\\r?\\n?", 'gi');
+    const runtimeRe = new RegExp("<script\\b[^>]*id=[\"']" + PATCH_RUNTIME_ID + "[\"'][^>]*>[\\s\\S]*?<\\/script\\s*>\\r?\\n?", 'gi');
+    const manifestRe = new RegExp('<!--\\s*' + PATCH_MANIFEST_MARKER + '[A-Za-z0-9+/=]+\\s*-->\\r?\\n?', 'gi');
+    output = output.replace(styleRe, '').replace(runtimeRe, '').replace(manifestRe, '');
+    return output;
+  }
+
+  function encodeManifest(operations) {
+    const bytes = new TextEncoder().encode(JSON.stringify({version:PROJECT_VERSION, operations}));
+    let binary = '';
+    const chunk = 0x8000;
+    for (let i=0;i<bytes.length;i+=chunk) binary += String.fromCharCode(...bytes.subarray(i,i+chunk));
+    return btoa(binary);
+  }
+
+  function extractEmbeddedOperations(source) {
+    const match = source.match(new RegExp('<!--\\s*' + PATCH_MANIFEST_MARKER + '([A-Za-z0-9+/=]+)\\s*-->', 'i'));
+    if (!match) return null;
+    try {
+      const binary = atob(match[1]);
+      const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+      const parsed = JSON.parse(new TextDecoder().decode(bytes));
+      return Array.isArray(parsed.operations) ? parsed.operations : null;
+    } catch (_) { return null; }
+  }
+
+  function loadSource(source, name = 'dashboard.html', importedOperations = null) {
+    if (!source || !/<html|<!doctype|<body/i.test(source)) {
+      toast('Geçerli bir HTML kaynağı bulunamadı', 'error');
+      return;
+    }
+    const embeddedOperations = extractEmbeddedOperations(source);
+    const clean = sourceWithoutPreviousPatches(source);
+    state.originalSource = clean;
+    state.sourceName = name.replace(/\.(html?|json)$/i, '') + '.html';
+    state.sourceHash = hashText(clean);
+    state.operations = Array.isArray(importedOperations) ? importedOperations : (embeddedOperations || []);
+    state.history = [];
+    state.historyIndex = -1;
+    state.frameErrors = [];
+    state.previewTriggers = new Set();
+    state.portalSource = '';
+    state.portalTarget = '';
+    state.portalTrigger = '';
+    $('#portalSourceBox').textContent = 'Belirlenmedi';
+    $('#portalTargetBox').textContent = 'Belirlenmedi';
+    $('#portalTriggerBox').textContent = 'Belirlenmedi';
+    $('#sourceViewer').value = clean;
+    $('#sourceMeta').textContent = state.sourceName + ' · ' + Math.round(clean.length / 1024).toLocaleString('tr-TR') + ' KB · #' + state.sourceHash;
+    $('#welcome').hidden = true;
+    setControlsEnabled(true);
+    pushHistory();
+    loadFrame(buildOutput());
+    renderOperations();
+    Logger.ok('HTML yüklendi: ' + state.sourceName + ' (' + clean.length.toLocaleString('tr-TR') + ' karakter)');
+    if (embeddedOperations?.length) Logger.info('Dosyanın içindeki ' + embeddedOperations.length + ' editör değişikliği yeniden yüklendi.');
+  }
+
+  function setControlsEnabled(enabled) {
+    ['designModeButton','validateButton','exportHtmlButton','exportProjectButton','scanUploadTargetsButton','injectGhostButton'].forEach(id => $('#' + id).disabled = !enabled);
+    $('#clearOperationsButton').disabled = !enabled || state.operations.length === 0;
+  }
+
+  function loadFrame(html) {
+    resetSelection();
+    state.frameLoaded = false;
+    state.previewTriggers = new Set();
+    state.frameErrors = [];
+    $('#frameStatus').className = 'status-badge';
+    $('#frameStatus').textContent = 'Yükleniyor…';
+    if (state.frameUrl) URL.revokeObjectURL(state.frameUrl);
+    state.frameUrl = URL.createObjectURL(new Blob([html], {type:'text/html'}));
+    const frame = $('#targetFrame');
+    frame.onload = () => {
+      state.frameLoaded = true;
+      $('#frameStatus').className = 'status-badge ready';
+      $('#frameStatus').textContent = 'Çalışma alanı hazır';
+      installFrameBridge();
+      scanUploadTargets();
+      Logger.ok('HTML çalışma alanında çalıştırıldı.');
+    };
+    frame.onerror = () => {
+      $('#frameStatus').className = 'status-badge';
+      $('#frameStatus').textContent = 'Yükleme hatası';
+      Logger.error('HTML çalışma alanına yüklenemedi.');
+    };
+    frame.src = state.frameUrl;
+  }
+
+  function installFrameBridge() {
+    const doc = frameDocument();
+    const win = frameWindow();
+    if (!doc || !win) return;
+
+    const bridgeStyle = doc.createElement('style');
+    bridgeStyle.id = 'rve-editor-bridge-style';
+    bridgeStyle.textContent =
+      '[data-rve-hover]{outline:2px dashed #00a9ff!important;outline-offset:2px!important;}' +
+      '[data-rve-selected]{outline:3px solid #15c886!important;outline-offset:2px!important;}' +
+      '[data-rve-hidden-preview]{opacity:.16!important;filter:grayscale(1)!important;display:block!important;min-height:16px!important;}' +
+      '#rve-selection-overlay{position:fixed;display:none;z-index:2147483646;pointer-events:none;border:2px solid #15c886;box-sizing:border-box;}' +
+      '#rve-selection-overlay .rve-move{position:absolute!important;left:6px!important;top:-30px;width:auto!important;height:24px!important;min-width:74px!important;padding:0 9px!important;border:2px solid #fff!important;border-radius:6px!important;background:#087f5b!important;color:#fff!important;box-shadow:0 2px 8px rgba(0,0,0,.4)!important;font:800 10px/20px system-ui,sans-serif!important;letter-spacing:.06em!important;text-align:center!important;white-space:nowrap!important;pointer-events:auto!important;touch-action:none!important;cursor:grab!important;user-select:none!important;box-sizing:border-box!important;}' +
+      '#rve-selection-overlay .rve-move:active{cursor:grabbing!important;background:#065f46!important;}' +
+      '#rve-selection-overlay .rve-grip{position:absolute;width:11px;height:11px;border:2px solid #fff;border-radius:3px;background:#15c886;box-shadow:0 1px 5px rgba(0,0,0,.35);pointer-events:auto;touch-action:none;box-sizing:border-box;}' +
+      '#rve-selection-overlay .rve-n{left:50%;top:-7px;transform:translateX(-50%);cursor:ns-resize;}' +
+      '#rve-selection-overlay .rve-s{left:50%;bottom:-7px;transform:translateX(-50%);cursor:ns-resize;}' +
+      '#rve-selection-overlay .rve-e{right:-7px;top:50%;transform:translateY(-50%);cursor:ew-resize;}' +
+      '#rve-selection-overlay .rve-w{left:-7px;top:50%;transform:translateY(-50%);cursor:ew-resize;}' +
+      '#rve-selection-overlay .rve-ne{right:-7px;top:-7px;cursor:nesw-resize;}' +
+      '#rve-selection-overlay .rve-nw{left:-7px;top:-7px;cursor:nwse-resize;}' +
+      '#rve-selection-overlay .rve-se{right:-7px;bottom:-7px;cursor:nwse-resize;}' +
+      '#rve-selection-overlay .rve-sw{left:-7px;bottom:-7px;cursor:nesw-resize;}';
+    doc.head.appendChild(bridgeStyle);
+
+    const selectionOverlay = doc.createElement('div');
+    selectionOverlay.id = 'rve-selection-overlay';
+    const moveHandle = doc.createElement('span');
+    moveHandle.className = 'rve-move';
+    moveHandle.textContent = '✥ TAŞI';
+    moveHandle.title = 'Öğeyi serbestçe taşımak için sürükleyin';
+    moveHandle.addEventListener('pointerdown', event => startMoveDrag(event, moveHandle));
+    selectionOverlay.appendChild(moveHandle);
+    ['n','s','e','w','ne','nw','se','sw'].forEach(direction => {
+      const grip = doc.createElement('span');
+      grip.className = 'rve-grip rve-' + direction;
+      grip.dataset.resizeDirection = direction;
+      grip.title = direction.toUpperCase() + ' kenarından boyutlandır';
+      grip.addEventListener('pointerdown', event => startEdgeResize(event, direction, grip));
+      selectionOverlay.appendChild(grip);
+    });
+    doc.body.appendChild(selectionOverlay);
+
+    doc.addEventListener('pointerover', event => {
+      if (!state.designMode) return;
+      const el = normalizeSelectable(event.target);
+      if (!el || el === state.hoveredEl) return;
+      if (state.hoveredEl) state.hoveredEl.removeAttribute('data-rve-hover');
+      state.hoveredEl = el;
+      if (el !== state.selectedEl) el.setAttribute('data-rve-hover', '');
+    }, true);
+
+    doc.addEventListener('pointerout', event => {
+      if (!state.designMode) return;
+      const related = event.relatedTarget;
+      if (state.hoveredEl && (!related || !state.hoveredEl.contains(related))) {
+        state.hoveredEl.removeAttribute('data-rve-hover');
+        state.hoveredEl = null;
+      }
+    }, true);
+
+    doc.addEventListener('click', event => {
+      if (!state.designMode) return;
+      const el = normalizeSelectable(event.target);
+      if (!el) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      selectElement(el);
+    }, true);
+    doc.addEventListener('keydown', event => handleNudgeKey(event), true);
+    win.addEventListener('scroll', syncSelectionOverlay, {passive:true});
+    win.addEventListener('resize', syncSelectionOverlay);
+
+    win.addEventListener('error', event => {
+      const message = event.message || 'Bilinmeyen çalışma zamanı hatası';
+      state.frameErrors.push(message);
+      Logger.error('Hedef HTML: ' + message);
+    });
+    win.addEventListener('unhandledrejection', event => {
+      const message = String(event.reason?.message || event.reason || 'Promise hatası');
+      state.frameErrors.push(message);
+      Logger.error('Hedef HTML: ' + message);
+    });
+
+    let portalTimer = 0;
+    try {
+      new win.MutationObserver(() => {
+        clearTimeout(portalTimer);
+        portalTimer = setTimeout(() => {
+          state.operations.filter(op => op.enabled && op.type === 'portal').forEach(op => applyPortalPreview(op, doc));
+        }, 90);
+      }).observe(doc.body, {childList:true, subtree:true});
+    } catch (_) {}
+  }
+
+  function normalizeSelectable(target) {
+    if (!target || target.nodeType !== 1) return null;
+    if (target.closest?.('#rve-selection-overlay')) return null;
+    if (target.closest && target.closest('html') === null) return null;
+    if (['HTML','BODY'].includes(target.tagName)) return target === frameDocument()?.body ? target : null;
+    if (target.closest('canvas') && target.tagName !== 'CANVAS') return target.closest('canvas');
+    return target;
+  }
+
+  function selectorIsUnique(selector, doc, element) {
+    try {
+      const matches = doc.querySelectorAll(selector);
+      return matches.length === 1 && (!element || matches[0] === element);
+    } catch (_) { return false; }
+  }
+
+  function selectorFor(el) {
+    const doc = el.ownerDocument;
+    if (el.id) {
+      const idSelector = '#' + cssEscape(el.id);
+      if (selectorIsUnique(idSelector, doc, el)) return idSelector;
+    }
+
+    const preferredAttrs = ['data-scope','data-view','data-tab','data-target','data-action','name','aria-label','role'];
+    for (const attr of preferredAttrs) {
+      const value = el.getAttribute(attr);
+      if (!value || value.length > 90) continue;
+      const selector = el.tagName.toLowerCase() + '[' + attr + '="' + String(value).replace(/\\/g,'\\\\').replace(/"/g,'\\"') + '"]';
+      if (selectorIsUnique(selector, doc, el)) return selector;
+    }
+
+    const classes = Array.from(el.classList).filter(c => !c.startsWith('rve-') && c.length < 70).slice(0,4);
+    if (classes.length) {
+      for (let n = classes.length; n >= 1; n--) {
+        const selector = el.tagName.toLowerCase() + classes.slice(0,n).map(c => '.' + cssEscape(c)).join('');
+        if (selectorIsUnique(selector, doc, el)) return selector;
+      }
+    }
+
+    const parts = [];
+    let node = el;
+    let depth = 0;
+    while (node && node.nodeType === 1 && node !== doc.documentElement && depth < 7) {
+      if (node.id) {
+        parts.unshift('#' + cssEscape(node.id));
+        const candidate = parts.join(' > ');
+        if (selectorIsUnique(candidate, doc, el)) return candidate;
+        break;
+      }
+      let part = node.tagName.toLowerCase();
+      const siblings = node.parentElement ? Array.from(node.parentElement.children).filter(child => child.tagName === node.tagName) : [];
+      if (siblings.length > 1) part += ':nth-of-type(' + (siblings.indexOf(node) + 1) + ')';
+      parts.unshift(part);
+      const candidate = parts.join(' > ');
+      if (selectorIsUnique(candidate, doc, el)) return candidate;
+      node = node.parentElement;
+      depth++;
+    }
+    return parts.join(' > ') || el.tagName.toLowerCase();
+  }
+
+  function selectElement(el) {
+    if (!el) return;
+    if (state.hoveredEl) {
+      state.hoveredEl.removeAttribute('data-rve-hover');
+      state.hoveredEl = null;
+    }
+    if (state.selectedEl && state.selectedEl !== el) state.selectedEl.removeAttribute('data-rve-selected');
+    state.selectedEl = el;
+    state.selectedEl.setAttribute('data-rve-selected', '');
+    state.selectedSelector = selectorFor(el);
+
+    const text = (el.innerText || el.textContent || '').trim().replace(/\s+/g,' ').slice(0,140);
+    const rect = el.getBoundingClientRect();
+    const computed = frameWindow().getComputedStyle(el);
+    $('#selectionStatus').textContent = el.tagName.toLowerCase() + ' · ' + Math.round(rect.width) + '×' + Math.round(rect.height);
+    $('#selectedCard').className = 'selected-card';
+    $('#selectedCard').innerHTML =
+      '<div class="selected-tag">&lt;' + escapeHtml(el.tagName.toLowerCase()) + '&gt;</div>' +
+      '<div class="selected-meta">' + escapeHtml(text || 'Metin içermiyor') + '</div>' +
+      '<div class="selector-box">' + escapeHtml(state.selectedSelector) + '</div>' +
+      '<div class="selected-meta">display: ' + escapeHtml(computed.display) + ' · position: ' + escapeHtml(computed.position) + ' · ' + Math.round(rect.width) + '×' + Math.round(rect.height) + ' px</div>';
+
+    ['hideButton','editTextButton','applyStyleButton','markPortalSourceButton','markPortalTargetButton','markPortalTriggerButton','selectParentButton','copyContextButton'].forEach(id => $('#' + id).disabled = false);
+    $$('[data-nudge]').forEach(button => button.disabled = false);
+    updateSourceContext(el);
+    scanElementRisk(el);
+    populateInspectorFromElement(el);
+    syncSelectionOverlay();
+  }
+
+  function syncSelectionOverlay() {
+    const doc = frameDocument();
+    const overlay = doc?.getElementById('rve-selection-overlay');
+    const el = state.selectedEl;
+    if (!overlay || !el || el.ownerDocument !== doc || !el.isConnected || !state.designMode) {
+      if (overlay) overlay.style.display = 'none';
+      return;
+    }
+    const rect = el.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) {
+      overlay.style.display = 'none';
+      return;
+    }
+    overlay.style.display = 'block';
+    overlay.style.left = rect.left + 'px';
+    overlay.style.top = rect.top + 'px';
+    overlay.style.width = rect.width + 'px';
+    overlay.style.height = rect.height + 'px';
+    const moveHandle = overlay.querySelector('.rve-move');
+    if (moveHandle) moveHandle.style.setProperty('top', rect.top < 34 ? '6px' : '-30px', 'important');
+  }
+
+  function geometryOperation(selector) {
+    for (let i = state.operations.length - 1; i >= 0; i--) {
+      const operation = state.operations[i];
+      if (operation.type === 'style' && operation.mode === 'geometry' && operation.selector === selector) return operation;
+    }
+    return null;
+  }
+
+  function geometryState(selector) {
+    const operation = geometryOperation(selector);
+    return operation?.geometry ? {...operation.geometry} : {x:0, y:0, width:null, height:null};
+  }
+
+  function geometryDeclarations(geometry) {
+    const declarations = {
+      translate: Math.round(geometry.x || 0) + 'px ' + Math.round(geometry.y || 0) + 'px'
+    };
+    if (Number.isFinite(geometry.width)) declarations.width = Math.max(24, Math.round(geometry.width)) + 'px';
+    if (Number.isFinite(geometry.height)) declarations.height = Math.max(24, Math.round(geometry.height)) + 'px';
+    if (declarations.width) declarations['min-width'] = '0';
+    if (declarations.height) declarations['min-height'] = '0';
+    return declarations;
+  }
+
+  function upsertGeometry(geometry, actionName = 'Konum / kenar boyutu') {
+    if (!state.selectedSelector) return;
+    const clean = {
+      x: Math.round(geometry.x || 0),
+      y: Math.round(geometry.y || 0),
+      width: Number.isFinite(geometry.width) ? Math.max(24, Math.round(geometry.width)) : null,
+      height: Number.isFinite(geometry.height) ? Math.max(24, Math.round(geometry.height)) : null
+    };
+    const existing = geometryOperation(state.selectedSelector);
+    if (!existing) {
+      addOperation({
+        type:'style',
+        mode:'geometry',
+        selector:state.selectedSelector,
+        declarations:geometryDeclarations(clean),
+        geometry:clean,
+        scope:'all',
+        context:currentContextText()
+      });
+    } else {
+      existing.geometry = clean;
+      existing.declarations = geometryDeclarations(clean);
+      existing.enabled = true;
+      existing.updatedAt = new Date().toISOString();
+      pushHistory();
+      renderOperations();
+      applyOperationsToPreview();
+      updateInstructionForOperation(existing);
+    }
+    syncSelectionOverlay();
+    Logger.ok(actionName + ' güncellendi: ' + state.selectedSelector);
+  }
+
+  function nudgeSelected(dx, dy) {
+    if (!state.selectedEl || !state.selectedSelector) return;
+    const geometry = geometryState(state.selectedSelector);
+    geometry.x = (geometry.x || 0) + dx;
+    geometry.y = (geometry.y || 0) + dy;
+    upsertGeometry(geometry, 'Ok tuşu konumu');
+  }
+
+  function selectedNudgeStep() {
+    const value = Number.parseInt($('#nudgeStep')?.value || '5', 10);
+    return [1,5,10,25].includes(value) ? value : 5;
+  }
+
+  function updateNudgeControls() {
+    const step = selectedNudgeStep();
+    const label = $('#nudgeStepLabel');
+    if (label) label.textContent = step + ' px';
+    const directionNames = {
+      '0,-1':'yukarı',
+      '-1,0':'sola',
+      '1,0':'sağa',
+      '0,1':'aşağı'
+    };
+    $$('[data-nudge]').forEach(button => {
+      button.title = step + ' px ' + (directionNames[button.dataset.nudge] || 'taşı');
+    });
+  }
+
+  function handleNudgeKey(event) {
+    if (!state.designMode || !state.selectedEl) return;
+    const tag = event.target?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || event.target?.isContentEditable) return;
+    const map = {ArrowLeft:[-1,0], ArrowRight:[1,0], ArrowUp:[0,-1], ArrowDown:[0,1]};
+    const direction = map[event.key];
+    if (!direction) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const step = event.shiftKey ? selectedNudgeStep() : 1;
+    nudgeSelected(direction[0] * step, direction[1] * step);
+  }
+
+  function startMoveDrag(event, handle) {
+    if (!state.selectedEl || !state.selectedSelector) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const doc = frameDocument();
+    const el = state.selectedEl;
+    const startGeometry = geometryState(state.selectedSelector);
+    const startX = event.clientX;
+    const startY = event.clientY;
+    let latest = {...startGeometry};
+    let moved = false;
+
+    try { handle.setPointerCapture(event.pointerId); } catch (_) {}
+
+    const onMove = moveEvent => {
+      moved = true;
+      latest = {
+        ...startGeometry,
+        x: (startGeometry.x || 0) + (moveEvent.clientX - startX),
+        y: (startGeometry.y || 0) + (moveEvent.clientY - startY)
+      };
+      el.style.setProperty('translate', Math.round(latest.x) + 'px ' + Math.round(latest.y) + 'px', 'important');
+      syncSelectionOverlay();
+    };
+
+    const onUp = () => {
+      doc.removeEventListener('pointermove', onMove, true);
+      doc.removeEventListener('pointerup', onUp, true);
+      doc.removeEventListener('pointercancel', onUp, true);
+      try { handle.releasePointerCapture(event.pointerId); } catch (_) {}
+      if (!moved) return;
+      upsertGeometry(latest, 'Serbest taşıma');
+      el.style.removeProperty('translate');
+      applyOperationsToPreview();
+      triggerChartResize(el);
+      syncSelectionOverlay();
+    };
+
+    doc.addEventListener('pointermove', onMove, true);
+    doc.addEventListener('pointerup', onUp, true);
+    doc.addEventListener('pointercancel', onUp, true);
+  }
+
+  function startEdgeResize(event, direction, grip) {
+    if (!state.selectedEl || !state.selectedSelector) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const doc = frameDocument();
+    const el = state.selectedEl;
+    const rect = el.getBoundingClientRect();
+    const startGeometry = geometryState(state.selectedSelector);
+    const startX = event.clientX;
+    const startY = event.clientY;
+    let latest = {...startGeometry};
+    let moved = false;
+
+    try { grip.setPointerCapture(event.pointerId); } catch (_) {}
+
+    const onMove = moveEvent => {
+      moved = true;
+      const dx = moveEvent.clientX - startX;
+      const dy = moveEvent.clientY - startY;
+      latest = {...startGeometry};
+
+      if (direction.includes('e')) latest.width = Math.max(24, rect.width + dx);
+      if (direction.includes('s')) latest.height = Math.max(24, rect.height + dy);
+      if (direction.includes('w')) {
+        latest.width = Math.max(24, rect.width - dx);
+        latest.x = (startGeometry.x || 0) + (rect.width - latest.width);
+      }
+      if (direction.includes('n')) {
+        latest.height = Math.max(24, rect.height - dy);
+        latest.y = (startGeometry.y || 0) + (rect.height - latest.height);
+      }
+
+      if (direction.includes('e') || direction.includes('w')) el.style.setProperty('width', Math.round(latest.width) + 'px', 'important');
+      if (direction.includes('n') || direction.includes('s')) el.style.setProperty('height', Math.round(latest.height) + 'px', 'important');
+      el.style.setProperty('translate', Math.round(latest.x || 0) + 'px ' + Math.round(latest.y || 0) + 'px', 'important');
+      syncSelectionOverlay();
+    };
+
+    const onUp = () => {
+      doc.removeEventListener('pointermove', onMove, true);
+      doc.removeEventListener('pointerup', onUp, true);
+      doc.removeEventListener('pointercancel', onUp, true);
+      try { grip.releasePointerCapture(event.pointerId); } catch (_) {}
+      if (!moved) return;
+      upsertGeometry(latest, 'Kenar boyutlandırma');
+      el.style.removeProperty('width');
+      el.style.removeProperty('height');
+      el.style.removeProperty('translate');
+      applyOperationsToPreview();
+      triggerChartResize(el);
+      syncSelectionOverlay();
+    };
+
+    doc.addEventListener('pointermove', onMove, true);
+    doc.addEventListener('pointerup', onUp, true);
+    doc.addEventListener('pointercancel', onUp, true);
+  }
+
+  function populateInspectorFromElement(el) {
+    const style = frameWindow().getComputedStyle(el);
+    $('#fontSizeValue').placeholder = Math.round(parseFloat(style.fontSize) || 0) + ' mevcut';
+    $('#lineHeightValue').placeholder = style.lineHeight;
+    $('#paddingValue').placeholder = Math.round(parseFloat(style.paddingTop) || 0) + ' mevcut';
+    $('#marginValue').placeholder = Math.round(parseFloat(style.marginTop) || 0) + ' mevcut';
+    $('#radiusValue').placeholder = Math.round(parseFloat(style.borderRadius) || 0) + ' mevcut';
+    $('#customWidth').placeholder = Math.round(el.getBoundingClientRect().width) + ' mevcut';
+    $('#heightValue').placeholder = Math.round(el.getBoundingClientRect().height) + ' mevcut';
+  }
+
+  function findSourceNeedle(el) {
+    if (!state.originalSource) return null;
+    const source = state.originalSource;
+    const tag = el.tagName.toLowerCase();
+    const candidates = [];
+    if (el.id) candidates.push(new RegExp("<" + tag + "\\b[^>]*\\bid\\s*=\\s*([\"'])" + escapeRegExp(el.id) + "\\1", 'i'));
+    for (const attr of ['data-scope','data-view','data-tab','data-target','data-action','name','aria-label']) {
+      const value = el.getAttribute(attr);
+      if (value) candidates.push(new RegExp("<" + tag + "\\b[^>]*\\b" + attr + "\\s*=\\s*([\"'])" + escapeRegExp(value) + "\\1", 'i'));
+    }
+    const text = directText(el).trim().replace(/\s+/g,' ');
+    if (text.length >= 4 && text.length <= 120) candidates.push(new RegExp(escapeRegExp(text).replace(/\\ /g,'\\s+'), 'i'));
+    for (const pattern of candidates) {
+      const match = pattern.exec(source);
+      if (match) return {index: match.index, match: match[0]};
+    }
+    return null;
+  }
+
+  function escapeRegExp(value) { return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+  function updateSourceContext(el) {
+    const found = findSourceNeedle(el);
+    if (!found) {
+      $('#sourceContext').textContent = 'Kaynakta benzersiz bir eşleşme bulunamadı.\n\nSeçici:\n' + state.selectedSelector;
+      $('#instructionOutput').value = 'HEDEF: ' + state.selectedSelector + '\nKAYNAK BAĞLAMI: Benzersiz eşleşme bulunamadı.\nÖNERİ: CSS seçicisi üzerinden güvenli yama uygulanmalı.';
+      return;
+    }
+    const source = state.originalSource;
+    const line = source.slice(0, found.index).split(/\r?\n/).length;
+    const lines = source.split(/\r?\n/);
+    const start = Math.max(0, line - 4);
+    const end = Math.min(lines.length, line + 4);
+    const numbered = lines.slice(start,end).map((value,i) => String(start+i+1).padStart(5,' ') + ' │ ' + value).join('\n');
+    $('#sourceContext').textContent = 'Yaklaşık satır: ' + line + '\nSeçici: ' + state.selectedSelector + '\n\n' + numbered;
+    $('#instructionOutput').value =
+      'İŞLEM: Henüz seçilmedi\n' +
+      'HEDEF: ' + state.selectedSelector + '\n' +
+      'KAYNAK SATIRI: yaklaşık ' + line + '\n' +
+      'EŞLEŞEN BAŞLANGIÇ: ' + found.match.slice(0,180) + '\n\n' +
+      'ÜST/ALT BAĞLAM:\n' + numbered;
+  }
+
+  function scriptBlocks(source) {
+    const blocks = [];
+    const pattern = new RegExp('<' + 'script\\b[^>]*>([\\s\\S]*?)<\\/' + 'script\\s*>', 'gi');
+    source.replace(pattern, (_, code) => { blocks.push(code); return _; });
+    return blocks.join('\n');
+  }
+
+  function scanElementRisk(el) {
+    const scripts = scriptBlocks(state.originalSource);
+    const items = [];
+    if (el.id) {
+      const count = (scripts.match(new RegExp(escapeRegExp(el.id), 'g')) || []).length;
+      items.push({label:'ID', value:el.id, count});
+    }
+    Array.from(el.classList).filter(c => !c.startsWith('rve-')).slice(0,5).forEach(cls => {
+      const count = (scripts.match(new RegExp(escapeRegExp(cls), 'g')) || []).length;
+      if (count) items.push({label:'Sınıf', value:cls, count});
+    });
+    if (!items.length || items.every(item => item.count === 0)) {
+      $('#riskResults').innerHTML = '<div class="selected-card"><div class="risk safe">JavaScript içinde belirgin bir doğrudan bağlantı bulunamadı.</div></div>';
+      return;
+    }
+    $('#riskResults').innerHTML = items.map(item =>
+      '<div class="operation"><div class="operation-head"><strong>' + escapeHtml(item.label) + '</strong><span>' + item.count + ' kullanım</span></div><code>' + escapeHtml(item.value) + '</code><p>' +
+      (item.count ? 'Gizleme güvenlidir; silme veya kimlik değiştirme riskli olabilir.' : 'Doğrudan kullanım bulunamadı.') + '</p></div>'
+    ).join('');
+  }
+
+  function directText(el) {
+    return Array.from(el.childNodes).filter(node => node.nodeType === Node.TEXT_NODE).map(node => node.nodeValue).join(' ').trim() ||
+      (el.children.length === 0 ? (el.textContent || '').trim() : '');
+  }
+
+  function operationId() {
+    return 'op-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,7);
+  }
+
+  function addOperation(operation) {
+    operation.id = operation.id || operationId();
+    operation.enabled = operation.enabled !== false;
+    operation.createdAt = operation.createdAt || new Date().toISOString();
+    state.operations.push(operation);
+    pushHistory();
+    renderOperations();
+    applyOperationsToPreview();
+    updateInstructionForOperation(operation);
+  }
+
+  function updateInstructionForOperation(op) {
+    const lines = [
+      'İŞLEM: ' + operationLabel(op),
+      'HEDEF: ' + (op.selector || op.source || '—')
+    ];
+    if (op.type === 'style') lines.push('CSS: ' + Object.entries(op.declarations).map(([k,v]) => k + ': ' + v).join('; '), 'KAPSAM: ' + op.scope);
+    if (op.type === 'hide') lines.push('YÖNTEM: Kaynaktan silme yok; CSS ile güvenli gizleme.');
+    if (op.type === 'text') lines.push('YENİ METİN: ' + op.value, 'YÖNTEM: Sayfa çalıştıktan sonra metin düğümü güncellenir.');
+    if (op.type === 'portal') {
+      lines.push('HEDEF KONUM: ' + op.target, 'YERLEŞTİRME: ' + op.position, 'YÖNTEM: Öğe kopyalanmadan gerçek DOM düğümü taşınır.');
+      if (op.trigger) lines.push('OTOMATİK TETİKLEYİCİ: ' + op.trigger);
+    }
+    lines.push('', 'KAYNAK BAĞLAMI:', op.context || 'Kaynak bağlamı bulunamadı.');
+    $('#instructionOutput').value = lines.join('\n');
+  }
+
+  function operationLabel(op) {
+    if (op.type === 'style' && op.mode === 'geometry') return 'Konum / kenar boyutu';
+    return ({style:'Boyut / görünüm', hide:'Güvenli gizle', text:'Metin değişikliği', portal:'Dinamik taşıma'}[op.type] || op.type);
+  }
+
+  function currentContextText() { return $('#sourceContext').textContent || ''; }
+
+  function pushHistory() {
+    const snapshot = JSON.stringify(state.operations);
+    if (state.historyIndex >= 0 && state.history[state.historyIndex] === snapshot) return;
+    state.history = state.history.slice(0, state.historyIndex + 1);
+    state.history.push(snapshot);
+    if (state.history.length > 80) state.history.shift();
+    state.historyIndex = state.history.length - 1;
+    updateHistoryButtons();
+  }
+
+  function restoreHistory(index) {
+    if (index < 0 || index >= state.history.length) return;
+    state.historyIndex = index;
+    state.operations = JSON.parse(state.history[index]);
+    renderOperations();
+    loadFrame(buildOutput());
+    updateHistoryButtons();
+  }
+
+  function updateHistoryButtons() {
+    $('#undoButton').disabled = state.historyIndex <= 0;
+    $('#redoButton').disabled = state.historyIndex < 0 || state.historyIndex >= state.history.length - 1;
+  }
+
+  function declarationsFromInspector() {
+    const declarations = {};
+    const customWidth = $('#customWidth').value.trim();
+    const preset = $('#widthPreset').value;
+    if (customWidth) declarations.width = customWidth + 'px';
+    else if (preset) declarations.width = preset;
+    if ($('#maxWidth').value) declarations['max-width'] = $('#maxWidth').value + 'px';
+    if ($('#heightValue').value) declarations.height = $('#heightValue').value + 'px';
+    if ($('#gridSpan').value) declarations['grid-column'] = 'span ' + $('#gridSpan').value;
+    if ($('#orderValue').value) declarations.order = $('#orderValue').value;
+    if ($('#paddingValue').value !== '') declarations.padding = $('#paddingValue').value + 'px';
+    if ($('#marginValue').value !== '') declarations.margin = $('#marginValue').value + 'px';
+    if ($('#overflowValue').value) declarations.overflow = $('#overflowValue').value;
+    if ($('#alignSelfValue').value) declarations['align-self'] = $('#alignSelfValue').value;
+    if ($('#fontSizeValue').value) declarations['font-size'] = $('#fontSizeValue').value + 'px';
+    if ($('#lineHeightValue').value) declarations['line-height'] = $('#lineHeightValue').value;
+    if ($('#whiteSpaceValue').value) declarations['white-space'] = $('#whiteSpaceValue').value;
+    if ($('#radiusValue').value !== '') declarations['border-radius'] = $('#radiusValue').value + 'px';
+    if ($('#useColor').checked) declarations.color = $('#colorValue').value;
+    if ($('#useBackground').checked) declarations.background = $('#backgroundValue').value;
+    if (declarations.width || declarations['grid-column']) declarations['min-width'] = '0';
+    return declarations;
+  }
+
+  function scopeWrap(scope, rule) {
+    if (scope === 'desktop') return '@media (min-width:1201px){' + rule + '}';
+    if (scope === 'tablet') return '@media (min-width:601px) and (max-width:1200px){' + rule + '}';
+    if (scope === 'mobile') return '@media (max-width:600px){' + rule + '}';
+    if (scope === 'print') return '@media print{' + rule + '}';
+    return rule;
+  }
+
+  function generatePatchCss() {
+    const chunks = ['/* Regnum Evrensel HTML Editörü V3 · Kaynak-korumalı yamalar */'];
+    state.operations.filter(op => op.enabled && (op.type === 'style' || op.type === 'hide')).forEach(op => {
+      let declarations;
+      if (op.type === 'hide') declarations = 'display:none!important;';
+      else declarations = Object.entries(op.declarations).map(([key,value]) => key + ':' + value + '!important;').join('');
+      chunks.push(scopeWrap(op.scope || 'all', op.selector + '{' + declarations + '}'));
+    });
+    return chunks.join('\n');
+  }
+
+  function runtimeOperations() {
+    return state.operations.filter(op => op.enabled && (op.type === 'text' || op.type === 'portal')).map(op => {
+      const clean = {...op};
+      delete clean.context;
+      delete clean.createdAt;
+      return clean;
+    });
+  }
+
+  function buildRuntimeScript() {
+    const opsJson = JSON.stringify(runtimeOperations()).replace(/</g, '\\u003c');
+    return `(function(){
+  'use strict';
+  var operations=${opsJson};
+  var busy=false;
+  var triggered={};
+  function one(selector){try{return document.querySelector(selector)}catch(e){return null}}
+  function directText(el,value){
+    var nodes=Array.prototype.filter.call(el.childNodes,function(n){return n.nodeType===3});
+    if(nodes.length){nodes[0].nodeValue=value;for(var i=1;i<nodes.length;i++)nodes[i].nodeValue=''}
+    else if(!el.children.length)el.textContent=value;
+    else el.insertBefore(document.createTextNode(value),el.firstChild);
+  }
+  function resize(root){
+    requestAnimationFrame(function(){
+      try{
+        if(window.echarts){
+          var eNodes=[];
+          if(root&&root.matches&&root.matches('[_echarts_instance_]'))eNodes.push(root);
+          if(root&&root.querySelectorAll)eNodes=eNodes.concat(Array.prototype.slice.call(root.querySelectorAll('[_echarts_instance_]')));
+          eNodes.forEach(function(node){var instance=window.echarts.getInstanceByDom(node);if(instance)instance.resize()});
+        }
+      }catch(e){}
+      try{
+        if(window.Chart&&typeof window.Chart.getChart==='function'){
+          var canvases=root&&root.querySelectorAll?root.querySelectorAll('canvas'):[];
+          Array.prototype.forEach.call(canvases,function(canvas){var chart=window.Chart.getChart(canvas);if(chart)chart.resize()});
+        }
+      }catch(e){}
+      try{if(window.Plotly&&window.Plotly.Plots&&root)window.Plotly.Plots.resize(root)}catch(e){}
+      try{window.dispatchEvent(new Event('resize'))}catch(e){}
+    });
+  }
+  function apply(){
+    if(busy)return;busy=true;
+    try{
+      operations.forEach(function(op){
+        if(op.type==='text'){var el=one(op.selector);if(el)directText(el,op.value)}
+        if(op.type==='portal'){
+          if(op.trigger&&!triggered[op.id]){
+            var trigger=one(op.trigger);
+            if(trigger){triggered[op.id]=true;try{trigger.click()}catch(e){}}
+          }
+          var source=one(op.source),target=one(op.target);
+          if(!source||!target||source===target||source.contains(target))return;
+          if(op.forceVisible){source.hidden=false;source.removeAttribute('hidden');if(source.style&&source.style.display==='none')source.style.removeProperty('display')}
+          var placed=(op.position==='inside-start'&&source.parentNode===target&&target.firstChild===source)||
+            (op.position==='inside-end'&&source.parentNode===target&&target.lastChild===source)||
+            (op.position==='before'&&source.parentNode===target.parentNode&&source.nextSibling===target)||
+            (op.position==='after'&&source.parentNode===target.parentNode&&target.nextSibling===source);
+          if(!placed){
+            if(op.position==='inside-start')target.insertBefore(source,target.firstChild);
+            else if(op.position==='inside-end')target.appendChild(source);
+            else if(op.position==='before'&&target.parentNode)target.parentNode.insertBefore(source,target);
+            else if(op.position==='after'&&target.parentNode)target.parentNode.insertBefore(source,target.nextSibling);
+            resize(source);
+          }
+        }
+      });
+    }finally{busy=false}
+  }
+  var timer=0;
+  function schedule(){clearTimeout(timer);timer=setTimeout(apply,80)}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();
+  window.addEventListener('load',apply);
+  try{new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
+  setTimeout(apply,300);setTimeout(apply,1200);
+})();`;
+  }
+
+  function findClosingTagOutsideRawText(source, tagName) {
+    // Yalnızca ASCII HTML etiketlerini küçültür; Türkçe İ gibi karakterlerde
+    // uzunluk değişmesini ve kaynak ofsetlerinin kaymasını engeller.
+    const lower = source.replace(/[A-Z]/g, ch => ch.toLowerCase());
+    const wanted = '</' + tagName.toLowerCase();
+    let index = 0;
+    let rawTag = '';
+    while (index < lower.length) {
+      if (rawTag) {
+        const closeAt = lower.indexOf('</' + rawTag, index);
+        if (closeAt < 0) return -1;
+        const closeEnd = lower.indexOf('>', closeAt);
+        if (closeEnd < 0) return -1;
+        index = closeEnd + 1;
+        rawTag = '';
+        continue;
+      }
+      const openAt = lower.indexOf('<', index);
+      if (openAt < 0) return -1;
+      if (lower.startsWith('<!--', openAt)) {
+        const commentEnd = lower.indexOf('-->', openAt + 4);
+        index = commentEnd < 0 ? lower.length : commentEnd + 3;
+        continue;
+      }
+      if (lower.startsWith('<script', openAt) && /[\s>]/.test(lower[openAt + 7] || '>')) {
+        const openEnd = lower.indexOf('>', openAt + 7);
+        if (openEnd < 0) return -1;
+        rawTag = 'script';
+        index = openEnd + 1;
+        continue;
+      }
+      if (lower.startsWith('<style', openAt) && /[\s>]/.test(lower[openAt + 6] || '>')) {
+        const openEnd = lower.indexOf('>', openAt + 6);
+        if (openEnd < 0) return -1;
+        rawTag = 'style';
+        index = openEnd + 1;
+        continue;
+      }
+      if (lower.startsWith(wanted, openAt) && /[\s>]/.test(lower[openAt + wanted.length] || '>')) return openAt;
+      index = openAt + 1;
+    }
+    return -1;
+  }
+
+  function injectBeforeClosing(source, closingTag, block) {
+    const index = findClosingTagOutsideRawText(source, closingTag);
+    if (index >= 0) return source.slice(0, index) + block + '\n' + source.slice(index);
+    return source + '\n' + block;
+  }
+
+  function buildOutput() {
+    if (!state.originalSource) return '';
+    let output = sourceWithoutPreviousPatches(state.originalSource);
+    if (!state.operations.length) return output;
+    const visualOperations = state.operations.filter(op => op.enabled && (op.type === 'style' || op.type === 'hide'));
+    if (visualOperations.length) {
+      const css = generatePatchCss();
+      const styleBlock = '<style id="' + PATCH_STYLE_ID + '">\n' + css + '\n</style>';
+      output = injectBeforeClosing(output, 'head', styleBlock);
+    }
+    const manifestBlock = '<!--' + PATCH_MANIFEST_MARKER + encodeManifest(state.operations) + '-->';
+    output = injectBeforeClosing(output, 'body', manifestBlock);
+    const runtime = runtimeOperations();
+    if (runtime.length) {
+      const open = '<scr' + 'ipt id="' + PATCH_RUNTIME_ID + '">';
+      const close = '</scr' + 'ipt>';
+      output = injectBeforeClosing(output, 'body', open + '\n' + buildRuntimeScript() + '\n' + close);
+    }
+    return output;
+  }
+
+  function applyOperationsToPreview() {
+    const doc = frameDocument();
+    if (!doc) return;
+    let style = doc.getElementById(PATCH_STYLE_ID);
+    if (!style) {
+      style = doc.createElement('style');
+      style.id = PATCH_STYLE_ID;
+      doc.head.appendChild(style);
+    }
+    style.textContent = generatePatchCss();
+    state.operations.filter(op => op.enabled && op.type === 'style').forEach(op => {
+      const el = safeQuery(doc, op.selector);
+      if (el) triggerChartResize(el);
+    });
+    state.operations.filter(op => op.enabled && op.type === 'text').forEach(op => {
+      const el = safeQuery(doc, op.selector);
+      if (el) applyDirectText(el, op.value);
+    });
+    state.operations.filter(op => op.enabled && op.type === 'portal').forEach(op => applyPortalPreview(op, doc));
+    renderOperations();
+    requestAnimationFrame(syncSelectionOverlay);
+  }
+
+  function safeQuery(doc, selector) { try { return doc.querySelector(selector); } catch (_) { return null; } }
+
+  function applyDirectText(el, value) {
+    const nodes = Array.from(el.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
+    if (nodes.length) {
+      nodes[0].nodeValue = value;
+      nodes.slice(1).forEach(node => node.nodeValue = '');
+    } else if (!el.children.length) el.textContent = value;
+    else el.insertBefore(el.ownerDocument.createTextNode(value), el.firstChild);
+  }
+
+  function applyPortalPreview(op, doc) {
+    if (op.trigger && !state.previewTriggers.has(op.id)) {
+      const trigger = safeQuery(doc, op.trigger);
+      if (trigger) {
+        state.previewTriggers.add(op.id);
+        try { trigger.click(); } catch (_) {}
+      }
+    }
+    const source = safeQuery(doc, op.source);
+    const target = safeQuery(doc, op.target);
+    if (!source || !target || source === target || source.contains(target)) return false;
+    if (op.forceVisible) {
+      source.hidden = false;
+      source.removeAttribute('hidden');
+      if (source.style?.display === 'none') source.style.removeProperty('display');
+    }
+    const placed =
+      (op.position === 'inside-start' && source.parentNode === target && target.firstChild === source) ||
+      (op.position === 'inside-end' && source.parentNode === target && target.lastChild === source) ||
+      (op.position === 'before' && source.parentNode === target.parentNode && source.nextSibling === target) ||
+      (op.position === 'after' && source.parentNode === target.parentNode && target.nextSibling === source);
+    if (placed) return true;
+    if (op.position === 'inside-start') target.insertBefore(source, target.firstChild);
+    if (op.position === 'inside-end') target.appendChild(source);
+    if (op.position === 'before' && target.parentNode) target.parentNode.insertBefore(source, target);
+    if (op.position === 'after' && target.parentNode) target.parentNode.insertBefore(source, target.nextSibling);
+    triggerChartResize(source);
+    return true;
+  }
+
+  function triggerChartResize(root) {
+    const win = frameWindow();
+    if (!win || !root) return;
+    requestAnimationFrame(() => {
+      try {
+        if (win.echarts) {
+          const nodes = [root, ...root.querySelectorAll('[_echarts_instance_]')].filter(node => node.matches?.('[_echarts_instance_]'));
+          nodes.forEach(node => win.echarts.getInstanceByDom(node)?.resize());
+        }
+      } catch (_) {}
+      try {
+        if (win.Chart?.getChart) root.querySelectorAll('canvas').forEach(canvas => win.Chart.getChart(canvas)?.resize());
+      } catch (_) {}
+      try { win.dispatchEvent(new Event('resize')); } catch (_) {}
+    });
+  }
+
+  function renderOperations() {
+    const list = $('#operationsList');
+    $('#operationCount').textContent = state.operations.length + ' değişiklik';
+    $('#clearOperationsButton').disabled = state.operations.length === 0;
+    $('#copyManifestButton').disabled = state.operations.length === 0;
+    $('#downloadReportButton').disabled = state.operations.length === 0;
+    if (!state.operations.length) {
+      list.innerHTML = '<div class="empty-list">Henüz değişiklik yok.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    state.operations.forEach((op,index) => {
+      const item = document.createElement('div');
+      item.className = 'operation' + (op.enabled ? '' : ' off');
+      const target = op.selector || op.source || '';
+      let summary = '';
+      if (op.type === 'style') summary = Object.entries(op.declarations).map(([k,v]) => k + ': ' + v).join('; ');
+      if (op.type === 'hide') summary = 'display: none';
+      if (op.type === 'text') summary = '“' + op.value.slice(0,80) + '”';
+      if (op.type === 'portal') summary = '→ ' + op.target + ' (' + op.position + ')' + (op.trigger ? ' · tetikleyici: ' + op.trigger : '');
+      item.innerHTML =
+        '<div class="operation-head"><strong>' + escapeHtml(operationLabel(op)) + '</strong><span>#' + (index+1) + '</span></div>' +
+        '<code>' + escapeHtml(target) + '</code><p>' + escapeHtml(summary) + '</p>' +
+        '<div class="operation-actions"><button class="btn small" data-op-toggle="' + escapeHtml(op.id) + '">' + (op.enabled ? 'Devre dışı' : 'Etkinleştir') + '</button><button class="btn danger small" data-op-remove="' + escapeHtml(op.id) + '">Kaldır</button></div>';
+      list.appendChild(item);
+    });
+  }
+
+  function validateProject() {
+    if (!state.originalSource) return;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(state.originalSource, 'text/html');
+    const ids = new Map();
+    doc.querySelectorAll('[id]').forEach(el => ids.set(el.id, (ids.get(el.id) || 0) + 1));
+    const duplicates = Array.from(ids).filter(([,count]) => count > 1);
+    const missing = [];
+    const previewDoc = frameDocument();
+    state.operations.filter(op => op.enabled).forEach(op => {
+      if (op.selector && !safeQuery(previewDoc, op.selector)) missing.push(op.selector);
+      if (op.type === 'portal') {
+        if (!safeQuery(previewDoc, op.source)) missing.push(op.source);
+        if (!safeQuery(previewDoc, op.target)) missing.push(op.target);
+      }
+    });
+    const scriptCountBefore = (state.originalSource.match(/<script\b/gi) || []).length;
+    const output = buildOutput();
+    const scriptCountAfter = (output.match(/<script\b/gi) || []).length;
+    const expectedExtra = runtimeOperations().length ? 1 : 0;
+    const scriptIntegrity = scriptCountAfter === scriptCountBefore + expectedExtra;
+    const issues = [];
+    if (duplicates.length) issues.push(duplicates.length + ' tekrarlanan ID');
+    if (missing.length) issues.push(missing.length + ' bulunamayan seçici');
+    if (!scriptIntegrity) issues.push('script sayısı beklenenden farklı');
+    if (state.frameErrors.length) issues.push(state.frameErrors.length + ' çalışma zamanı hatası');
+    $('#integritySummary').className = 'selected-card' + (issues.length ? '' : '');
+    $('#integritySummary').innerHTML =
+      '<div class="' + (issues.length ? 'risk' : 'risk safe') + '">' + (issues.length ? issues.join(' · ') : 'Kaynak koruma ve seçici kontrolleri başarılı.') + '</div>' +
+      '<div class="selected-meta">Orijinal script: ' + scriptCountBefore + ' · Çıktı script: ' + scriptCountAfter + ' · Yama: ' + state.operations.length + '</div>';
+    if (duplicates.length) Logger.warn('Tekrarlanan ID: ' + duplicates.map(([id,count]) => id + '×' + count).join(', '));
+    if (missing.length) Logger.warn('Bulunamayan seçiciler: ' + Array.from(new Set(missing)).join(', '));
+    if (!scriptIntegrity) Logger.error('Script bütünlüğü kontrolü başarısız.');
+    else Logger.ok('Doğrulama tamamlandı. Orijinal script blokları korundu.');
+    toast(issues.length ? 'Doğrulama uyarılarla tamamlandı' : 'Doğrulama başarılı', issues.length ? 'error' : 'ok');
+  }
+
+  function projectData() {
+    return {
+      format: 'Regnum Universal HTML Editor Project',
+      version: PROJECT_VERSION,
+      createdAt: new Date().toISOString(),
+      sourceName: state.sourceName,
+      sourceHash: state.sourceHash,
+      originalSource: state.originalSource,
+      operations: state.operations
+    };
+  }
+
+  function reportText() {
+    const lines = [
+      'REGNUM EVRENSEL HTML EDİTÖRÜ V3',
+      'DEĞİŞİKLİK RAPORU',
+      '',
+      'Dosya: ' + state.sourceName,
+      'Kaynak özeti: #' + state.sourceHash,
+      'İşlem sayısı: ' + state.operations.length,
+      'Tarih: ' + new Date().toLocaleString('tr-TR'),
+      ''
+    ];
+    state.operations.forEach((op,index) => {
+      lines.push('='.repeat(70), (index+1) + '. ' + operationLabel(op), 'Durum: ' + (op.enabled ? 'Etkin' : 'Devre dışı'));
+      lines.push('Hedef: ' + (op.selector || op.source || '—'));
+      if (op.type === 'style') lines.push('CSS: ' + Object.entries(op.declarations).map(([k,v]) => k + ': ' + v).join('; '), 'Kapsam: ' + op.scope);
+      if (op.type === 'hide') lines.push('Yöntem: Güvenli CSS gizleme');
+      if (op.type === 'text') lines.push('Yeni metin: ' + op.value);
+      if (op.type === 'portal') {
+        lines.push('Hedef konum: ' + op.target, 'Yerleştirme: ' + op.position);
+        if (op.trigger) lines.push('Otomatik tetikleyici: ' + op.trigger);
+        lines.push('Görünürlük zorlaması: ' + (op.forceVisible ? 'Evet' : 'Hayır'));
+      }
+      lines.push('', op.context || 'Kaynak bağlamı bulunamadı.', '');
+    });
+    return lines.join('\n');
+  }
+
+  const ZipGen = (() => {
+    const enc = new TextEncoder();
+    const crcTable = (() => {
+      const table = new Uint32Array(256);
+      for (let i=0;i<256;i++) {
+        let c=i;
+        for (let j=0;j<8;j++) c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);
+        table[i]=c;
+      }
+      return table;
+    })();
+    const crc32 = data => {
+      let crc=0xFFFFFFFF;
+      for (let i=0;i<data.length;i++) crc=crcTable[(crc^data[i])&0xFF]^(crc>>>8);
+      return (crc^0xFFFFFFFF)>>>0;
+    };
+    const u16=n=>[n&255,(n>>8)&255];
+    const u32=n=>[n&255,(n>>8)&255,(n>>16)&255,(n>>24)&255];
+    const concat=(...arrays)=>{
+      const out=new Uint8Array(arrays.reduce((n,a)=>n+a.length,0));
+      let pos=0; arrays.forEach(a=>{out.set(a,pos);pos+=a.length}); return out;
+    };
+    function build(files) {
+      const normalized=files.map(file=>({name:file.name,data:typeof file.data==='string'?enc.encode(file.data):file.data}));
+      const localParts=[],centralParts=[]; let offset=0;
+      normalized.forEach(({name,data})=>{
+        const nameBytes=enc.encode(name),crc=crc32(data),size=data.length;
+        const local=new Uint8Array([0x50,0x4B,0x03,0x04,20,0,0,0,0,0,0,0,0,0,...u32(crc),...u32(size),...u32(size),...u16(nameBytes.length),0,0,...nameBytes]);
+        const central=new Uint8Array([0x50,0x4B,0x01,0x02,20,0,20,0,0,0,0,0,0,0,0,0,...u32(crc),...u32(size),...u32(size),...u16(nameBytes.length),0,0,0,0,0,0,0,0,0,0,0,0,...u32(offset),...nameBytes]);
+        localParts.push(local,data); centralParts.push(central); offset+=local.length+size;
+      });
+      const centralData=concat(...centralParts);
+      const end=new Uint8Array([0x50,0x4B,0x05,0x06,0,0,0,0,...u16(normalized.length),...u16(normalized.length),...u32(centralData.length),...u32(offset),0,0]);
+      return concat(...localParts,centralData,end);
+    }
+    return {build};
+  })();
+
+  const XlsxGen = {
+    esc(value) { return String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); },
+    col(index) {
+      let value='';
+      while(index>=0){value=String.fromCharCode(65+(index%26))+value;index=Math.floor(index/26)-1}
+      return value;
+    },
+    build(headers, rows, sheetName='Veri') {
+      const shared=[],map={};
+      const indexOf=value=>{const key=String(value??'');if(!(key in map)){map[key]=shared.length;shared.push(key)}return map[key]};
+      let sheet='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData><row r="1">';
+      headers.forEach((header,i)=>{sheet+='<c r="'+this.col(i)+'1" t="s"><v>'+indexOf(header)+'</v></c>'});
+      sheet+='</row>';
+      rows.forEach((row,ri)=>{
+        sheet+='<row r="'+(ri+2)+'">';
+        row.forEach((value,ci)=>{
+          const ref=this.col(ci)+(ri+2);
+          const numeric=value!==null&&value!==''&&!isNaN(+value);
+          sheet+=numeric?'<c r="'+ref+'"><v>'+Number(value)+'</v></c>':'<c r="'+ref+'" t="s"><v>'+indexOf(value)+'</v></c>';
+        });
+        sheet+='</row>';
+      });
+      sheet+='</sheetData></worksheet>';
+      let strings='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="'+shared.length+'" uniqueCount="'+shared.length+'">';
+      shared.forEach(value=>{strings+='<si><t xml:space="preserve">'+this.esc(value)+'</t></si>'}); strings+='</sst>';
+      const safeSheet=this.esc(sheetName.replace(/[\\/*?:[\]]/g,' ').slice(0,31)||'Veri');
+      const workbook='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="'+safeSheet+'" sheetId="1" r:id="rId1"/></sheets></workbook>';
+      const workbookRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/></Relationships>';
+      const rootRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+      const types='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/></Types>';
+      return ZipGen.build([
+        {name:'[Content_Types].xml',data:types},{name:'_rels/.rels',data:rootRels},{name:'xl/workbook.xml',data:workbook},
+        {name:'xl/_rels/workbook.xml.rels',data:workbookRels},{name:'xl/worksheets/sheet1.xml',data:sheet},{name:'xl/sharedStrings.xml',data:strings}
+      ]);
+    }
+  };
+
+  function normalizeHeader(value) {
+    return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'');
+  }
+
+  function ghostValue(header, index) {
+    const key=normalizeHeader(header);
+    const date=new Date(); date.setDate(date.getDate()+1+(index%20));
+    const dateText=String(date.getDate()).padStart(2,'0')+'.'+String(date.getMonth()+1).padStart(2,'0')+'.'+date.getFullYear();
+    if (/conf|confirmation|rezervasyonno/.test(key)) return 3500000+index;
+    if (/roomno|odano|odanumarasi/.test(key)) return 1101+(index%80);
+    if (/name|guest|misafir|adsoyad/.test(key)) return 'TEST MISAFIR '+(index+1);
+    if (/arrival|departure|date|tarih|gelis|cikis/.test(key)) return dateText;
+    if (/adult|yetiskin/.test(key)) return 2;
+    if (/paychd|fchd|infant|child|cocuk|bebek/.test(key)) return index%3===0?1:0;
+    if (/rtype|rrtype|odatipi/.test(key)) return ['PPR','SPR','DLX'][index%3];
+    if (/agent|acenta|agency/.test(key)) return ['TEST ACENTA','ODEON TEST','DIREKT'][index%3];
+    if (/commentstatus|yorumdurum/.test(key)) return ['Olumlu','Olumsuz','Öneri'][index%3];
+    if (/commentsource|yorumkaynak/.test(key)) return 'Test';
+    if (/comment|yorum|feedback/.test(key)) return 'Editör test kaydı '+(index+1);
+    if (/vip/.test(key)) return index%4===0?'VIP':'';
+    if (/cardtype|karttipi/.test(key)) return index%4===0?'Silver Card':'';
+    if (/value|deger|gelir|revenue|amount|tutar|point|puan/.test(key)) return 100+(index*25);
+    if (/id$|no$|number|sayi/.test(key)) return index+1;
+    if (/status|durum/.test(key)) return ['Aktif','Bekliyor','Tamamlandı'][index%3];
+    if (/category|kategori/.test(key)) return ['A','B','C'][index%3];
+    return 'Test '+(index+1);
+  }
+
+  function buildGhostFile() {
+    const headers=$('#ghostHeaders').value.split(/[\n,;\t]+/).map(value=>value.trim()).filter(Boolean);
+    const count=Math.max(1,Math.min(2000,Number($('#ghostRows').value)||25));
+    if (!headers.length) throw new Error('En az bir sütun başlığı girin.');
+    const rows=Array.from({length:count},(_,index)=>headers.map(header=>ghostValue(header,index)));
+    const bytes=XlsxGen.build(headers,rows,$('#ghostSheet').value.trim()||'Veri');
+    return new File([bytes],'hayalet_test.xlsx',{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  }
+
+  function scanUploadTargets() {
+    const doc=frameDocument();
+    if (!doc) return;
+    const targets=[];
+    doc.querySelectorAll('input[type="file"]').forEach((el,index)=>{
+      const selector=selectorFor(el);
+      const accept=el.getAttribute('accept')||'dosya';
+      targets.push({kind:'input',selector,label:'Dosya inputu '+(index+1)+' · '+selector+' · '+accept});
+    });
+    const dropSelectors='[id*="drop" i],[class*="drop" i],[data-drop],[data-dropzone]';
+    try {
+      doc.querySelectorAll(dropSelectors).forEach((el,index)=>{
+        if (targets.some(target=>target.selector===selectorFor(el))) return;
+        const selector=selectorFor(el);
+        targets.push({kind:'drop',selector,label:'Bırakma alanı '+(index+1)+' · '+selector});
+      });
+    } catch (_) {}
+    state.uploadTargets=targets;
+    const select=$('#uploadTargetSelect');
+    select.innerHTML='';
+    if (!targets.length) select.innerHTML='<option value="">Yükleme alanı bulunamadı</option>';
+    else targets.forEach((target,index)=>{
+      const option=document.createElement('option');option.value=String(index);option.textContent=target.label;select.appendChild(option);
+    });
+    $('#injectRealFileButton').disabled=!targets.length||!state.testFile;
+    $('#injectGhostButton').disabled=!targets.length;
+    Logger.info(targets.length+' olası Excel yükleme alanı bulundu.');
+  }
+
+  function eventWithData(type, dataTransfer) {
+    try { return new DragEvent(type,{bubbles:true,cancelable:true,dataTransfer}); }
+    catch (_) {
+      const event=new Event(type,{bubbles:true,cancelable:true});
+      Object.defineProperty(event,'dataTransfer',{value:dataTransfer});
+      return event;
+    }
+  }
+
+  async function injectFile(file) {
+    const doc=frameDocument();
+    if (!doc) throw new Error('Çalışma alanı hazır değil.');
+    const target=state.uploadTargets[Number($('#uploadTargetSelect').value)||0];
+    if (!target) throw new Error('Yükleme hedefi seçilmedi.');
+    const el=safeQuery(doc,target.selector);
+    if (!el) throw new Error('Seçilen yükleme alanı artık bulunamıyor.');
+    const before=measureFrameContent(doc);
+    const transfer=new DataTransfer();transfer.items.add(file);
+    if (target.kind==='input') {
+      try { el.files=transfer.files; }
+      catch (_) { Object.defineProperty(el,'files',{configurable:true,value:transfer.files}); }
+      el.dispatchEvent(new Event('input',{bubbles:true}));
+      el.dispatchEvent(new Event('change',{bubbles:true}));
+    } else {
+      el.dispatchEvent(eventWithData('dragenter',transfer));
+      el.dispatchEvent(eventWithData('dragover',transfer));
+      el.dispatchEvent(eventWithData('drop',transfer));
+    }
+    $('#excelResult').textContent='Dosya aktarıldı, dinamik içerik bekleniyor…';
+    Logger.info('Test dosyası enjekte edildi: '+file.name+' → '+target.selector);
+    await new Promise(resolve=>setTimeout(resolve,1800));
+    const after=measureFrameContent(doc);
+    const delta={
+      rows:after.rows-before.rows,
+      canvas:after.canvas-before.canvas,
+      svg:after.svg-before.svg,
+      text:after.text-before.text
+    };
+    $('#excelResult').textContent=
+      '✓ Dosya hedefe aktarıldı\n'+
+      'Hedef: '+target.selector+'\n'+
+      'Tablo satırı: '+before.rows+' → '+after.rows+' ('+signed(delta.rows)+')\n'+
+      'Canvas: '+before.canvas+' → '+after.canvas+' ('+signed(delta.canvas)+')\n'+
+      'SVG: '+before.svg+' → '+after.svg+' ('+signed(delta.svg)+')\n'+
+      'Metin uzunluğu: '+before.text+' → '+after.text+' ('+signed(delta.text)+')';
+    if (delta.rows>0||delta.canvas>0||delta.svg>0||Math.abs(delta.text)>20) {
+      Logger.ok('Excel tetiklemesi içerik değişikliği oluşturdu.');
+      toast('Excel tetiklemesi başarılı');
+    } else {
+      Logger.warn('Dosya aktarıldı ancak belirgin içerik değişikliği algılanmadı.');
+      toast('Dosya aktarıldı; içerik değişimi doğrulanamadı','error');
+    }
+    scanUploadTargets();
+  }
+
+  function signed(value){return (value>=0?'+':'')+value}
+  function measureFrameContent(doc) {
+    return {
+      rows:doc.querySelectorAll('tbody tr').length,
+      canvas:doc.querySelectorAll('canvas').length,
+      svg:doc.querySelectorAll('svg').length,
+      text:(doc.body.innerText||'').length
+    };
+  }
+
+  function setActivePane(button) {
+    const group=button.closest('[data-tab-group]');
+    const side=group.parentElement;
+    $$('.tab',group).forEach(tab=>tab.classList.toggle('active',tab===button));
+    $$('.pane',side).forEach(pane=>pane.classList.toggle('active',pane.id===button.dataset.pane));
+  }
+
+  function clearInspectorInputs() {
+    ['customWidth','maxWidth','heightValue','orderValue','paddingValue','marginValue','fontSizeValue','lineHeightValue','radiusValue'].forEach(id=>$('#'+id).value='');
+    ['widthPreset','gridSpan','overflowValue','alignSelfValue','whiteSpaceValue'].forEach(id=>$('#'+id).value='');
+    $('#useColor').checked=false;$('#useBackground').checked=false;
+  }
+
+  function init() {
+    for(let i=1;i<=12;i++){
+      const option=document.createElement('option');option.value=String(i);option.textContent=i+'/12 kolon';$('#gridSpan').appendChild(option);
+    }
+    Logger.ok('Regnum Evrensel HTML Editörü V3 başlatıldı.');
+    Logger.info('HTML açın; hedef dosyanın mevcut scriptleri kaynakta korunacaktır.');
+
+    $('#openHtmlButton').addEventListener('click',()=>$('#htmlFileInput').click());
+    $('#welcomeOpenButton').addEventListener('click',()=>$('#htmlFileInput').click());
+    $('#htmlFileInput').addEventListener('change',async event=>{
+      const file=event.target.files[0];if(!file)return;
+      loadSource(await file.text(),file.name);
+      event.target.value='';
+    });
+    $('#colorValue').addEventListener('input', () => $('#useColor').checked = true);
+    $('#backgroundValue').addEventListener('input', () => $('#useBackground').checked = true);
+    $('#pasteHtmlButton').addEventListener('click',()=>openModal('pasteModal'));
+    $('#helpButton').addEventListener('click',()=>openModal('helpModal'));
+    $('#loadPastedSourceButton').addEventListener('click',()=>{
+      loadSource($('#pasteSource').value,'yapistirilan-dashboard.html');closeModal('pasteModal');
+    });
+    $$('[data-close-modal]').forEach(button=>button.addEventListener('click',()=>closeModal(button.dataset.closeModal)));
+    $$('.modal-backdrop').forEach(modal=>modal.addEventListener('click',event=>{if(event.target===modal)modal.hidden=true}));
+
+    $$('.tab').forEach(button=>button.addEventListener('click',()=>setActivePane(button)));
+    $$('.viewport-buttons .btn').forEach(button=>button.addEventListener('click',()=>{
+      $$('.viewport-buttons .btn').forEach(item=>item.classList.remove('active'));button.classList.add('active');
+      state.viewport=button.dataset.viewport;
+      $('#frameShell').style.width=state.viewport;
+    }));
+
+    $('#designModeButton').addEventListener('click',()=>{
+      state.designMode=!state.designMode;
+      $('#designModeButton').classList.toggle('active',state.designMode);
+      $('#designModeButton').textContent='Seçim Modu '+(state.designMode?'Açık':'Kapalı');
+      if(!state.designMode)resetSelection();
+      Logger.info('Seçim modu '+(state.designMode?'açıldı.':'kapatıldı; hedef HTML normal kullanılabilir.'));
+    });
+    $('#selectParentButton').addEventListener('click',()=>{
+      const parent=state.selectedEl?.parentElement;
+      if(parent&&parent!==frameDocument()?.documentElement)selectElement(parent);
+    });
+
+    $('#applyStyleButton').addEventListener('click',()=>{
+      if(!state.selectedSelector)return;
+      const declarations=declarationsFromInspector();
+      if(!Object.keys(declarations).length){toast('Uygulanacak bir ölçü veya görünüm değeri girin','error');return}
+      addOperation({type:'style',selector:state.selectedSelector,declarations,scope:$('#styleScope').value,context:currentContextText()});
+      clearInspectorInputs();
+      toast('Görünüm yaması eklendi');
+      Logger.ok('CSS yaması eklendi: '+state.selectedSelector);
+    });
+    $('#nudgeStep').addEventListener('change',updateNudgeControls);
+    updateNudgeControls();
+    $$('[data-nudge]').forEach(button=>button.addEventListener('click',()=>{
+      const [dx,dy]=button.dataset.nudge.split(',').map(Number);
+      const step=selectedNudgeStep();
+      nudgeSelected(dx*step,dy*step);
+    }));
+
+    $('#hideButton').addEventListener('click',()=>{
+      if(!state.selectedSelector)return;
+      addOperation({type:'hide',selector:state.selectedSelector,scope:'all',context:currentContextText()});
+      toast('Öğe güvenli biçimde gizlendi');
+      Logger.ok('Güvenli gizleme eklendi: '+state.selectedSelector);
+    });
+
+    $('#editTextButton').addEventListener('click',()=>{
+      if(!state.selectedEl)return;
+      $('#textEditValue').value=directText(state.selectedEl)||(state.selectedEl.textContent||'').trim();
+      $('#textEditHint').textContent=state.selectedEl.children.length?'Alt öğeler korunarak doğrudan metin düğümü değiştirilecektir.':'Seçili öğenin metni değiştirilecektir.';
+      openModal('textModal');
+    });
+    $('#applyTextButton').addEventListener('click',()=>{
+      const value=$('#textEditValue').value;
+      addOperation({type:'text',selector:state.selectedSelector,value,context:currentContextText()});
+      closeModal('textModal');toast('Metin yaması eklendi');Logger.ok('Metin yaması eklendi: '+state.selectedSelector);
+    });
+
+    $('#markPortalSourceButton').addEventListener('click',()=>{
+      state.portalSource=state.selectedSelector;$('#portalSourceBox').textContent=state.portalSource;updatePortalButton();toast('Taşınacak öğe belirlendi');
+    });
+    $('#markPortalTargetButton').addEventListener('click',()=>{
+      state.portalTarget=state.selectedSelector;$('#portalTargetBox').textContent=state.portalTarget;updatePortalButton();toast('Hedef alan belirlendi');
+    });
+    $('#markPortalTriggerButton').addEventListener('click',()=>{
+      state.portalTrigger=state.selectedSelector;$('#portalTriggerBox').textContent=state.portalTrigger;toast('Otomatik tetikleyici belirlendi');
+    });
+    $('#clearPortalTriggerButton').addEventListener('click',()=>{
+      state.portalTrigger='';$('#portalTriggerBox').textContent='Belirlenmedi';
+    });
+    $('#createPortalButton').addEventListener('click',()=>{
+      if(!state.portalSource||!state.portalTarget)return;
+      const doc=frameDocument(),source=safeQuery(doc,state.portalSource),target=safeQuery(doc,state.portalTarget);
+      if(source&&target&&(source===target||source.contains(target))){toast('Kaynak kendi içine taşınamaz','error');return}
+      addOperation({
+        type:'portal',
+        source:state.portalSource,
+        target:state.portalTarget,
+        trigger:state.portalTrigger || '',
+        forceVisible:$('#portalForceVisible').checked,
+        position:$('#portalPosition').value,
+        context:'Kaynak: '+state.portalSource+'\nHedef: '+state.portalTarget+(state.portalTrigger?'\nTetikleyici: '+state.portalTrigger:'')
+      });
+      state.portalSource='';state.portalTarget='';state.portalTrigger='';
+      $('#portalSourceBox').textContent='Belirlenmedi';$('#portalTargetBox').textContent='Belirlenmedi';$('#portalTriggerBox').textContent='Belirlenmedi';updatePortalButton();
+      toast('Dinamik taşıma kuralı oluşturuldu');Logger.ok('Portal taşıma kuralı eklendi.');
+    });
+
+    $('#operationsList').addEventListener('click',event=>{
+      const toggle=event.target.closest('[data-op-toggle]'),remove=event.target.closest('[data-op-remove]');
+      if(toggle){
+        const op=state.operations.find(item=>item.id===toggle.dataset.opToggle);if(op){op.enabled=!op.enabled;pushHistory();loadFrame(buildOutput());renderOperations()}
+      }
+      if(remove){
+        state.operations=state.operations.filter(item=>item.id!==remove.dataset.opRemove);pushHistory();loadFrame(buildOutput());renderOperations();
+      }
+    });
+    $('#clearOperationsButton').addEventListener('click',()=>{
+      if(!state.operations.length)return;
+      state.operations=[];pushHistory();loadFrame(buildOutput());renderOperations();toast('Tüm değişiklikler kaldırıldı');
+    });
+
+    $('#undoButton').addEventListener('click',()=>restoreHistory(state.historyIndex-1));
+    $('#redoButton').addEventListener('click',()=>restoreHistory(state.historyIndex+1));
+    $('#validateButton').addEventListener('click',validateProject);
+    $('#exportHtmlButton').addEventListener('click',()=>{
+      validateProject();
+      downloadText(state.sourceName.replace(/\.html?$/i,'')+'_duzenlenmis.html',buildOutput(),'text/html;charset=utf-8');
+      Logger.ok('Çalışan HTML çıktısı oluşturuldu.');
+    });
+    $('#exportProjectButton').addEventListener('click',()=>{
+      downloadText(state.sourceName.replace(/\.html?$/i,'')+'_editor_projesi.json',JSON.stringify(projectData(),null,2),'application/json;charset=utf-8');
+    });
+    $('#importProjectButton').addEventListener('click',()=>$('#projectFileInput').click());
+    $('#projectFileInput').addEventListener('change',async event=>{
+      const file=event.target.files[0];if(!file)return;
+      try{
+        const project=JSON.parse(await file.text());
+        if(!project.originalSource||!Array.isArray(project.operations))throw new Error('Geçersiz proje dosyası');
+        loadSource(project.originalSource,project.sourceName||'proje.html',project.operations);
+        toast('Editör projesi açıldı');
+      }catch(error){toast(error.message,'error');Logger.error(error.message)}
+      event.target.value='';
+    });
+    $('#copyManifestButton').addEventListener('click',()=>copyText(JSON.stringify(state.operations,null,2)));
+    $('#downloadReportButton').addEventListener('click',()=>downloadText(state.sourceName.replace(/\.html?$/i,'')+'_degisiklik_raporu.txt',reportText()));
+    $('#copyContextButton').addEventListener('click',()=>copyText($('#instructionOutput').value));
+
+    $('#testExcelFile').addEventListener('change',event=>{
+      state.testFile=event.target.files[0]||null;
+      $('#injectRealFileButton').disabled=!state.testFile||!state.uploadTargets.length;
+      if(state.testFile)Logger.info('Test dosyası seçildi: '+state.testFile.name);
+    });
+    $('#scanUploadTargetsButton').addEventListener('click',scanUploadTargets);
+    $('#injectRealFileButton').addEventListener('click',async()=>{
+      try{await injectFile(state.testFile)}catch(error){Logger.error(error.message);toast(error.message,'error')}
+    });
+    $('#injectGhostButton').addEventListener('click',async()=>{
+      try{await injectFile(buildGhostFile())}catch(error){Logger.error(error.message);toast(error.message,'error')}
+    });
+
+    $('#toggleLeftButton').addEventListener('click',()=>$('#app').classList.toggle('left-closed'));
+    $('#toggleRightButton').addEventListener('click',()=>$('#app').classList.toggle('right-closed'));
+    $('#toggleLogButton').addEventListener('click',()=>$('#app').classList.toggle('log-closed'));
+    $('#clearLogButton').addEventListener('click',()=>$('#logBody').innerHTML='');
+
+    document.addEventListener('keydown',event=>{
+      handleNudgeKey(event);
+      if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='z'){event.preventDefault();restoreHistory(state.historyIndex-1)}
+      if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='y'){event.preventDefault();restoreHistory(state.historyIndex+1)}
+      if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='s'&&state.originalSource){event.preventDefault();$('#exportHtmlButton').click()}
+      if(event.key==='Escape'){$$('.modal-backdrop').forEach(modal=>modal.hidden=true)}
+    });
+  }
+
+  function updatePortalButton() { $('#createPortalButton').disabled=!(state.portalSource&&state.portalTarget); }
+
+  document.addEventListener('DOMContentLoaded',init);
+  </script>
+</body>
+</html>
