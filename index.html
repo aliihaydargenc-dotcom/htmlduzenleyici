@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <title>Regnum Evrensel HTML Editörü V3.2</title>
+  <title>Regnum Evrensel HTML Editörü V4.1</title>
   <style>
     :root {
       --bg: #09120f;
@@ -23,7 +23,7 @@
       --orange: #ffae62;
       --shadow: 0 18px 48px rgba(0,0,0,.28);
       --top-h: 58px;
-      --side-w: 348px;
+      --side-w: 326px;
       --log-h: 124px;
     }
 
@@ -244,6 +244,42 @@
       background: #0b1713;
       font-size: 8px;
     }
+    .quick-size-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0,1fr));
+      gap: 5px;
+      margin-top: 8px;
+    }
+    .quick-size-grid .btn { min-width: 0; padding-inline: 4px; }
+    .range-field { margin-top: 4px; }
+    .range-field input[type="range"] {
+      height: 24px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      accent-color: var(--green);
+    }
+    .range-value {
+      min-width: 40px;
+      color: var(--green);
+      text-align: right;
+      font: 800 10px Consolas, monospace;
+    }
+    details.advanced {
+      border: 1px solid var(--line-soft);
+      border-radius: 9px;
+      overflow: hidden;
+      background: rgba(255,255,255,.014);
+    }
+    details.advanced > summary {
+      padding: 9px;
+      color: var(--gold);
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 900;
+      list-style-position: inside;
+    }
+    details.advanced > .group-body { border-top: 1px solid var(--line-soft); }
     .check-row { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 10px; }
 
     .selected-card {
@@ -296,6 +332,36 @@
     .operation code { display: block; margin-top: 5px; color: #c8ded5; font-size: 9px; overflow-wrap: anywhere; }
     .operation p { margin: 5px 0 0; color: var(--muted); font-size: 9px; }
     .operation-actions { margin-top: 7px; display: flex; gap: 5px; }
+    .operation-group { margin-bottom: 10px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+    .operation-group-head {
+      min-height: 35px;
+      padding: 6px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 7px;
+      color: var(--gold);
+      background: var(--surface-2);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .operation-group-body { padding: 7px; }
+    .operation-group.off .operation-group-body { opacity: .46; }
+    .align-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 5px;
+    }
+    .align-grid .btn { min-width: 0; padding-inline: 4px; }
+    .tool-status {
+      margin-top: 7px;
+      padding: 7px;
+      border: 1px solid var(--line-soft);
+      border-radius: 7px;
+      color: var(--muted);
+      background: #091510;
+      font-size: 9px;
+    }
     .empty-list { padding: 18px 8px; color: var(--muted); text-align: center; font-size: 10px; }
 
     .main {
@@ -466,22 +532,39 @@
 
     @media (max-width: 1100px) {
       :root { --side-w: 310px; }
-      .app { grid-template:
+      .app, .app.left-closed { grid-template:
         "top top" var(--top-h)
         "main right" minmax(0,1fr)
         "log right" var(--log-h)
         / minmax(0,1fr) var(--side-w); }
-      .side.left { display: none; }
+      .app.right-closed, .app.left-closed.right-closed { grid-template:
+        "top top" var(--top-h)
+        "main right" minmax(0,1fr)
+        "log right" var(--log-h)
+        / minmax(0,1fr) 0; }
+      .side.left {
+        display: flex;
+        position: fixed;
+        z-index: 60;
+        left: 0;
+        top: var(--top-h);
+        bottom: 0;
+        width: min(var(--side-w), 92vw);
+        box-shadow: 18px 0 48px rgba(0,0,0,.38);
+        transform: translateX(0);
+        transition: transform .18s ease, opacity .18s ease;
+      }
+      .left-closed .side.left { transform: translateX(-102%); }
       .topbar .brand small { display: none; }
     }
   </style>
 </head>
 <body>
-  <div class="app" id="app">
+  <div class="app left-closed log-closed" id="app">
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark">R</div>
-        <div><strong>Evrensel HTML Editörü</strong><small>Kaynak-korumalı V3.2</small></div>
+        <div><strong>Evrensel HTML Editörü</strong><small>Akış-korumalı V4.1</small></div>
       </div>
       <div class="sep"></div>
       <input id="htmlFileInput" type="file" accept=".html,.htm,text/html" hidden>
@@ -490,9 +573,10 @@
       <button class="btn active" id="designModeButton" disabled>Seçim Modu Açık</button>
       <button class="btn" id="selectParentButton" disabled>Üst Öğeyi Seç</button>
       <div class="sep"></div>
-      <button class="btn" id="undoButton" disabled>↶ Geri</button>
-      <button class="btn" id="redoButton" disabled>↷ İleri</button>
+      <button class="btn" id="undoButton" title="Son işlemi geri al (Ctrl+Z)" disabled>↶ Geri</button>
+      <button class="btn" id="redoButton" title="Geri alınan işlemi yinele (Ctrl+Y)" disabled>↷ İleri</button>
       <button class="btn" id="validateButton" disabled>Doğrula</button>
+      <button class="btn active" id="autoLayoutButton" disabled>Alan Koruma Açık</button>
       <div class="spacer"></div>
       <button class="btn gold" id="exportHtmlButton" disabled>Çalışan HTML İndir</button>
       <button class="btn" id="exportProjectButton" disabled>Proje Kaydet</button>
@@ -501,6 +585,7 @@
       <button class="btn icon" id="toggleLeftButton" title="Sol panel">◧</button>
       <button class="btn icon" id="toggleRightButton" title="Sağ panel">◨</button>
       <button class="btn icon" id="toggleLogButton" title="Konsol">⌄</button>
+      <button class="btn icon" id="shortcutsButton" title="Klavye kısayolları">⌨</button>
       <button class="btn icon" id="helpButton" title="Kullanım yardımı">?</button>
     </header>
 
@@ -518,7 +603,11 @@
         <div class="group">
           <div class="group-title">Orijinal Kaynak</div>
           <div class="group-body">
-            <p class="hint">Bu alan yalnızca görüntüleme içindir. Editör hedef HTML’nin mevcut CSS ve JavaScript kodlarını yeniden yazmaz.</p>
+            <p class="hint">Hızlı görünüm yalnızca seçili alanın kaynak çevresini gösterir. Tam kaynak gerektiğinde ayrıca yüklenir.</p>
+            <div class="button-row" style="margin-bottom:8px">
+              <button class="btn small grow active" id="sourceContextViewButton">Hızlı Bağlam</button>
+              <button class="btn small grow" id="loadFullSourceButton">Tam Kaynak</button>
+            </div>
             <textarea id="sourceViewer" readonly spellcheck="false" style="height:calc(100vh - 240px);resize:none"></textarea>
           </div>
         </div>
@@ -560,10 +649,9 @@
         <span class="status-badge" id="frameStatus">HTML bekleniyor</span>
         <div class="viewport-buttons">
           <button class="btn small active" data-viewport="100%">Masaüstü</button>
-          <button class="btn small" data-viewport="1024px">Tablet Y</button>
-          <button class="btn small" data-viewport="768px">Tablet D</button>
-          <button class="btn small" data-viewport="390px">Telefon</button>
         </div>
+        <button class="btn small" id="multiSelectButton" disabled>Çoklu Seçim</button>
+        <button class="btn small" id="layoutAuditButton" disabled>Yerleşimi Düzelt</button>
         <div class="spacer"></div>
         <span class="status-badge" id="selectionStatus">Öğe seçilmedi</span>
       </div>
@@ -603,28 +691,48 @@
               <button class="btn small grow" id="hideButton" disabled>Güvenli Gizle</button>
               <button class="btn small grow" id="editTextButton" disabled>Metni Düzenle</button>
             </div>
-            <div class="nudge-toolbar">
-              <label for="nudgeStep">Ok butonu adımı</label>
-              <select id="nudgeStep" aria-label="Ok butonlarının hareket miktarı">
-                <option value="1">1 px</option>
-                <option value="5" selected>5 px</option>
-                <option value="10">10 px</option>
-                <option value="25">25 px</option>
-              </select>
+            <div class="field" style="margin-top:10px">
+              <span>Hızlı genişlik</span>
+              <div class="quick-size-grid">
+                <button class="btn small" data-size-preset="auto" disabled>Oto</button>
+                <button class="btn small" data-size-preset="0.3333" disabled>⅓</button>
+                <button class="btn small" data-size-preset="0.5" disabled>½</button>
+                <button class="btn small" data-size-preset="0.6667" disabled>⅔</button>
+                <button class="btn small" data-size-preset="1" disabled>Tam</button>
+              </div>
             </div>
-            <div class="nudge-grid" aria-label="Seçili öğeyi oklarla taşı">
-              <span></span><button class="btn" data-nudge="0,-1" title="5 px yukarı" disabled>↑</button><span></span>
-              <button class="btn" data-nudge="-1,0" title="5 px sola" disabled>←</button><span class="nudge-center" id="nudgeStepLabel">5 px</span><button class="btn" data-nudge="1,0" title="5 px sağa" disabled>→</button>
-              <span></span><button class="btn" data-nudge="0,1" title="5 px aşağı" disabled>↓</button><span></span>
+            <div class="button-row">
+              <button class="btn small grow" id="moveBeforeButton" disabled>↑ Akışta Öne Al</button>
+              <button class="btn small grow" id="moveAfterButton" disabled>↓ Akışta Alta Al</button>
             </div>
-            <p class="hint" style="text-align:center;margin:0">Serbest taşıma: yeşil çerçevedeki <strong>TAŞI</strong> tutamacını sürükleyin.</p>
-            <p class="hint" style="text-align:center;margin:4px 0 0">Klavye: Ok = 1 px · Shift + Ok = seçilen adım</p>
+            <p class="hint" style="text-align:center;margin:8px 0 0">Sağ tıklayın veya yeşil <strong>TAŞI</strong> tutamacını hedef konuma sürükleyin.</p>
+          </div>
+        </div>
+
+        <div class="group" id="multiAlignGroup" hidden>
+          <div class="group-title">Akıllı Hizalama <span id="multiSelectionCount">0 öğe</span></div>
+          <div class="group-body">
+            <div class="align-grid">
+              <button class="btn small" data-align="left">Sola</button>
+              <button class="btn small" data-align="center-x">Yatay Orta</button>
+              <button class="btn small" data-align="right">Sağa</button>
+              <button class="btn small" data-align="top">Üste</button>
+              <button class="btn small" data-align="center-y">Dikey Orta</button>
+              <button class="btn small" data-align="bottom">Alta</button>
+              <button class="btn small" data-align="equal-width">Eşit En</button>
+              <button class="btn small" data-align="equal-height">Eşit Boy</button>
+              <button class="btn small" data-align="reset">Hizayı Sıfırla</button>
+            </div>
+            <p class="hint" style="margin:8px 0 0">Çoklu seçim açıkken öğelere tıklayın; Ctrl/Shift ile de seçim ekleyebilirsiniz.</p>
           </div>
         </div>
 
         <div class="group">
           <div class="group-title">Kutu ve Yerleşim</div>
           <div class="group-body">
+            <label class="field range-field"><span>Canlı genişlik <em id="widthRangeValue" class="range-value">%100</em></span>
+              <input id="widthRange" type="range" min="10" max="100" step="1" value="100" disabled>
+            </label>
             <div class="row">
               <label class="field"><span>Genişlik</span>
                 <select id="widthPreset">
@@ -669,6 +777,26 @@
           </div>
         </div>
 
+        <div class="group" id="tableToolsGroup" hidden>
+          <div class="group-title">Tabloya Özel Araçlar</div>
+          <div class="group-body">
+            <div class="button-row">
+              <button class="btn small grow" data-table-tool="fit">Alana Sığdır</button>
+              <button class="btn small grow" data-table-tool="scroll">Yatay Kaydır</button>
+              <button class="btn small grow" data-table-tool="sticky">Başlığı Sabitle</button>
+            </div>
+            <div class="button-row" style="margin-top:6px">
+              <button class="btn small grow" data-table-tool="compact">Kompakt</button>
+              <button class="btn small grow" data-table-tool="wrap">Metni Sar</button>
+              <button class="btn small grow" data-table-tool="reset">Tabloyu Sıfırla</button>
+            </div>
+            <label class="field range-field" style="margin-top:9px"><span>Tablo yazı boyutu <em id="tableFontValue" class="range-value">11 px</em></span>
+              <input id="tableFontRange" type="range" min="8" max="18" step="1" value="11">
+            </label>
+            <div class="tool-status" id="tableToolStatus">Bir tablo veya tabloyu içeren kart seçin.</div>
+          </div>
+        </div>
+
         <div class="group">
           <div class="group-title">Yazı ve Görünüm</div>
           <div class="group-body">
@@ -692,6 +820,7 @@
               <label class="check-row"><input id="useColor" type="checkbox"> Yazı rengini uygula</label>
               <label class="check-row"><input id="useBackground" type="checkbox"> Arka planı uygula</label>
             </div>
+            <label class="check-row" style="margin-top:7px"><input id="clearBackgroundImage" type="checkbox" checked> Arka plan renginde eski desen/gradienti kaldır</label>
           </div>
         </div>
 
@@ -700,10 +829,7 @@
           <div class="group-body">
             <label class="field"><span>Ekran</span>
               <select id="styleScope">
-                <option value="all">Tüm ekranlar</option>
-                <option value="desktop">Yalnızca masaüstü (1201px+)</option>
-                <option value="tablet">Tablet (601–1200px)</option>
-                <option value="mobile">Telefon (600px ve altı)</option>
+                <option value="all">Tüm masaüstü ekranlar</option>
                 <option value="print">PDF / Yazdırma</option>
               </select>
             </label>
@@ -714,9 +840,19 @@
 
       <section class="pane" id="movePane">
         <div class="group">
-          <div class="group-title">Ana Ekrana / Başka Alana Taşı</div>
+          <div class="group-title">Basit Sürükle-Bırak</div>
           <div class="group-body">
-            <p class="hint">Grafiği kopyalamaz; çalışan gerçek öğeyi hedef konuma taşır. Böylece aynı kimlik iki kez oluşmaz.</p>
+            <p class="hint">Öğeyi seçin, yeşil TAŞI tutamacını basılı tutup hedef alanın üst veya alt kenarına bırakın. Konum sayfa akışı içinde korunur ve diğer tabloların üzerine binmez.</p>
+            <div class="button-row">
+              <button class="btn grow" id="moveBeforeButtonAlt" disabled>↑ Bir Önceki Konum</button>
+              <button class="btn grow" id="moveAfterButtonAlt" disabled>↓ Bir Sonraki Konum</button>
+            </div>
+          </div>
+        </div>
+        <details class="advanced">
+          <summary>Dinamik grafikler için gelişmiş taşıma</summary>
+          <div class="group-body">
+            <p class="hint">Sonradan oluşan grafiklerde kaynak ve hedef seçicilerini kalıcı kural olarak tanımlar.</p>
             <div class="field"><span>Kaynak öğe</span><div class="selector-box" id="portalSourceBox">Belirlenmedi</div></div>
             <button class="btn" id="markPortalSourceButton" disabled style="width:100%;margin-bottom:8px">Seçili Öğeyi Kaynak Yap</button>
             <div class="field"><span>Hedef öğe</span><div class="selector-box" id="portalTargetBox">Belirlenmedi</div></div>
@@ -737,7 +873,7 @@
             <label class="check-row" style="margin-bottom:9px"><input id="portalForceVisible" type="checkbox" checked> Taşınan öğedeki hidden/display:none durumunu kaldır</label>
             <button class="btn primary" id="createPortalButton" disabled style="width:100%">Taşıma Kuralı Oluştur</button>
           </div>
-        </div>
+        </details>
         <div class="group">
           <div class="group-title">Dinamik Grafik Notu</div>
           <div class="group-body">
@@ -780,6 +916,16 @@
       </section>
 
       <section class="pane" id="changesPane">
+        <div class="group">
+          <div class="group-title">İşlem Grupları</div>
+          <div class="group-body">
+            <label class="field"><span>Aktif grup</span><select id="activeGroupSelect"></select></label>
+            <div class="button-row">
+              <input id="newGroupName" maxlength="40" placeholder="Yeni grup adı" style="flex:1">
+              <button class="btn small" id="addGroupButton">Ekle</button>
+            </div>
+          </div>
+        </div>
         <div class="button-row" style="margin-bottom:9px">
           <button class="btn small grow" id="copyManifestButton" disabled>Manifesti Kopyala</button>
           <button class="btn small grow" id="downloadReportButton" disabled>Raporu İndir</button>
@@ -828,10 +974,13 @@
               <li><strong style="color:var(--text)">HTML Aç</strong> ile düzenleyeceğiniz tek dosyalı raporu yükleyin.</li>
               <li>Rapor Excel’den sonra oluşuyorsa <strong style="color:var(--text)">Excel Test</strong> sekmesinden gerçek dosyayı veya Hayalet XLSX’i enjekte edin.</li>
               <li><strong style="color:var(--text)">Seçim Modu Açık</strong> iken hedef öğeye tıklayın.</li>
-              <li>Seçili öğeyi yeşil çerçevenin üzerindeki TAŞI tutamacıyla serbestçe sürükleyin; oklarla ince ayar yapın.</li>
-              <li>Çerçevenin yeşil kenar ve köşe tutamaçlarıyla öğeyi daraltıp büyütün.</li>
-              <li>Öğe sekmesinden genişlik, yükseklik, grid kolonu, yazı ve boşluk ayarlarını uygulayın.</li>
-              <li>Bir alanı kaldırmak için <strong style="color:var(--text)">Güvenli Gizle</strong> kullanın.</li>
+              <li>Yeşil TAŞI tutamacıyla öğeyi sürükleyin: boş alana bırakınca manuel konum, başka karta bırakınca akış sırası kaydedilir.</li>
+              <li>Ok tuşları 1 px, Shift + Ok 10 px taşır; Ctrl + Ok akış sırasını değiştirir.</li>
+              <li>Çoklu Seçim’i açıp birden fazla öğeyi seçerek ortak boyut ve akıllı hizalama uygulayın.</li>
+              <li>Çerçevenin kenar ve köşe tutamaçlarıyla öğeyi canlı olarak daraltıp büyütün; ölçü duyarlı biçimde kaydedilir.</li>
+              <li>Hızlı genişlik düğmelerini veya canlı genişlik kaydırıcısını kullanın.</li>
+              <li>Bir alanı sağ tıklayıp <strong style="color:var(--text)">Güvenli Gizle</strong> seçeneğini kullanın.</li>
+              <li>Tablo seçildiğinde tabloya özel sığdırma, kaydırma, sabit başlık ve kompakt görünüm araçları açılır.</li>
               <li>Grafiği butonlu panelden çıkarmak için Taşı sekmesinde sırasıyla kaynak, hedef ve gerekiyorsa tetikleyici butonu belirleyin.</li>
               <li>Butonları normal biçimde denemek için seçim modunu kapatın.</li>
               <li><strong style="color:var(--text)">Doğrula</strong> sonrasında Çalışan HTML’i indirin. Daha sonra düzenlemeye devam etmek için Proje Kaydet seçeneğini de kullanın.</li>
@@ -844,6 +993,27 @@
     </section>
   </div>
 
+  <div class="modal-backdrop" id="shortcutsModal" hidden>
+    <section class="modal" style="width:min(620px,100%)">
+      <div class="modal-head"><h2>Klavye Kısayolları</h2><button class="btn icon" data-close-modal="shortcutsModal">×</button></div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="context">Ok tuşları     1 px taşı
+Shift + Ok      10 px taşı
+Ctrl + Ok       Akışta önce/sonra
+M               Çoklu seçimi aç/kapat
+H               Güvenli gizle</div>
+          <div class="context">E               Metni düzenle
+F               Tam genişlik
+L               Yerleşimi düzelt
+Ctrl + Z / Y    Geri / ileri
+Ctrl + S        Nihai HTML indir</div>
+        </div>
+      </div>
+      <div class="modal-foot"><button class="btn primary" data-close-modal="shortcutsModal">Kapat</button></div>
+    </section>
+  </div>
+
   <script>
   'use strict';
 
@@ -853,21 +1023,33 @@
   const PATCH_STYLE_ID = 'regnum-visual-editor-patches';
   const PATCH_RUNTIME_ID = 'regnum-visual-editor-runtime';
   const PATCH_MANIFEST_MARKER = 'REGNUM_VISUAL_EDITOR_MANIFEST:';
-  const PROJECT_VERSION = '3.2';
+  const PROJECT_VERSION = '4.1';
 
   const state = {
     originalSource: '',
     sourceName: '',
     sourceHash: '',
+    sourceLines: [],
+    sourceLineOffsets: [],
+    sourceNeedleCache: new Map(),
     frameUrl: '',
     frameLoaded: false,
     designMode: true,
     selectedEl: null,
     selectedSelector: '',
+    selectedItems: [],
+    multiSelectMode: false,
     hoveredEl: null,
     operations: [],
     history: [],
     historyIndex: -1,
+    layoutProtection: true,
+    desktopStandard: true,
+    groups: ['Genel','Yerleşim','Tablolar','Renkler','Otomatik Onarım'],
+    activeGroup: 'Genel',
+    sourceViewMode: 'context',
+    previewBaselines: {texts:new Map(), portals:new Map()},
+    previewPortalRefs: new Map(),
     portalSource: '',
     portalTarget: '',
     portalTrigger: '',
@@ -961,19 +1143,31 @@
       state.hoveredEl.removeAttribute('data-rve-hover');
       state.hoveredEl = null;
     }
+    state.selectedItems.forEach(item => {
+      item.el?.removeAttribute('data-rve-selected');
+      item.el?.removeAttribute('data-rve-multi-selected');
+    });
     if (state.selectedEl) state.selectedEl.removeAttribute('data-rve-selected');
     const overlay = frameDocument()?.getElementById('rve-selection-overlay');
     if (overlay) overlay.style.display = 'none';
     state.selectedEl = null;
     state.selectedSelector = '';
+    state.selectedItems = [];
     $('#selectionStatus').textContent = 'Öğe seçilmedi';
     $('#selectedCard').className = 'selected-card empty';
     $('#selectedCard').textContent = 'Önizlemeden bir başlık, buton, kart, tablo veya grafik alanı seçin.';
     $('#sourceContext').textContent = 'Bir öğe seçin.';
+    if (state.sourceViewMode === 'context' && $('#sourceViewer')) $('#sourceViewer').value = 'Çalışma alanından bir öğe seçin.';
     $('#instructionOutput').value = 'Henüz işlem seçilmedi.';
     $('#riskResults').innerHTML = '<div class="empty-list">Bir öğe seçildiğinde kimlik ve sınıf kullanımları taranır.</div>';
-    ['hideButton','editTextButton','applyStyleButton','markPortalSourceButton','markPortalTargetButton','markPortalTriggerButton','selectParentButton','copyContextButton'].forEach(id => $('#' + id).disabled = true);
+    ['hideButton','editTextButton','applyStyleButton','markPortalSourceButton','markPortalTargetButton','markPortalTriggerButton','selectParentButton','copyContextButton','moveBeforeButton','moveAfterButton','moveBeforeButtonAlt','moveAfterButtonAlt','widthRange'].forEach(id => {
+      const control = $('#' + id);
+      if (control) control.disabled = true;
+    });
     $$('[data-nudge]').forEach(button => button.disabled = true);
+    $$('[data-size-preset]').forEach(button => button.disabled = true);
+    $('#multiAlignGroup').hidden = true;
+    $('#tableToolsGroup').hidden = true;
   }
 
   function sourceWithoutPreviousPatches(source) {
@@ -986,7 +1180,14 @@
   }
 
   function encodeManifest(operations) {
-    const bytes = new TextEncoder().encode(JSON.stringify({version:PROJECT_VERSION, operations}));
+    const bytes = new TextEncoder().encode(JSON.stringify({
+      version:PROJECT_VERSION,
+      operations,
+      layoutProtection:state.layoutProtection,
+      desktopStandard:state.desktopStandard,
+      groups:state.groups,
+      activeGroup:state.activeGroup
+    }));
     let binary = '';
     const chunk = 0x8000;
     for (let i=0;i<bytes.length;i+=chunk) binary += String.fromCharCode(...bytes.subarray(i,i+chunk));
@@ -1000,7 +1201,13 @@
       const binary = atob(match[1]);
       const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
       const parsed = JSON.parse(new TextDecoder().decode(bytes));
-      return Array.isArray(parsed.operations) ? parsed.operations : null;
+      return Array.isArray(parsed.operations) ? {
+        operations: parsed.operations,
+        layoutProtection: parsed.layoutProtection !== false,
+        desktopStandard: parsed.desktopStandard !== false,
+        groups: Array.isArray(parsed.groups) ? parsed.groups : null,
+        activeGroup: parsed.activeGroup || null
+      } : null;
     } catch (_) { return null; }
   }
 
@@ -1009,12 +1216,41 @@
       toast('Geçerli bir HTML kaynağı bulunamadı', 'error');
       return;
     }
-    const embeddedOperations = extractEmbeddedOperations(source);
+    const embeddedProject = extractEmbeddedOperations(source);
     const clean = sourceWithoutPreviousPatches(source);
     state.originalSource = clean;
     state.sourceName = name.replace(/\.(html?|json)$/i, '') + '.html';
     state.sourceHash = hashText(clean);
-    state.operations = Array.isArray(importedOperations) ? importedOperations : (embeddedOperations || []);
+    state.sourceLines = clean.split(/\r?\n/);
+    state.sourceLineOffsets = [0];
+    for (let offset = clean.indexOf('\n'); offset >= 0; offset = clean.indexOf('\n', offset + 1)) {
+      state.sourceLineOffsets.push(offset + 1);
+    }
+    state.sourceNeedleCache = new Map();
+    const importedProject = Array.isArray(importedOperations) ? {operations:importedOperations} : importedOperations;
+    state.operations = Array.isArray(importedProject?.operations) ? importedProject.operations : (embeddedProject?.operations || []);
+    state.layoutProtection = importedProject?.layoutProtection !== undefined
+      ? importedProject.layoutProtection !== false
+      : (embeddedProject?.layoutProtection !== false);
+    state.desktopStandard = importedProject?.desktopStandard !== undefined
+      ? importedProject.desktopStandard !== false
+      : (embeddedProject?.desktopStandard !== false);
+    state.groups = Array.from(new Set([
+      'Genel','Yerleşim','Tablolar','Renkler','Otomatik Onarım',
+      ...(importedProject?.groups || embeddedProject?.groups || []),
+      ...state.operations.map(op => op.group).filter(Boolean)
+    ]));
+    state.activeGroup = importedProject?.activeGroup || embeddedProject?.activeGroup || 'Genel';
+    if (!state.groups.includes(state.activeGroup)) state.activeGroup = 'Genel';
+    state.operations.forEach(op => {
+      op.id = op.id || operationId();
+      op.group = op.group || 'Genel';
+    });
+    state.multiSelectMode = false;
+    state.selectedItems = [];
+    state.sourceViewMode = 'context';
+    state.previewBaselines = {texts:new Map(), portals:new Map()};
+    state.previewPortalRefs = new Map();
     state.history = [];
     state.historyIndex = -1;
     state.frameErrors = [];
@@ -1025,19 +1261,24 @@
     $('#portalSourceBox').textContent = 'Belirlenmedi';
     $('#portalTargetBox').textContent = 'Belirlenmedi';
     $('#portalTriggerBox').textContent = 'Belirlenmedi';
-    $('#sourceViewer').value = clean;
+    $('#sourceViewer').value = 'Hızlı kaynak görünümü hazır. Çalışma alanından bir öğe seçin.';
+    $('#sourceContextViewButton').classList.add('active');
+    $('#loadFullSourceButton').classList.remove('active');
+    updateLayoutButton();
+    renderGroupControls();
+    updateMultiSelectButton();
     $('#sourceMeta').textContent = state.sourceName + ' · ' + Math.round(clean.length / 1024).toLocaleString('tr-TR') + ' KB · #' + state.sourceHash;
     $('#welcome').hidden = true;
     setControlsEnabled(true);
     pushHistory();
-    loadFrame(buildOutput());
+    loadFrame(clean);
     renderOperations();
     Logger.ok('HTML yüklendi: ' + state.sourceName + ' (' + clean.length.toLocaleString('tr-TR') + ' karakter)');
-    if (embeddedOperations?.length) Logger.info('Dosyanın içindeki ' + embeddedOperations.length + ' editör değişikliği yeniden yüklendi.');
+    if (embeddedProject?.operations?.length) Logger.info('Dosyanın içindeki ' + embeddedProject.operations.length + ' editör değişikliği yeniden yüklendi.');
   }
 
   function setControlsEnabled(enabled) {
-    ['designModeButton','validateButton','exportHtmlButton','exportProjectButton','scanUploadTargetsButton','injectGhostButton'].forEach(id => $('#' + id).disabled = !enabled);
+    ['designModeButton','validateButton','exportHtmlButton','exportProjectButton','scanUploadTargetsButton','injectGhostButton','autoLayoutButton','multiSelectButton','layoutAuditButton'].forEach(id => $('#' + id).disabled = !enabled);
     $('#clearOperationsButton').disabled = !enabled || state.operations.length === 0;
   }
 
@@ -1045,6 +1286,8 @@
     resetSelection();
     state.frameLoaded = false;
     state.previewTriggers = new Set();
+    state.previewBaselines = {texts:new Map(), portals:new Map()};
+    state.previewPortalRefs = new Map();
     state.frameErrors = [];
     $('#frameStatus').className = 'status-badge';
     $('#frameStatus').textContent = 'Yükleniyor…';
@@ -1056,6 +1299,7 @@
       $('#frameStatus').className = 'status-badge ready';
       $('#frameStatus').textContent = 'Çalışma alanı hazır';
       installFrameBridge();
+      applyOperationsToPreview();
       scanUploadTargets();
       Logger.ok('HTML çalışma alanında çalıştırıldı.');
     };
@@ -1077,10 +1321,13 @@
     bridgeStyle.textContent =
       '[data-rve-hover]{outline:2px dashed #00a9ff!important;outline-offset:2px!important;}' +
       '[data-rve-selected]{outline:3px solid #15c886!important;outline-offset:2px!important;}' +
+      '[data-rve-multi-selected]{outline:3px solid #ffbe55!important;outline-offset:2px!important;}' +
+      '[data-rve-dragging]{opacity:.82!important;filter:drop-shadow(0 12px 18px rgba(0,0,0,.28))!important;cursor:grabbing!important;}' +
       '[data-rve-hidden-preview]{opacity:.16!important;filter:grayscale(1)!important;display:block!important;min-height:16px!important;}' +
       '#rve-selection-overlay{position:fixed;display:none;z-index:2147483646;pointer-events:none;border:2px solid #15c886;box-sizing:border-box;}' +
-      '#rve-selection-overlay .rve-move{position:absolute!important;left:6px!important;top:-30px;width:auto!important;height:24px!important;min-width:74px!important;padding:0 9px!important;border:2px solid #fff!important;border-radius:6px!important;background:#087f5b!important;color:#fff!important;box-shadow:0 2px 8px rgba(0,0,0,.4)!important;font:800 10px/20px system-ui,sans-serif!important;letter-spacing:.06em!important;text-align:center!important;white-space:nowrap!important;pointer-events:auto!important;touch-action:none!important;cursor:grab!important;user-select:none!important;box-sizing:border-box!important;}' +
+      '#rve-selection-overlay .rve-move{position:absolute!important;left:50%!important;top:-30px;transform:translateX(-50%)!important;width:auto!important;height:24px!important;min-width:82px!important;padding:0 9px!important;border:2px solid #fff!important;border-radius:6px!important;background:#087f5b!important;color:#fff!important;box-shadow:0 2px 8px rgba(0,0,0,.4)!important;font:800 10px/20px system-ui,sans-serif!important;letter-spacing:.06em!important;text-align:center!important;white-space:nowrap!important;pointer-events:auto!important;touch-action:none!important;cursor:grab!important;user-select:none!important;box-sizing:border-box!important;}' +
       '#rve-selection-overlay .rve-move:active{cursor:grabbing!important;background:#065f46!important;}' +
+      '#rve-selection-overlay .rve-size-badge{position:absolute!important;right:6px!important;bottom:6px!important;padding:2px 6px!important;border-radius:5px!important;background:rgba(5,30,22,.88)!important;color:#fff!important;font:700 9px/1.4 Consolas,monospace!important;pointer-events:none!important;white-space:nowrap!important;}' +
       '#rve-selection-overlay .rve-grip{position:absolute;width:11px;height:11px;border:2px solid #fff;border-radius:3px;background:#15c886;box-shadow:0 1px 5px rgba(0,0,0,.35);pointer-events:auto;touch-action:none;box-sizing:border-box;}' +
       '#rve-selection-overlay .rve-n{left:50%;top:-7px;transform:translateX(-50%);cursor:ns-resize;}' +
       '#rve-selection-overlay .rve-s{left:50%;bottom:-7px;transform:translateX(-50%);cursor:ns-resize;}' +
@@ -1089,7 +1336,17 @@
       '#rve-selection-overlay .rve-ne{right:-7px;top:-7px;cursor:nesw-resize;}' +
       '#rve-selection-overlay .rve-nw{left:-7px;top:-7px;cursor:nwse-resize;}' +
       '#rve-selection-overlay .rve-se{right:-7px;bottom:-7px;cursor:nwse-resize;}' +
-      '#rve-selection-overlay .rve-sw{left:-7px;bottom:-7px;cursor:nesw-resize;}';
+      '#rve-selection-overlay .rve-sw{left:-7px;bottom:-7px;cursor:nesw-resize;}' +
+      '#rve-drop-indicator{position:fixed;display:none;z-index:2147483647;height:4px;border-radius:4px;background:#ffbe55;box-shadow:0 0 0 2px rgba(0,0,0,.4),0 0 18px rgba(255,190,85,.75);pointer-events:none;}' +
+      '.rve-smart-guide{position:fixed;display:none;z-index:2147483645;pointer-events:none;background:#00b7ff;box-shadow:0 0 0 1px rgba(255,255,255,.75);}' +
+      '#rve-guide-x{top:0;bottom:0;width:1px;}' +
+      '#rve-guide-y{left:0;right:0;height:1px;}' +
+      '#rve-context-menu{position:fixed;display:none;z-index:2147483647;width:218px;padding:6px;border:1px solid #315b4a;border-radius:10px;background:#0d1d17;color:#eef7f3;box-shadow:0 18px 48px rgba(0,0,0,.5);font:600 11px/1.3 system-ui,sans-serif;}' +
+      '#rve-context-menu button{display:flex;width:100%;min-height:31px;align-items:center;gap:8px;padding:6px 9px;border:0;border-radius:6px;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer;}' +
+      '#rve-context-menu button:hover{background:#18372c;color:#62e0b2;}' +
+      '#rve-context-menu .rve-menu-sep{height:1px;margin:5px 3px;background:#28463b;}' +
+      '#rve-context-menu .rve-menu-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;}' +
+      '#rve-context-menu .rve-menu-grid button{justify-content:center;padding:4px;min-height:29px;}';
     doc.head.appendChild(bridgeStyle);
 
     const selectionOverlay = doc.createElement('div');
@@ -1100,6 +1357,9 @@
     moveHandle.title = 'Öğeyi serbestçe taşımak için sürükleyin';
     moveHandle.addEventListener('pointerdown', event => startMoveDrag(event, moveHandle));
     selectionOverlay.appendChild(moveHandle);
+    const sizeBadge = doc.createElement('span');
+    sizeBadge.className = 'rve-size-badge';
+    selectionOverlay.appendChild(sizeBadge);
     ['n','s','e','w','ne','nw','se','sw'].forEach(direction => {
       const grip = doc.createElement('span');
       grip.className = 'rve-grip rve-' + direction;
@@ -1109,6 +1369,46 @@
       selectionOverlay.appendChild(grip);
     });
     doc.body.appendChild(selectionOverlay);
+
+    const dropIndicator = doc.createElement('div');
+    dropIndicator.id = 'rve-drop-indicator';
+    doc.body.appendChild(dropIndicator);
+    const guideX = doc.createElement('div');
+    guideX.id = 'rve-guide-x';
+    guideX.className = 'rve-smart-guide';
+    doc.body.appendChild(guideX);
+    const guideY = doc.createElement('div');
+    guideY.id = 'rve-guide-y';
+    guideY.className = 'rve-smart-guide';
+    doc.body.appendChild(guideY);
+
+    const contextMenu = doc.createElement('div');
+    contextMenu.id = 'rve-context-menu';
+    contextMenu.innerHTML =
+      '<button data-rve-action="hide">◉ Güvenli Gizle</button>' +
+      '<button data-rve-action="edit-text">✎ Metni Düzenle</button>' +
+      '<div class="rve-menu-sep"></div>' +
+      '<div class="rve-menu-grid" aria-label="Hızlı genişlik">' +
+        '<button data-rve-action="size-auto">Oto</button>' +
+        '<button data-rve-action="size-33">⅓</button>' +
+        '<button data-rve-action="size-50">½</button>' +
+        '<button data-rve-action="size-67">⅔</button>' +
+        '<button data-rve-action="size-100">Tam</button>' +
+      '</div>' +
+      '<div class="rve-menu-sep"></div>' +
+      '<button data-rve-action="move-before">↑ Akışta öne al</button>' +
+      '<button data-rve-action="move-after">↓ Akışta alta al</button>' +
+      '<button data-rve-action="select-parent">↥ Üst öğeyi seç</button>' +
+      '<button data-rve-action="reset-element">↺ Bu öğenin düzenlemelerini sıfırla</button>';
+    contextMenu.addEventListener('click', event => {
+      const button = event.target.closest('[data-rve-action]');
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      contextMenu.style.display = 'none';
+      handleContextAction(button.dataset.rveAction);
+    });
+    doc.body.appendChild(contextMenu);
 
     doc.addEventListener('pointerover', event => {
       if (!state.designMode) return;
@@ -1129,15 +1429,30 @@
     }, true);
 
     doc.addEventListener('click', event => {
+      contextMenu.style.display = 'none';
       if (!state.designMode) return;
       const el = normalizeSelectable(event.target);
       if (!el) return;
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation();
-      selectElement(el);
+      selectElement(el, {
+        additive: state.multiSelectMode || event.ctrlKey || event.metaKey || event.shiftKey,
+        toggle: state.multiSelectMode || event.ctrlKey || event.metaKey
+      });
     }, true);
-    doc.addEventListener('keydown', event => handleNudgeKey(event), true);
+    doc.addEventListener('contextmenu', event => {
+      if (!state.designMode) return;
+      const el = normalizeSelectable(event.target);
+      if (!el) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      const alreadySelected = state.selectedItems.some(item => item.el === el);
+      selectElement(el, {additive:alreadySelected, toggle:false});
+      showFrameContextMenu(contextMenu, event.clientX, event.clientY, win);
+    }, true);
+    doc.addEventListener('keydown', event => handleEditorShortcut(event), true);
     win.addEventListener('scroll', syncSelectionOverlay, {passive:true});
     win.addEventListener('resize', syncSelectionOverlay);
 
@@ -1158,6 +1473,7 @@
         clearTimeout(portalTimer);
         portalTimer = setTimeout(() => {
           state.operations.filter(op => op.enabled && op.type === 'portal').forEach(op => applyPortalPreview(op, doc));
+          applyPreviewLayoutProtection(doc);
         }, 90);
       }).observe(doc.body, {childList:true, subtree:true});
     } catch (_) {}
@@ -1165,7 +1481,7 @@
 
   function normalizeSelectable(target) {
     if (!target || target.nodeType !== 1) return null;
-    if (target.closest?.('#rve-selection-overlay')) return null;
+    if (target.closest?.('#rve-selection-overlay,#rve-context-menu,#rve-drop-indicator')) return null;
     if (target.closest && target.closest('html') === null) return null;
     if (['HTML','BODY'].includes(target.tagName)) return target === frameDocument()?.body ? target : null;
     if (target.closest('canvas') && target.tagName !== 'CANVAS') return target.closest('canvas');
@@ -1224,33 +1540,113 @@
     return parts.join(' > ') || el.tagName.toLowerCase();
   }
 
-  function selectElement(el) {
+  function selectorForEditing(el) {
+    for (const [id, refs] of state.previewPortalRefs) {
+      const operation = state.operations.find(op => op.id === id && op.enabled);
+      if (operation && refs.source === el) return operation.source;
+      if (operation && refs.target === el) return operation.target;
+    }
+    for (const operation of state.operations) {
+      if (!operation.enabled || !operation.selector) continue;
+      const attribute = operationAttribute(operation);
+      if (attribute && el.hasAttribute?.(attribute)) return operation.selector;
+    }
+    return selectorFor(el);
+  }
+
+  function selectedEntries() {
+    state.selectedItems = state.selectedItems.filter(item => item.el?.isConnected);
+    return state.selectedItems.length
+      ? state.selectedItems
+      : (state.selectedEl ? [{el:state.selectedEl, selector:state.selectedSelector}] : []);
+  }
+
+  function selectedTables() {
+    const seen = new Set();
+    const tables = [];
+    selectedEntries().forEach(item => {
+      const candidates = [
+        item.el.closest?.('table'),
+        item.el.matches?.('table') ? item.el : null,
+        ...(item.el.querySelectorAll ? item.el.querySelectorAll('table') : [])
+      ].filter(Boolean);
+      candidates.forEach(table => {
+        if (seen.has(table)) return;
+        seen.add(table);
+        tables.push({el:table, selector:selectorForEditing(table)});
+      });
+    });
+    return tables;
+  }
+
+  function selectElement(el, options = {}) {
     if (!el) return;
+    if (state.selectedEl && state.selectedEl !== el) clearLivePreviewStyles();
     if (state.hoveredEl) {
       state.hoveredEl.removeAttribute('data-rve-hover');
       state.hoveredEl = null;
     }
-    if (state.selectedEl && state.selectedEl !== el) state.selectedEl.removeAttribute('data-rve-selected');
+    const selector = selectorForEditing(el);
+    const existingIndex = state.selectedItems.findIndex(item => item.el === el);
+    if (!options.additive) {
+      state.selectedItems.forEach(item => {
+        item.el?.removeAttribute('data-rve-selected');
+        item.el?.removeAttribute('data-rve-multi-selected');
+      });
+      state.selectedItems = [];
+    }
+    if (options.toggle && existingIndex >= 0) {
+      const currentIndex = state.selectedItems.findIndex(item => item.el === el);
+      if (currentIndex >= 0) state.selectedItems.splice(currentIndex, 1);
+      el.removeAttribute('data-rve-selected');
+      el.removeAttribute('data-rve-multi-selected');
+      if (!state.selectedItems.length) {
+        resetSelection();
+        return;
+      }
+      el = state.selectedItems[state.selectedItems.length - 1].el;
+    } else if (!state.selectedItems.some(item => item.el === el)) {
+      state.selectedItems.push({el, selector});
+    }
+    state.selectedItems = state.selectedItems.filter(item => item.el?.isConnected);
+    state.selectedItems.forEach(item => {
+      item.el.removeAttribute('data-rve-selected');
+      item.el.setAttribute('data-rve-multi-selected','');
+    });
     state.selectedEl = el;
+    const primary = state.selectedItems.find(item => item.el === el) || state.selectedItems[state.selectedItems.length - 1];
+    state.selectedEl = primary.el;
+    state.selectedItems = state.selectedItems.filter(item => item.el !== primary.el).concat(primary);
     state.selectedEl.setAttribute('data-rve-selected', '');
-    state.selectedSelector = selectorFor(el);
+    state.selectedEl.removeAttribute('data-rve-multi-selected');
+    state.selectedSelector = primary.selector || selectorForEditing(state.selectedEl);
 
-    const text = (el.innerText || el.textContent || '').trim().replace(/\s+/g,' ').slice(0,140);
-    const rect = el.getBoundingClientRect();
-    const computed = frameWindow().getComputedStyle(el);
-    $('#selectionStatus').textContent = el.tagName.toLowerCase() + ' · ' + Math.round(rect.width) + '×' + Math.round(rect.height);
+    const text = (state.selectedEl.innerText || state.selectedEl.textContent || '').trim().replace(/\s+/g,' ').slice(0,140);
+    const rect = state.selectedEl.getBoundingClientRect();
+    const computed = frameWindow().getComputedStyle(state.selectedEl);
+    const selectionPrefix = state.selectedItems.length > 1 ? state.selectedItems.length + ' öğe · ' : '';
+    $('#selectionStatus').textContent = selectionPrefix + state.selectedEl.tagName.toLowerCase() + ' · ' + Math.round(rect.width) + '×' + Math.round(rect.height);
     $('#selectedCard').className = 'selected-card';
     $('#selectedCard').innerHTML =
-      '<div class="selected-tag">&lt;' + escapeHtml(el.tagName.toLowerCase()) + '&gt;</div>' +
+      '<div class="selected-tag">' + (state.selectedItems.length > 1 ? state.selectedItems.length + ' öğe · ' : '') + '&lt;' + escapeHtml(state.selectedEl.tagName.toLowerCase()) + '&gt;</div>' +
       '<div class="selected-meta">' + escapeHtml(text || 'Metin içermiyor') + '</div>' +
       '<div class="selector-box">' + escapeHtml(state.selectedSelector) + '</div>' +
       '<div class="selected-meta">display: ' + escapeHtml(computed.display) + ' · position: ' + escapeHtml(computed.position) + ' · ' + Math.round(rect.width) + '×' + Math.round(rect.height) + ' px</div>';
 
-    ['hideButton','editTextButton','applyStyleButton','markPortalSourceButton','markPortalTargetButton','markPortalTriggerButton','selectParentButton','copyContextButton'].forEach(id => $('#' + id).disabled = false);
+    ['hideButton','editTextButton','applyStyleButton','markPortalSourceButton','markPortalTargetButton','markPortalTriggerButton','selectParentButton','copyContextButton','moveBeforeButton','moveAfterButton','moveBeforeButtonAlt','moveAfterButtonAlt','widthRange'].forEach(id => {
+      const control = $('#' + id);
+      if (control) control.disabled = false;
+    });
     $$('[data-nudge]').forEach(button => button.disabled = false);
-    updateSourceContext(el);
-    scanElementRisk(el);
-    populateInspectorFromElement(el);
+    $$('[data-size-preset]').forEach(button => button.disabled = false);
+    $('#multiAlignGroup').hidden = state.selectedItems.length < 2;
+    $('#multiSelectionCount').textContent = state.selectedItems.length + ' öğe';
+    const tables = selectedTables();
+    $('#tableToolsGroup').hidden = tables.length === 0;
+    $('#tableToolStatus').textContent = tables.length ? tables.length + ' tablo seçime dahil.' : 'Bir tablo veya tabloyu içeren kart seçin.';
+    updateSourceContext(state.selectedEl);
+    scanElementRisk(state.selectedEl);
+    populateInspectorFromElement(state.selectedEl);
     syncSelectionOverlay();
   }
 
@@ -1273,7 +1669,258 @@
     overlay.style.width = rect.width + 'px';
     overlay.style.height = rect.height + 'px';
     const moveHandle = overlay.querySelector('.rve-move');
-    if (moveHandle) moveHandle.style.setProperty('top', rect.top < 34 ? '6px' : '-30px', 'important');
+    if (moveHandle) {
+      moveHandle.style.setProperty('top', rect.top < 36 ? '6px' : '-30px', 'important');
+      const viewportWidth = frameWindow()?.innerWidth || rect.right;
+      const viewportCenter = Math.max(48, Math.min(rect.left + rect.width / 2, viewportWidth - 48));
+      moveHandle.style.setProperty('left', (viewportCenter - rect.left) + 'px', 'important');
+      moveHandle.style.setProperty('transform', 'translateX(-50%)', 'important');
+    }
+    const sizeBadge = overlay.querySelector('.rve-size-badge');
+    if (sizeBadge) sizeBadge.textContent = Math.round(rect.width) + ' × ' + Math.round(rect.height);
+  }
+
+  function showFrameContextMenu(menu, x, y, win) {
+    menu.style.display = 'block';
+    const width = menu.offsetWidth || 218;
+    const height = menu.offsetHeight || 320;
+    menu.style.left = Math.max(8, Math.min(x, win.innerWidth - width - 8)) + 'px';
+    menu.style.top = Math.max(8, Math.min(y, win.innerHeight - height - 8)) + 'px';
+  }
+
+  function handleContextAction(action) {
+    if (!state.selectedEl || !state.selectedSelector) return;
+    if (action === 'hide') return hideSelectedElement();
+    if (action === 'edit-text') return openSelectedTextEditor();
+    if (action === 'size-auto') return applySizePreset('auto');
+    if (action === 'size-33') return applySizePreset(0.3333);
+    if (action === 'size-50') return applySizePreset(0.5);
+    if (action === 'size-67') return applySizePreset(0.6667);
+    if (action === 'size-100') return applySizePreset(1);
+    if (action === 'move-before') return moveSelectedInFlow(-1);
+    if (action === 'move-after') return moveSelectedInFlow(1);
+    if (action === 'select-parent') {
+      const parent = state.selectedEl.parentElement;
+      if (parent && parent !== frameDocument()?.documentElement) selectElement(parent);
+      return;
+    }
+    if (action === 'reset-element') resetSelectedOperations();
+  }
+
+  function updateLayoutButton() {
+    const button = $('#autoLayoutButton');
+    if (!button) return;
+    button.classList.toggle('active', state.layoutProtection);
+    button.textContent = 'Alan Koruma ' + (state.layoutProtection ? 'Açık' : 'Kapalı');
+  }
+
+  function upsertModeStyleRecord(selector, mode, declarations, scope = 'all', context = currentContextText(), group = null) {
+    let operation = null;
+    for (let i = state.operations.length - 1; i >= 0; i--) {
+      const candidate = state.operations[i];
+      if (candidate.type === 'style' && candidate.mode === mode && candidate.selector === selector) {
+        operation = candidate;
+        break;
+      }
+    }
+    if (!operation) {
+      operation = {
+        id:operationId(),
+        type:'style',
+        mode,
+        selector,
+        declarations,
+        scope,
+        context,
+        group:group || state.activeGroup || 'Genel',
+        enabled:true,
+        createdAt:new Date().toISOString()
+      };
+      state.operations.push(operation);
+      if (!state.groups.includes(operation.group)) state.groups.push(operation.group);
+      return operation;
+    }
+    operation.declarations = declarations;
+    operation.scope = scope;
+    operation.enabled = true;
+    operation.group = group || operation.group || state.activeGroup || 'Genel';
+    operation.updatedAt = new Date().toISOString();
+    return operation;
+  }
+
+  function upsertModeStyle(selector, mode, declarations, scope = 'all', context = currentContextText(), group = null) {
+    const operation = upsertModeStyleRecord(selector, mode, declarations, scope, context, group);
+    pushHistory();
+    renderOperations();
+    applyOperationsToPreview();
+    updateInstructionForOperation(operation);
+    renderGroupControls();
+  }
+
+  function splitGridTracks(value) {
+    const tracks = [];
+    let token = '';
+    let depth = 0;
+    for (const char of String(value || '')) {
+      if (char === '(') depth++;
+      if (char === ')') depth = Math.max(0, depth - 1);
+      if (/\s/.test(char) && depth === 0) {
+        if (token) tracks.push(token);
+        token = '';
+      } else token += char;
+    }
+    if (token) tracks.push(token);
+    return tracks.filter(track => track && track !== 'none');
+  }
+
+  function responsiveDeclarations(el, fraction, heightPx = null) {
+    const declarations = {
+      'box-sizing':'border-box',
+      'min-width':'0',
+      'max-width':'100%'
+    };
+    const parent = el?.parentElement;
+    const parentStyle = parent ? frameWindow()?.getComputedStyle(parent) : null;
+    if (fraction === 'auto') {
+      declarations.width = 'auto';
+      declarations['grid-column'] = 'auto';
+      declarations['flex-basis'] = 'auto';
+    } else {
+      const safeFraction = Math.max(.1, Math.min(1, Number(fraction) || 1));
+      if (parentStyle?.display?.includes('grid')) {
+        const columns = Math.max(1, splitGridTracks(parentStyle.gridTemplateColumns).length);
+        declarations['grid-column'] = 'span ' + Math.max(1, Math.round(columns * safeFraction));
+        declarations.width = '100%';
+      } else {
+        const percent = Math.round(safeFraction * 1000) / 10;
+        declarations.width = percent + '%';
+        if (parentStyle?.display?.includes('flex')) declarations['flex-basis'] = percent + '%';
+      }
+    }
+    if (Number.isFinite(heightPx)) {
+      declarations.height = Math.max(24, Math.round(heightPx)) + 'px';
+      declarations['min-height'] = '0';
+    }
+    return declarations;
+  }
+
+  function applySizePreset(value, silent = false) {
+    const entries = selectedEntries();
+    if (!entries.length) return;
+    let lastOperation = null;
+    entries.forEach(item => {
+      lastOperation = upsertModeStyleRecord(
+        item.selector,
+        'responsive-size',
+        responsiveDeclarations(item.el, value),
+        'all',
+        'Çoklu/tekli duyarlı boyut',
+        'Yerleşim'
+      );
+    });
+    pushHistory();
+    renderOperations();
+    applyOperationsToPreview();
+    if (lastOperation) updateInstructionForOperation(lastOperation);
+    renderGroupControls();
+    const percent = value === 'auto' ? 100 : Math.round(Number(value) * 100);
+    $('#widthRange').value = String(Math.max(10, Math.min(100, percent)));
+    $('#widthRangeValue').textContent = value === 'auto' ? 'Oto' : '%' + percent;
+    if (!silent) toast('Genişlik akışa uyumlu biçimde uygulandı');
+    entries.forEach(item => triggerChartResize(item.el));
+  }
+
+  function resetSelectedOperations() {
+    const selectors = new Set(selectedEntries().map(item => item.selector));
+    if (!selectors.size) return;
+    const before = state.operations.length;
+    state.operations = state.operations.filter(op =>
+      !selectors.has(op.selector) && !selectors.has(op.source)
+    );
+    if (state.operations.length === before) {
+      toast('Bu öğede kaldırılacak düzenleme yok', 'error');
+      return;
+    }
+    pushHistory();
+    applyOperationsToPreview();
+    renderOperations();
+    toast('Seçili öğenin düzenlemeleri sıfırlandı');
+  }
+
+  function upsertFlowMove(sourceSelector, targetSelector, position) {
+    let operation = null;
+    for (let i = state.operations.length - 1; i >= 0; i--) {
+      const candidate = state.operations[i];
+      if (candidate.type === 'portal' && candidate.mode === 'flow' && candidate.source === sourceSelector) {
+        operation = candidate;
+        break;
+      }
+    }
+    const values = {
+      type:'portal',
+      mode:'flow',
+      source:sourceSelector,
+      target:targetSelector,
+      trigger:'',
+      forceVisible:true,
+      position,
+      group:'Yerleşim',
+      context:'Akış içi sürükle-bırak\nKaynak: ' + sourceSelector + '\nHedef: ' + targetSelector
+    };
+    if (!operation) addOperation(values);
+    else {
+      Object.assign(operation, values, {enabled:true, updatedAt:new Date().toISOString()});
+      state.previewPortalRefs.delete(operation.id);
+      pushHistory();
+      renderOperations();
+      applyOperationsToPreview();
+      updateInstructionForOperation(operation);
+    }
+  }
+
+  function movableSiblings(el) {
+    if (!el?.parentElement) return [];
+    return Array.from(el.parentElement.children).filter(node =>
+      node !== el &&
+      node.id !== 'rve-selection-overlay' &&
+      node.id !== 'rve-context-menu' &&
+      node.id !== 'rve-drop-indicator'
+    );
+  }
+
+  function moveSelectedInFlow(direction) {
+    const source = state.selectedEl;
+    if (!source || !state.selectedSelector || !source.parentElement) return;
+    const children = Array.from(source.parentElement.children).filter(node =>
+      !['rve-selection-overlay','rve-context-menu','rve-drop-indicator'].includes(node.id)
+    );
+    const index = children.indexOf(source);
+    const target = children[index + direction];
+    if (!target) {
+      toast(direction < 0 ? 'Öğe zaten ilk konumda' : 'Öğe zaten son konumda', 'error');
+      return;
+    }
+    const targetSelector = selectorForEditing(target);
+    upsertFlowMove(state.selectedSelector, targetSelector, direction < 0 ? 'before' : 'after');
+    const moved = safeQuery(frameDocument(), state.selectedSelector);
+    if (moved) selectElement(moved);
+    toast('Öğe sayfa akışı içinde taşındı');
+  }
+
+  function findFlowDropTarget(node, source) {
+    if (!node || !source || node === source || source.contains(node) || node.contains?.(source)) return null;
+    const doc = source.ownerDocument;
+    let current = node;
+    while (current && current !== doc.body) {
+      if (current === source || source.contains(current)) return null;
+      const parent = current.parentElement;
+      if (!parent) break;
+      const parentDisplay = frameWindow()?.getComputedStyle(parent).display || '';
+      if (parent === source.parentElement || parent === doc.body || parent.tagName === 'MAIN' ||
+          parent.tagName === 'SECTION' || parentDisplay.includes('grid') || parentDisplay.includes('flex')) return current;
+      current = parent;
+    }
+    return current && current !== doc.body ? current : null;
   }
 
   function geometryOperation(selector) {
@@ -1295,7 +1942,11 @@
     };
     if (Number.isFinite(geometry.width)) declarations.width = Math.max(24, Math.round(geometry.width)) + 'px';
     if (Number.isFinite(geometry.height)) declarations.height = Math.max(24, Math.round(geometry.height)) + 'px';
-    if (declarations.width) declarations['min-width'] = '0';
+    if (declarations.width) {
+      declarations['min-width'] = '0';
+      declarations['max-width'] = '100%';
+      declarations['box-sizing'] = 'border-box';
+    }
     if (declarations.height) declarations['min-height'] = '0';
     return declarations;
   }
@@ -1317,6 +1968,7 @@
         declarations:geometryDeclarations(clean),
         geometry:clean,
         scope:'all',
+        group:'Yerleşim',
         context:currentContextText()
       });
     } else {
@@ -1333,45 +1985,427 @@
     Logger.ok(actionName + ' güncellendi: ' + state.selectedSelector);
   }
 
-  function nudgeSelected(dx, dy) {
-    if (!state.selectedEl || !state.selectedSelector) return;
-    const geometry = geometryState(state.selectedSelector);
-    geometry.x = (geometry.x || 0) + dx;
-    geometry.y = (geometry.y || 0) + dy;
-    upsertGeometry(geometry, 'Ok tuşu konumu');
-  }
-
-  function selectedNudgeStep() {
-    const value = Number.parseInt($('#nudgeStep')?.value || '5', 10);
-    return [1,5,10,25].includes(value) ? value : 5;
-  }
-
-  function updateNudgeControls() {
-    const step = selectedNudgeStep();
-    const label = $('#nudgeStepLabel');
-    if (label) label.textContent = step + ' px';
-    const directionNames = {
-      '0,-1':'yukarı',
-      '-1,0':'sola',
-      '1,0':'sağa',
-      '0,1':'aşağı'
+  function geometryRecord(selector, geometry, el = null) {
+    const clean = {
+      x: Math.round(geometry.x || 0),
+      y: Math.round(geometry.y || 0),
+      width: Number.isFinite(geometry.width) ? Math.max(24, Math.round(geometry.width)) : null,
+      height: Number.isFinite(geometry.height) ? Math.max(24, Math.round(geometry.height)) : null
     };
-    $$('[data-nudge]').forEach(button => {
-      button.title = step + ' px ' + (directionNames[button.dataset.nudge] || 'taşı');
+    let operation = geometryOperation(selector);
+    if (!operation) {
+      operation = {
+        id:operationId(),
+        type:'style',
+        mode:'geometry',
+        selector,
+        declarations:geometryDeclarations(clean),
+        geometry:clean,
+        scope:'all',
+        group:'Yerleşim',
+        context:el ? 'Akıllı konumlandırma: ' + selector : currentContextText(),
+        enabled:true,
+        createdAt:new Date().toISOString()
+      };
+      state.operations.push(operation);
+    } else {
+      operation.geometry = clean;
+      operation.declarations = geometryDeclarations(clean);
+      operation.enabled = true;
+      operation.group = operation.group || 'Yerleşim';
+      operation.updatedAt = new Date().toISOString();
+    }
+    return operation;
+  }
+
+  function shiftedRect(rect, dx, dy) {
+    return {
+      left:rect.left + dx,
+      right:rect.right + dx,
+      top:rect.top + dy,
+      bottom:rect.bottom + dy,
+      width:rect.width,
+      height:rect.height
+    };
+  }
+
+  function rectsOverlap(a, b, tolerance = 3) {
+    return Math.min(a.right,b.right)-Math.max(a.left,b.left)>tolerance &&
+      Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>tolerance;
+  }
+
+  function canPlaceElement(el, dx, dy) {
+    const rect = el.getBoundingClientRect();
+    const candidate = shiftedRect(rect, dx, dy);
+    const parentRect = el.parentElement?.getBoundingClientRect();
+    if (parentRect && (candidate.left < parentRect.left - 2 || candidate.right > parentRect.right + 2 ||
+        candidate.top < parentRect.top - 2 || candidate.bottom > parentRect.bottom + 2)) return false;
+    const selectedSet = new Set(selectedEntries().map(item => item.el));
+    const siblings = Array.from(el.parentElement?.children || []).filter(sibling => {
+      if (sibling === el || selectedSet.has(sibling) || sibling.id?.startsWith('rve-')) return false;
+      const style = frameWindow()?.getComputedStyle(sibling);
+      const siblingRect = sibling.getBoundingClientRect();
+      return style?.display !== 'none' && style?.visibility !== 'hidden' && siblingRect.width > 1 && siblingRect.height > 1;
     });
+    return !siblings.some(sibling => rectsOverlap(candidate, sibling.getBoundingClientRect()));
+  }
+
+  function nudgeSelection(dx, dy) {
+    const entries = selectedEntries();
+    if (!entries.length) return;
+    if (!entries.every(item => canPlaceElement(item.el, dx, dy))) {
+      toast('Bu yönde taşıma başka bir alanla çakışıyor', 'error');
+      return;
+    }
+    let lastOperation = null;
+    entries.forEach(item => {
+      const geometry = geometryState(item.selector);
+      geometry.x = (geometry.x || 0) + dx;
+      geometry.y = (geometry.y || 0) + dy;
+      lastOperation = geometryRecord(item.selector, geometry, item.el);
+    });
+    pushHistory();
+    renderOperations();
+    applyOperationsToPreview();
+    if (lastOperation) updateInstructionForOperation(lastOperation);
+    syncSelectionOverlay();
+  }
+
+  function alignSelected(mode) {
+    const entries = selectedEntries();
+    if (entries.length < 2) {
+      toast('Hizalama için en az iki öğe seçin', 'error');
+      return;
+    }
+    const selectors = new Set(entries.map(item => item.selector));
+    if (mode === 'reset') {
+      state.operations = state.operations.filter(op =>
+        !(selectors.has(op.selector) && ['geometry','smart-align-size'].includes(op.mode))
+      );
+      pushHistory();
+      applyOperationsToPreview();
+      renderOperations();
+      toast('Çoklu hizalama sıfırlandı');
+      return;
+    }
+    const anchorRect = entries[0].el.getBoundingClientRect();
+    if (!['equal-width','equal-height'].includes(mode)) {
+      const candidates = entries.map(item => {
+        const rect = item.el.getBoundingClientRect();
+        let dx = 0;
+        let dy = 0;
+        if (mode === 'left') dx = anchorRect.left - rect.left;
+        if (mode === 'center-x') dx = (anchorRect.left + anchorRect.width/2) - (rect.left + rect.width/2);
+        if (mode === 'right') dx = anchorRect.right - rect.right;
+        if (mode === 'top') dy = anchorRect.top - rect.top;
+        if (mode === 'center-y') dy = (anchorRect.top + anchorRect.height/2) - (rect.top + rect.height/2);
+        if (mode === 'bottom') dy = anchorRect.bottom - rect.bottom;
+        return shiftedRect(rect,dx,dy);
+      });
+      for (let i=0;i<candidates.length;i++) {
+        for (let j=i+1;j<candidates.length;j++) {
+          if (rectsOverlap(candidates[i],candidates[j])) {
+            toast('Bu hizalama seçili öğeleri üst üste bindireceği için uygulanmadı','error');
+            return;
+          }
+        }
+      }
+    }
+    let changed = 0;
+    let blocked = 0;
+    entries.forEach((item,index) => {
+      if (['equal-width','equal-height'].includes(mode)) {
+        const declarations = {
+          'box-sizing':'border-box',
+          'min-width':'0',
+          'max-width':'100%'
+        };
+        if (mode === 'equal-width') declarations.width = Math.round(anchorRect.width) + 'px';
+        else {
+          declarations.height = Math.round(anchorRect.height) + 'px';
+          declarations['min-height'] = '0';
+        }
+        upsertModeStyleRecord(item.selector,'smart-align-size',declarations,'all','Akıllı çoklu hizalama','Yerleşim');
+        changed++;
+        return;
+      }
+      if (index === 0) return;
+      const rect = item.el.getBoundingClientRect();
+      let dx = 0;
+      let dy = 0;
+      if (mode === 'left') dx = anchorRect.left - rect.left;
+      if (mode === 'center-x') dx = (anchorRect.left + anchorRect.width/2) - (rect.left + rect.width/2);
+      if (mode === 'right') dx = anchorRect.right - rect.right;
+      if (mode === 'top') dy = anchorRect.top - rect.top;
+      if (mode === 'center-y') dy = (anchorRect.top + anchorRect.height/2) - (rect.top + rect.height/2);
+      if (mode === 'bottom') dy = anchorRect.bottom - rect.bottom;
+      if (!canPlaceElement(item.el, dx, dy)) {
+        blocked++;
+        return;
+      }
+      const geometry = geometryState(item.selector);
+      geometry.x = (geometry.x || 0) + dx;
+      geometry.y = (geometry.y || 0) + dy;
+      geometryRecord(item.selector, geometry, item.el);
+      changed++;
+    });
+    if (!changed) {
+      toast('Hizalama alan sınırı veya çakışma nedeniyle uygulanamadı', 'error');
+      return;
+    }
+    pushHistory();
+    applyOperationsToPreview();
+    renderOperations();
+    toast('Akıllı hizalama uygulandı' + (blocked ? ' · ' + blocked + ' öğe korundu' : ''));
+  }
+
+  function updateMultiSelectButton() {
+    const button = $('#multiSelectButton');
+    if (!button) return;
+    button.classList.toggle('active',state.multiSelectMode);
+    button.textContent = state.multiSelectMode ? 'Çoklu Seçim Açık' : 'Çoklu Seçim';
+  }
+
+  function tableCellSelector(tableSelector) {
+    return tableSelector + ' th,' + tableSelector + ' td';
+  }
+
+  function applyTableTool(tool, value = null) {
+    const tables = selectedTables();
+    if (!tables.length) {
+      toast('Önce bir tablo veya tablo kartı seçin', 'error');
+      return;
+    }
+    const roots = new Set(tables.map(item => item.selector));
+    if (tool === 'reset') {
+      state.operations = state.operations.filter(op => !(op.tableRoot && roots.has(op.tableRoot)));
+      pushHistory();
+      applyOperationsToPreview();
+      renderOperations();
+      toast('Tablo düzenlemeleri sıfırlandı');
+      return;
+    }
+    let lastOperation = null;
+    tables.forEach(item => {
+      const tableSelector = item.selector;
+      let createdOperation = null;
+      if (tool === 'fit') {
+        createdOperation = upsertModeStyleRecord(tableSelector,'table-fit',{
+          width:'100%','max-width':'100%','min-width':'0','table-layout':'auto','box-sizing':'border-box'
+        },'all','Tabloyu alana sığdır','Tablolar');
+      }
+      if (tool === 'scroll') {
+        const parent = item.el.parentElement;
+        if (parent) createdOperation = upsertModeStyleRecord(selectorForEditing(parent),'table-scroll',{
+          'max-width':'100%','min-width':'0','overflow-x':'auto','overscroll-behavior-inline':'contain'
+        },'all','Tablo yatay kaydırma alanı','Tablolar');
+      }
+      if (tool === 'sticky') {
+        createdOperation = upsertModeStyleRecord(tableSelector + ' th','table-sticky',{
+          position:'sticky',top:'0','z-index':'3','background-color':'inherit'
+        },'all','Tablo başlığını sabitle','Tablolar');
+        createdOperation.allMatches = true;
+      }
+      if (tool === 'compact') {
+        createdOperation = upsertModeStyleRecord(tableCellSelector(tableSelector),'table-compact',{
+          padding:'4px 6px','font-size':'10px','line-height':'1.25'
+        },'all','Kompakt tablo görünümü','Tablolar');
+        createdOperation.allMatches = true;
+      }
+      if (tool === 'wrap') {
+        createdOperation = upsertModeStyleRecord(tableCellSelector(tableSelector),'table-wrap',{
+          'white-space':'normal','overflow-wrap':'anywhere','word-break':'break-word'
+        },'all','Tablo metinlerini sar','Tablolar');
+        createdOperation.allMatches = true;
+      }
+      if (tool === 'font') {
+        createdOperation = upsertModeStyleRecord(tableCellSelector(tableSelector),'table-font',{
+          'font-size':Math.max(8,Math.min(18,Number(value)||11))+'px'
+        },'all','Tablo yazı boyutu','Tablolar');
+        createdOperation.allMatches = true;
+      }
+      if (createdOperation) {
+        createdOperation.tableRoot = tableSelector;
+        lastOperation = createdOperation;
+      }
+    });
+    pushHistory();
+    applyOperationsToPreview();
+    renderOperations();
+    renderGroupControls();
+    if (lastOperation) updateInstructionForOperation(lastOperation);
+    toast('Tablo aracı uygulandı');
+  }
+
+  function runLayoutAudit() {
+    const doc = frameDocument();
+    if (!doc) return;
+    const repairedSelectors = new Set();
+    let overflowCount = 0;
+    let collisionCount = 0;
+    const candidates = Array.from(doc.querySelectorAll('table,canvas,svg,[class*="table" i],[class*="chart" i],[class*="panel" i],[class*="card" i]')).slice(0,400);
+    candidates.forEach(el => {
+      if (el.closest?.('#rve-selection-overlay,#rve-context-menu')) return;
+      const rect = el.getBoundingClientRect();
+      const parentRect = el.parentElement?.getBoundingClientRect();
+      const overflowing = parentRect && (rect.right > parentRect.right + 2 || rect.left < parentRect.left - 2 || el.scrollWidth > el.clientWidth + 2);
+      if (!overflowing) return;
+      const selector = selectorForEditing(el);
+      if (repairedSelectors.has(selector)) return;
+      repairedSelectors.add(selector);
+      overflowCount++;
+      upsertModeStyleRecord(selector,'auto-repair',{
+        'box-sizing':'border-box','min-width':'0','max-width':'100%','overflow-x':el.tagName === 'TABLE' ? 'visible' : 'auto'
+      },'all','Otomatik taşma onarımı','Otomatik Onarım');
+      if (el.tagName === 'TABLE' && el.parentElement) {
+        upsertModeStyleRecord(selectorForEditing(el.parentElement),'auto-repair-table-wrap',{
+          'box-sizing':'border-box','min-width':'0','max-width':'100%','overflow-x':'auto'
+        },'all','Otomatik tablo kaydırma onarımı','Otomatik Onarım');
+      }
+    });
+    doc.querySelectorAll('[data-rve-stack-repair]').forEach(parent => {
+      const selector = selectorForEditing(parent);
+      if (repairedSelectors.has(selector)) return;
+      repairedSelectors.add(selector);
+      collisionCount++;
+      upsertModeStyleRecord(selector,'auto-repair-layout',{
+        display:'grid','grid-template-columns':'repeat(auto-fit,minmax(min(100%,280px),1fr))',
+        'align-items':'start',gap:'12px','min-width':'0','max-width':'100%'
+      },'all','Otomatik çakışma onarımı','Otomatik Onarım');
+    });
+    if (!overflowCount && !collisionCount) {
+      $('#integritySummary').className='selected-card';
+      $('#integritySummary').innerHTML='<div class="risk safe">Yerleşim denetimi temiz: taşma veya çakışma bulunmadı.</div>';
+      toast('Yerleşim denetimi temiz');
+      return;
+    }
+    pushHistory();
+    applyOperationsToPreview();
+    renderOperations();
+    renderGroupControls();
+    $('#integritySummary').className='selected-card';
+    $('#integritySummary').innerHTML='<div class="risk safe">'+overflowCount+' taşma ve '+collisionCount+' çakışma otomatik onarıldı.</div>';
+    toast('Yerleşim otomatik düzeltildi');
   }
 
   function handleNudgeKey(event) {
     if (!state.designMode || !state.selectedEl) return;
     const tag = event.target?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || event.target?.isContentEditable) return;
-    const map = {ArrowLeft:[-1,0], ArrowRight:[1,0], ArrowUp:[0,-1], ArrowDown:[0,1]};
+    const map = {ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
     const direction = map[event.key];
     if (!direction) return;
     event.preventDefault();
     event.stopPropagation();
-    const step = event.shiftKey ? selectedNudgeStep() : 1;
-    nudgeSelected(direction[0] * step, direction[1] * step);
+    if (event.ctrlKey || event.metaKey) {
+      moveSelectedInFlow(['ArrowLeft','ArrowUp'].includes(event.key) ? -1 : 1);
+      return;
+    }
+    const step = event.shiftKey ? 10 : (event.altKey ? 5 : 1);
+    nudgeSelection(direction[0] * step, direction[1] * step);
+  }
+
+  function handleEditorShortcut(event) {
+    const tag = event.target?.tagName;
+    const editing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || event.target?.isContentEditable;
+    if (!editing) handleNudgeKey(event);
+    const key = String(event.key || '').toLowerCase();
+    if ((event.ctrlKey || event.metaKey) && key === 'z') {
+      event.preventDefault();
+      restoreHistory(state.historyIndex - 1);
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && key === 'y') {
+      event.preventDefault();
+      restoreHistory(state.historyIndex + 1);
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && key === 's' && state.originalSource) {
+      event.preventDefault();
+      $('#exportHtmlButton').click();
+      return;
+    }
+    if (editing || event.ctrlKey || event.metaKey || event.altKey) return;
+    if (key === 'm') {
+      event.preventDefault();
+      $('#multiSelectButton').click();
+    }
+    if (key === 'h' && state.selectedEl) {
+      event.preventDefault();
+      hideSelectedElement();
+    }
+    if (key === 'e' && state.selectedEl) {
+      event.preventDefault();
+      openSelectedTextEditor();
+    }
+    if (key === 'f' && state.selectedEl) {
+      event.preventDefault();
+      applySizePreset(1);
+    }
+    if (key === 'l' && state.originalSource) {
+      event.preventDefault();
+      runLayoutAudit();
+    }
+    if (key === '[' && state.selectedEl) {
+      event.preventDefault();
+      moveSelectedInFlow(-1);
+    }
+    if (key === ']' && state.selectedEl) {
+      event.preventDefault();
+      moveSelectedInFlow(1);
+    }
+    if (event.key === 'Escape') {
+      frameDocument()?.getElementById('rve-context-menu')?.style.setProperty('display','none');
+      $$('.modal-backdrop').forEach(modal=>modal.hidden=true);
+    }
+  }
+
+  function smartSnapForDrag(source, startRect, dx, dy) {
+    const threshold = 8;
+    const candidate = shiftedRect(startRect, dx, dy);
+    const siblings = Array.from(source.parentElement?.children || []).filter(el =>
+      el !== source && !el.id?.startsWith('rve-') && !selectedEntries().some(item => item.el === el)
+    );
+    let snappedX = dx;
+    let snappedY = dy;
+    let guideX = null;
+    let guideY = null;
+    let bestX = threshold + 1;
+    let bestY = threshold + 1;
+    const xPoints = [
+      {value:candidate.left, offset:0},
+      {value:candidate.left + candidate.width / 2, offset:candidate.width / 2},
+      {value:candidate.right, offset:candidate.width}
+    ];
+    const yPoints = [
+      {value:candidate.top, offset:0},
+      {value:candidate.top + candidate.height / 2, offset:candidate.height / 2},
+      {value:candidate.bottom, offset:candidate.height}
+    ];
+    siblings.forEach(sibling => {
+      const rect = sibling.getBoundingClientRect();
+      [rect.left,rect.left+rect.width/2,rect.right].forEach(point => {
+        xPoints.forEach(sourcePoint => {
+          const distance = Math.abs(sourcePoint.value - point);
+          if (distance < bestX && distance <= threshold) {
+            bestX = distance;
+            snappedX = point - startRect.left - sourcePoint.offset;
+            guideX = point;
+          }
+        });
+      });
+      [rect.top,rect.top+rect.height/2,rect.bottom].forEach(point => {
+        yPoints.forEach(sourcePoint => {
+          const distance = Math.abs(sourcePoint.value - point);
+          if (distance < bestY && distance <= threshold) {
+            bestY = distance;
+            snappedY = point - startRect.top - sourcePoint.offset;
+            guideY = point;
+          }
+        });
+      });
+    });
+    return {dx:snappedX,dy:snappedY,guideX,guideY};
   }
 
   function startMoveDrag(event, handle) {
@@ -1379,24 +2413,60 @@
     event.preventDefault();
     event.stopPropagation();
     const doc = frameDocument();
-    const el = state.selectedEl;
-    const startGeometry = geometryState(state.selectedSelector);
+    const win = frameWindow();
+    const source = state.selectedEl;
+    const sourceSelector = state.selectedSelector;
+    const indicator = doc.getElementById('rve-drop-indicator');
+    const guideX = doc.getElementById('rve-guide-x');
+    const guideY = doc.getElementById('rve-guide-y');
+    const startRect = source.getBoundingClientRect();
+    const startGeometry = geometryState(sourceSelector);
     const startX = event.clientX;
     const startY = event.clientY;
-    let latest = {...startGeometry};
+    const originalPointerEvents = source.style.pointerEvents;
+    let liveStyle = doc.getElementById('rve-live-drag-style');
+    if (!liveStyle) {
+      liveStyle = doc.createElement('style');
+      liveStyle.id = 'rve-live-drag-style';
+      doc.head.appendChild(liveStyle);
+    }
+    let dropTarget = null;
+    let dropPosition = 'after';
+    let latest = {dx:0,dy:0};
     let moved = false;
 
     try { handle.setPointerCapture(event.pointerId); } catch (_) {}
 
     const onMove = moveEvent => {
+      const rawDx = moveEvent.clientX - startX;
+      const rawDy = moveEvent.clientY - startY;
+      if (Math.hypot(rawDx,rawDy) < 2) return;
       moved = true;
-      latest = {
-        ...startGeometry,
-        x: (startGeometry.x || 0) + (moveEvent.clientX - startX),
-        y: (startGeometry.y || 0) + (moveEvent.clientY - startY)
-      };
-      el.style.setProperty('translate', Math.round(latest.x) + 'px ' + Math.round(latest.y) + 'px', 'important');
-      syncSelectionOverlay();
+      source.setAttribute('data-rve-dragging','');
+      source.setAttribute('data-rve-live-drag','');
+      source.style.pointerEvents = 'none';
+      latest = smartSnapForDrag(source, startRect, rawDx, rawDy);
+      liveStyle.textContent = '[data-rve-live-drag]{translate:' +
+        Math.round((startGeometry.x || 0) + latest.dx) + 'px ' +
+        Math.round((startGeometry.y || 0) + latest.dy) + 'px!important;}';
+      guideX.style.display = latest.guideX === null ? 'none' : 'block';
+      guideY.style.display = latest.guideY === null ? 'none' : 'block';
+      if (latest.guideX !== null) guideX.style.left = latest.guideX + 'px';
+      if (latest.guideY !== null) guideY.style.top = latest.guideY + 'px';
+      const raw = (doc.elementsFromPoint?.(moveEvent.clientX, moveEvent.clientY) || [doc.elementFromPoint(moveEvent.clientX, moveEvent.clientY)])
+        .find(node => node && node !== source && !source.contains(node) && !node.closest?.('#rve-selection-overlay,#rve-context-menu'));
+      const selectable = normalizeSelectable(raw);
+      dropTarget = findFlowDropTarget(selectable, source);
+      if (!dropTarget) {
+        indicator.style.display = 'none';
+        return;
+      }
+      const rect = dropTarget.getBoundingClientRect();
+      dropPosition = moveEvent.clientY < rect.top + rect.height / 2 ? 'before' : 'after';
+      indicator.style.display = 'block';
+      indicator.style.left = Math.max(4, rect.left) + 'px';
+      indicator.style.width = Math.max(30, Math.min(rect.width, win.innerWidth - Math.max(4, rect.left) - 4)) + 'px';
+      indicator.style.top = (dropPosition === 'before' ? rect.top - 2 : rect.bottom - 2) + 'px';
     };
 
     const onUp = () => {
@@ -1404,12 +2474,58 @@
       doc.removeEventListener('pointerup', onUp, true);
       doc.removeEventListener('pointercancel', onUp, true);
       try { handle.releasePointerCapture(event.pointerId); } catch (_) {}
+      indicator.style.display = 'none';
+      guideX.style.display = 'none';
+      guideY.style.display = 'none';
+      liveStyle.textContent = '';
+      source.removeAttribute('data-rve-dragging');
+      source.removeAttribute('data-rve-live-drag');
+      source.style.pointerEvents = originalPointerEvents;
       if (!moved) return;
-      upsertGeometry(latest, 'Serbest taşıma');
-      el.style.removeProperty('translate');
+      const dragEntries = selectedEntries();
+      if (dragEntries.length > 1) {
+        if (!dragEntries.every(item => canPlaceElement(item.el,latest.dx,latest.dy))) {
+          toast('Çoklu taşıma alan dışına çıkıyor veya başka bir alanla çakışıyor','error');
+          syncSelectionOverlay();
+          return;
+        }
+        dragEntries.forEach(item => {
+          const geometry = geometryState(item.selector);
+          geometry.x = (geometry.x || 0) + latest.dx;
+          geometry.y = (geometry.y || 0) + latest.dy;
+          geometryRecord(item.selector,geometry,item.el);
+        });
+        pushHistory();
+        renderOperations();
+        applyOperationsToPreview();
+        toast(dragEntries.length+' öğe birlikte taşındı');
+        return;
+      }
+      if (dropTarget) {
+        const targetSelector = selectorForEditing(dropTarget);
+        if (targetSelector && targetSelector !== sourceSelector) {
+          upsertFlowMove(sourceSelector, targetSelector, dropPosition);
+          const movedElement = safeQuery(doc, sourceSelector);
+          if (movedElement) selectElement(movedElement);
+          toast('Öğe akış içinde yeni konumuna taşındı');
+          return;
+        }
+      }
+      if (!canPlaceElement(source, latest.dx, latest.dy)) {
+        toast('Konum alan dışına taşıyor veya başka bir öğeyle çakışıyor', 'error');
+        syncSelectionOverlay();
+        return;
+      }
+      geometryRecord(sourceSelector, {
+        ...startGeometry,
+        x:(startGeometry.x || 0) + latest.dx,
+        y:(startGeometry.y || 0) + latest.dy
+      }, source);
+      pushHistory();
+      renderOperations();
       applyOperationsToPreview();
-      triggerChartResize(el);
-      syncSelectionOverlay();
+      selectElement(source, {additive:state.selectedItems.length>1});
+      toast('Manuel konum kaydedildi');
     };
 
     doc.addEventListener('pointermove', onMove, true);
@@ -1424,11 +2540,18 @@
     const doc = frameDocument();
     const el = state.selectedEl;
     const rect = el.getBoundingClientRect();
-    const startGeometry = geometryState(state.selectedSelector);
+    const parentRect = el.parentElement?.getBoundingClientRect();
     const startX = event.clientX;
     const startY = event.clientY;
-    let latest = {...startGeometry};
+    let latestWidth = rect.width;
+    let latestHeight = rect.height;
     let moved = false;
+    let liveStyle = doc.getElementById('rve-live-preview-style');
+    if (!liveStyle) {
+      liveStyle = doc.createElement('style');
+      liveStyle.id = 'rve-live-preview-style';
+      doc.head.appendChild(liveStyle);
+    }
 
     try { grip.setPointerCapture(event.pointerId); } catch (_) {}
 
@@ -1436,22 +2559,20 @@
       moved = true;
       const dx = moveEvent.clientX - startX;
       const dy = moveEvent.clientY - startY;
-      latest = {...startGeometry};
-
-      if (direction.includes('e')) latest.width = Math.max(24, rect.width + dx);
-      if (direction.includes('s')) latest.height = Math.max(24, rect.height + dy);
-      if (direction.includes('w')) {
-        latest.width = Math.max(24, rect.width - dx);
-        latest.x = (startGeometry.x || 0) + (rect.width - latest.width);
+      if (direction.includes('e')) latestWidth = Math.max(60, rect.width + dx);
+      if (direction.includes('w')) latestWidth = Math.max(60, rect.width - dx);
+      if (direction.includes('s')) latestHeight = Math.max(24, rect.height + dy);
+      if (direction.includes('n')) latestHeight = Math.max(24, rect.height - dy);
+      const maxWidth = Math.max(60, parentRect?.width || latestWidth);
+      latestWidth = Math.min(latestWidth, maxWidth);
+      const declarations = [];
+      if (direction.includes('e') || direction.includes('w')) {
+        const percent = Math.max(10, Math.min(100, latestWidth / maxWidth * 100));
+        declarations.push('width:' + percent.toFixed(2) + '%!important', 'max-width:100%!important', 'min-width:0!important');
       }
-      if (direction.includes('n')) {
-        latest.height = Math.max(24, rect.height - dy);
-        latest.y = (startGeometry.y || 0) + (rect.height - latest.height);
-      }
-
-      if (direction.includes('e') || direction.includes('w')) el.style.setProperty('width', Math.round(latest.width) + 'px', 'important');
-      if (direction.includes('n') || direction.includes('s')) el.style.setProperty('height', Math.round(latest.height) + 'px', 'important');
-      el.style.setProperty('translate', Math.round(latest.x || 0) + 'px ' + Math.round(latest.y || 0) + 'px', 'important');
+      if (direction.includes('n') || direction.includes('s')) declarations.push('height:' + Math.round(latestHeight) + 'px!important');
+      el.setAttribute('data-rve-live-selected','');
+      liveStyle.textContent = state.selectedSelector + ',[data-rve-live-selected]{' + declarations.join(';') + '}';
       syncSelectionOverlay();
     };
 
@@ -1460,14 +2581,16 @@
       doc.removeEventListener('pointerup', onUp, true);
       doc.removeEventListener('pointercancel', onUp, true);
       try { grip.releasePointerCapture(event.pointerId); } catch (_) {}
+      liveStyle.textContent = '';
+      el.removeAttribute('data-rve-live-selected');
       if (!moved) return;
-      upsertGeometry(latest, 'Kenar boyutlandırma');
-      el.style.removeProperty('width');
-      el.style.removeProperty('height');
-      el.style.removeProperty('translate');
-      applyOperationsToPreview();
+      const maxWidth = Math.max(1, parentRect?.width || latestWidth);
+      const fraction = Math.max(.1, Math.min(1, latestWidth / maxWidth));
+      const height = (direction.includes('n') || direction.includes('s')) ? latestHeight : null;
+      upsertModeStyle(state.selectedSelector, 'responsive-size', responsiveDeclarations(el, fraction, height));
       triggerChartResize(el);
       syncSelectionOverlay();
+      toast('Boyut akışa uyumlu biçimde kaydedildi');
     };
 
     doc.addEventListener('pointermove', onMove, true);
@@ -1484,10 +2607,16 @@
     $('#radiusValue').placeholder = Math.round(parseFloat(style.borderRadius) || 0) + ' mevcut';
     $('#customWidth').placeholder = Math.round(el.getBoundingClientRect().width) + ' mevcut';
     $('#heightValue').placeholder = Math.round(el.getBoundingClientRect().height) + ' mevcut';
+    const parentWidth = Math.max(1, el.parentElement?.getBoundingClientRect().width || el.getBoundingClientRect().width);
+    const percent = Math.max(10, Math.min(100, Math.round(el.getBoundingClientRect().width / parentWidth * 100)));
+    $('#widthRange').value = String(percent);
+    $('#widthRangeValue').textContent = '%' + percent;
   }
 
   function findSourceNeedle(el) {
     if (!state.originalSource) return null;
+    const cacheKey = state.selectedSelector || selectorFor(el);
+    if (state.sourceNeedleCache.has(cacheKey)) return state.sourceNeedleCache.get(cacheKey);
     const source = state.originalSource;
     const tag = el.tagName.toLowerCase();
     const candidates = [];
@@ -1500,8 +2629,13 @@
     if (text.length >= 4 && text.length <= 120) candidates.push(new RegExp(escapeRegExp(text).replace(/\\ /g,'\\s+'), 'i'));
     for (const pattern of candidates) {
       const match = pattern.exec(source);
-      if (match) return {index: match.index, match: match[0]};
+      if (match) {
+        const result = {index: match.index, match: match[0]};
+        state.sourceNeedleCache.set(cacheKey, result);
+        return result;
+      }
     }
+    state.sourceNeedleCache.set(cacheKey, null);
     return null;
   }
 
@@ -1512,15 +2646,24 @@
     if (!found) {
       $('#sourceContext').textContent = 'Kaynakta benzersiz bir eşleşme bulunamadı.\n\nSeçici:\n' + state.selectedSelector;
       $('#instructionOutput').value = 'HEDEF: ' + state.selectedSelector + '\nKAYNAK BAĞLAMI: Benzersiz eşleşme bulunamadı.\nÖNERİ: CSS seçicisi üzerinden güvenli yama uygulanmalı.';
+      if (state.sourceViewMode === 'context') $('#sourceViewer').value = $('#sourceContext').textContent;
       return;
     }
     const source = state.originalSource;
-    const line = source.slice(0, found.index).split(/\r?\n/).length;
-    const lines = source.split(/\r?\n/);
+    let low = 0;
+    let high = state.sourceLineOffsets.length;
+    while (low < high) {
+      const mid = (low + high) >> 1;
+      if (state.sourceLineOffsets[mid] <= found.index) low = mid + 1;
+      else high = mid;
+    }
+    const line = Math.max(1, low);
+    const lines = state.sourceLines;
     const start = Math.max(0, line - 4);
     const end = Math.min(lines.length, line + 4);
     const numbered = lines.slice(start,end).map((value,i) => String(start+i+1).padStart(5,' ') + ' │ ' + value).join('\n');
     $('#sourceContext').textContent = 'Yaklaşık satır: ' + line + '\nSeçici: ' + state.selectedSelector + '\n\n' + numbered;
+    if (state.sourceViewMode === 'context') $('#sourceViewer').value = numbered;
     $('#instructionOutput').value =
       'İŞLEM: Henüz seçilmedi\n' +
       'HEDEF: ' + state.selectedSelector + '\n' +
@@ -1569,12 +2712,15 @@
   function addOperation(operation) {
     operation.id = operation.id || operationId();
     operation.enabled = operation.enabled !== false;
+    operation.group = operation.group || state.activeGroup || 'Genel';
+    if (!state.groups.includes(operation.group)) state.groups.push(operation.group);
     operation.createdAt = operation.createdAt || new Date().toISOString();
     state.operations.push(operation);
     pushHistory();
     renderOperations();
     applyOperationsToPreview();
     updateInstructionForOperation(operation);
+    renderGroupControls();
   }
 
   function updateInstructionForOperation(op) {
@@ -1595,13 +2741,24 @@
 
   function operationLabel(op) {
     if (op.type === 'style' && op.mode === 'geometry') return 'Konum / kenar boyutu';
+    if (op.type === 'style' && op.mode === 'responsive-size') return 'Duyarlı boyut';
+    if (op.type === 'style' && op.mode === 'smart-align-size') return 'Akıllı eşitleme';
+    if (op.type === 'style' && String(op.mode || '').startsWith('table-')) return 'Tablo aracı';
+    if (op.type === 'style' && String(op.mode || '').startsWith('auto-repair')) return 'Otomatik yerleşim onarımı';
+    if (op.type === 'portal' && op.mode === 'flow') return 'Akışta taşıma';
     return ({style:'Boyut / görünüm', hide:'Güvenli gizle', text:'Metin değişikliği', portal:'Dinamik taşıma'}[op.type] || op.type);
   }
 
   function currentContextText() { return $('#sourceContext').textContent || ''; }
 
   function pushHistory() {
-    const snapshot = JSON.stringify(state.operations);
+    const snapshot = JSON.stringify({
+      operations: state.operations,
+      layoutProtection: state.layoutProtection,
+      desktopStandard: state.desktopStandard,
+      groups: state.groups,
+      activeGroup: state.activeGroup
+    });
     if (state.historyIndex >= 0 && state.history[state.historyIndex] === snapshot) return;
     state.history = state.history.slice(0, state.historyIndex + 1);
     state.history.push(snapshot);
@@ -1612,11 +2769,25 @@
 
   function restoreHistory(index) {
     if (index < 0 || index >= state.history.length) return;
+    const selectedSelectors = selectedEntries().map(item => item.selector);
     state.historyIndex = index;
-    state.operations = JSON.parse(state.history[index]);
+    const snapshot = JSON.parse(state.history[index]);
+    state.operations = Array.isArray(snapshot) ? snapshot : (snapshot.operations || []);
+    state.layoutProtection = Array.isArray(snapshot) ? true : snapshot.layoutProtection !== false;
+    state.desktopStandard = Array.isArray(snapshot) ? true : snapshot.desktopStandard !== false;
+    state.groups = Array.isArray(snapshot) ? state.groups : (snapshot.groups || state.groups);
+    state.activeGroup = Array.isArray(snapshot) ? 'Genel' : (snapshot.activeGroup || 'Genel');
+    updateLayoutButton();
+    renderGroupControls();
     renderOperations();
-    loadFrame(buildOutput());
+    applyOperationsToPreview();
+    resetSelection();
+    selectedSelectors.forEach((selector,index) => {
+      const selected = safeQuery(frameDocument(), selector);
+      if (selected) selectElement(selected, {additive:index>0});
+    });
     updateHistoryButtons();
+    Logger.ok('Geçmiş adımı uygulandı; çalışma alanı yeniden yüklenmeden korundu.');
   }
 
   function updateHistoryButtons() {
@@ -1643,8 +2814,15 @@
     if ($('#whiteSpaceValue').value) declarations['white-space'] = $('#whiteSpaceValue').value;
     if ($('#radiusValue').value !== '') declarations['border-radius'] = $('#radiusValue').value + 'px';
     if ($('#useColor').checked) declarations.color = $('#colorValue').value;
-    if ($('#useBackground').checked) declarations.background = $('#backgroundValue').value;
-    if (declarations.width || declarations['grid-column']) declarations['min-width'] = '0';
+    if ($('#useBackground').checked) {
+      declarations['background-color'] = $('#backgroundValue').value;
+      if ($('#clearBackgroundImage').checked) declarations['background-image'] = 'none';
+    }
+    if (declarations.width || declarations['grid-column']) {
+      declarations['min-width'] = '0';
+      declarations['max-width'] = '100%';
+      declarations['box-sizing'] = 'border-box';
+    }
     return declarations;
   }
 
@@ -1656,13 +2834,32 @@
     return rule;
   }
 
+  function operationAttribute(op) {
+    return 'data-rve-op-' + String(op.id || '').replace(/[^a-zA-Z0-9_-]/g,'');
+  }
+
   function generatePatchCss() {
-    const chunks = ['/* Regnum Evrensel HTML Editörü V3 · Kaynak-korumalı yamalar */'];
+    const chunks = ['/* Regnum Evrensel HTML Editörü V4.1 · Akış, masaüstü ve alan korumalı yamalar */'];
+    if (state.layoutProtection) {
+      chunks.push(
+        '[data-rve-layout-guard]{box-sizing:border-box!important;min-width:0!important;max-width:100%!important;}',
+        '[data-rve-layout-parent]{box-sizing:border-box!important;min-width:0!important;max-width:100%!important;}',
+        '[data-rve-flow-moved]{position:relative!important;inset:auto!important;translate:none!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;}',
+        '[data-rve-table-scroll]{max-width:100%!important;min-width:0!important;overflow-x:auto!important;overscroll-behavior-inline:contain;}',
+        '[data-rve-table-scroll]>table{max-width:100%!important;}',
+        '[data-rve-layout-guard] :where(img,video,svg,canvas){max-width:100%!important;}',
+        '[data-rve-stack-repair]{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))!important;align-items:start!important;gap:12px!important;}',
+        '@media print{[data-rve-layout-guard]{translate:none!important;transform:none!important;max-width:100%!important;break-inside:avoid;page-break-inside:avoid;}[data-rve-table-scroll]{overflow:visible!important;}[data-rve-table-scroll]>table{width:100%!important;table-layout:auto;}}'
+      );
+    }
     state.operations.filter(op => op.enabled && (op.type === 'style' || op.type === 'hide')).forEach(op => {
       let declarations;
       if (op.type === 'hide') declarations = 'display:none!important;';
       else declarations = Object.entries(op.declarations).map(([key,value]) => key + ':' + value + '!important;').join('');
-      chunks.push(scopeWrap(op.scope || 'all', op.selector + '{' + declarations + '}'));
+      const attribute = operationAttribute(op);
+      const targets = attribute ? op.selector + ',[' + attribute + ']' : op.selector;
+      const effectiveScope = state.desktopStandard && op.scope !== 'print' ? 'all' : (op.scope || 'all');
+      chunks.push(scopeWrap(effectiveScope, targets + '{' + declarations + '}'));
     });
     return chunks.join('\n');
   }
@@ -1678,11 +2875,23 @@
 
   function buildRuntimeScript() {
     const opsJson = JSON.stringify(runtimeOperations()).replace(/</g, '\\u003c');
+    const visualJson = JSON.stringify(state.operations.filter(op => op.enabled && (op.type === 'style' || op.type === 'hide')).map(op => ({
+      id:op.id,
+      selector:op.selector,
+      attribute:operationAttribute(op),
+      allMatches:op.allMatches === true
+    }))).replace(/</g, '\\u003c');
+    const guardSelectors = Array.from(new Set(state.operations.filter(op => op.enabled).flatMap(op => [op.selector, op.source, op.target]).filter(Boolean)));
+    const guardsJson = JSON.stringify(guardSelectors).replace(/</g, '\\u003c');
     return `(function(){
   'use strict';
   var operations=${opsJson};
+  var visualOperations=${visualJson};
+  var guardSelectors=${guardsJson};
+  var layoutProtection=${state.layoutProtection ? 'true' : 'false'};
   var busy=false;
   var triggered={};
+  var references={};
   function one(selector){try{return document.querySelector(selector)}catch(e){return null}}
   function directText(el,value){
     var nodes=Array.prototype.filter.call(el.childNodes,function(n){return n.nodeType===3});
@@ -1710,18 +2919,95 @@
       try{window.dispatchEvent(new Event('resize'))}catch(e){}
     });
   }
+  function visible(el){
+    if(!el||!el.getBoundingClientRect)return false;
+    var style=getComputedStyle(el),rect=el.getBoundingClientRect();
+    return style.display!=='none'&&style.visibility!=='hidden'&&rect.width>1&&rect.height>1;
+  }
+  function overlaps(a,b){
+    var ar=a.getBoundingClientRect(),br=b.getBoundingClientRect();
+    return Math.min(ar.right,br.right)-Math.max(ar.left,br.left)>4&&
+      Math.min(ar.bottom,br.bottom)-Math.max(ar.top,br.top)>4;
+  }
+  function markLayout(el){
+    if(!layoutProtection||!el)return;
+    el.setAttribute('data-rve-layout-guard','');
+    if(el.parentElement)el.parentElement.setAttribute('data-rve-layout-parent','');
+    var ancestor=el.parentElement,depth=0;
+    while(ancestor&&depth<5){
+      var display=getComputedStyle(ancestor).display;
+      if(display.indexOf('grid')>=0||display.indexOf('flex')>=0||ancestor.tagName==='MAIN'||ancestor.tagName==='SECTION'){
+        ancestor.setAttribute('data-rve-layout-parent','');break;
+      }
+      ancestor=ancestor.parentElement;depth++;
+    }
+    var tables=[];
+    if(el.matches&&el.matches('table'))tables.push(el);
+    if(el.querySelectorAll)tables=tables.concat(Array.prototype.slice.call(el.querySelectorAll('table')));
+    tables.forEach(function(table){
+      table.setAttribute('data-rve-layout-guard','');
+      if(table.parentElement)table.parentElement.setAttribute('data-rve-table-scroll','');
+    });
+  }
+  function protectLayout(){
+    if(!layoutProtection)return;
+    guardSelectors.forEach(function(selector){markLayout(one(selector))});
+    Array.prototype.forEach.call(document.querySelectorAll('table'),function(table){markLayout(table)});
+    var parents=Array.prototype.slice.call(document.querySelectorAll('[data-rve-layout-parent]'));
+    parents.forEach(function(parent){
+      var children=Array.prototype.filter.call(parent.children,function(child){
+        if(!visible(child))return false;
+        var position=getComputedStyle(child).position;
+        return position!=='absolute'&&position!=='fixed';
+      });
+      var collision=false;
+      for(var i=0;i<children.length&&!collision;i++){
+        for(var j=i+1;j<children.length;j++){
+          if(overlaps(children[i],children[j])){collision=true;break}
+        }
+      }
+      if(collision){
+        parent.setAttribute('data-rve-stack-repair','');
+        Array.prototype.forEach.call(parent.children,function(child){
+          if(child.hasAttribute('data-rve-layout-guard'))child.style.setProperty('translate','none','important');
+        });
+      }
+    });
+  }
   function apply(){
     if(busy)return;busy=true;
     try{
+      visualOperations.forEach(function(op){
+        var ref=references[op.id];
+        if(op.allMatches){
+          if(!ref||!ref.elements||!ref.elements.length||!ref.elements[0].isConnected){
+            var elements=[];try{elements=Array.prototype.slice.call(document.querySelectorAll(op.selector))}catch(e){}
+            ref=references[op.id]={elements:elements};
+          }
+          if(op.attribute)ref.elements.forEach(function(el){el.setAttribute(op.attribute,'')});
+        }else{
+          if(!ref||!ref.el||!ref.el.isConnected)ref=references[op.id]={el:one(op.selector)};
+          if(ref.el&&op.attribute)ref.el.setAttribute(op.attribute,'');
+        }
+      });
       operations.forEach(function(op){
-        if(op.type==='text'){var el=one(op.selector);if(el)directText(el,op.value)}
+        if(op.type==='text'){
+          var textRef=references[op.id];
+          if(!textRef||!textRef.el||!textRef.el.isConnected)textRef=references[op.id]={el:one(op.selector)};
+          if(textRef.el)directText(textRef.el,op.value);
+        }
         if(op.type==='portal'){
           if(op.trigger&&!triggered[op.id]){
             var trigger=one(op.trigger);
             if(trigger){triggered[op.id]=true;try{trigger.click()}catch(e){}}
           }
-          var source=one(op.source),target=one(op.target);
+          var refs=references[op.id];
+          if(!refs||!refs.source||!refs.source.isConnected||!refs.target||!refs.target.isConnected){
+            refs=references[op.id]={source:one(op.source),target:one(op.target)};
+          }
+          var source=refs.source,target=refs.target;
           if(!source||!target||source===target||source.contains(target))return;
+          if(op.mode==='flow')source.setAttribute('data-rve-flow-moved','');
           if(op.forceVisible){source.hidden=false;source.removeAttribute('hidden');if(source.style&&source.style.display==='none')source.style.removeProperty('display')}
           var placed=(op.position==='inside-start'&&source.parentNode===target&&target.firstChild===source)||
             (op.position==='inside-end'&&source.parentNode===target&&target.lastChild===source)||
@@ -1734,8 +3020,10 @@
             else if(op.position==='after'&&target.parentNode)target.parentNode.insertBefore(source,target.nextSibling);
             resize(source);
           }
+          markLayout(source);markLayout(target);
         }
       });
+      protectLayout();
     }finally{busy=false}
   }
   var timer=0;
@@ -1743,7 +3031,9 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();
   window.addEventListener('load',apply);
   try{new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
-  setTimeout(apply,300);setTimeout(apply,1200);
+  window.addEventListener('resize',schedule);
+  if(window.matchMedia){try{window.matchMedia('print').addEventListener('change',schedule)}catch(e){}}
+  setTimeout(apply,300);setTimeout(apply,1200);setTimeout(apply,2500);
 })();`;
   }
 
@@ -1800,9 +3090,9 @@
   function buildOutput() {
     if (!state.originalSource) return '';
     let output = sourceWithoutPreviousPatches(state.originalSource);
-    if (!state.operations.length) return output;
+    if (!state.operations.length && !state.layoutProtection) return output;
     const visualOperations = state.operations.filter(op => op.enabled && (op.type === 'style' || op.type === 'hide'));
-    if (visualOperations.length) {
+    if (visualOperations.length || state.layoutProtection) {
       const css = generatePatchCss();
       const styleBlock = '<style id="' + PATCH_STYLE_ID + '">\n' + css + '\n</style>';
       output = injectBeforeClosing(output, 'head', styleBlock);
@@ -1810,7 +3100,7 @@
     const manifestBlock = '<!--' + PATCH_MANIFEST_MARKER + encodeManifest(state.operations) + '-->';
     output = injectBeforeClosing(output, 'body', manifestBlock);
     const runtime = runtimeOperations();
-    if (runtime.length) {
+    if (runtime.length || state.layoutProtection) {
       const open = '<scr' + 'ipt id="' + PATCH_RUNTIME_ID + '">';
       const close = '</scr' + 'ipt>';
       output = injectBeforeClosing(output, 'body', open + '\n' + buildRuntimeScript() + '\n' + close);
@@ -1821,6 +3111,14 @@
   function applyOperationsToPreview() {
     const doc = frameDocument();
     if (!doc) return;
+    restorePreviewBaselines();
+    doc.querySelectorAll('[data-rve-layout-guard],[data-rve-layout-parent],[data-rve-table-scroll],[data-rve-stack-repair],[data-rve-flow-moved]').forEach(el => {
+      el.removeAttribute('data-rve-layout-guard');
+      el.removeAttribute('data-rve-layout-parent');
+      el.removeAttribute('data-rve-table-scroll');
+      el.removeAttribute('data-rve-stack-repair');
+      el.removeAttribute('data-rve-flow-moved');
+    });
     let style = doc.getElementById(PATCH_STYLE_ID);
     if (!style) {
       style = doc.createElement('style');
@@ -1828,28 +3126,76 @@
       doc.head.appendChild(style);
     }
     style.textContent = generatePatchCss();
+    state.operations.filter(op => op.enabled && (op.type === 'style' || op.type === 'hide')).forEach(op => {
+      const attribute = operationAttribute(op);
+      const elements = op.allMatches ? safeQueryAll(doc,op.selector) : [safeQuery(doc, op.selector)].filter(Boolean);
+      if (attribute) elements.forEach(el => el.setAttribute(attribute, ''));
+    });
     state.operations.filter(op => op.enabled && op.type === 'style').forEach(op => {
       const el = safeQuery(doc, op.selector);
       if (el) triggerChartResize(el);
     });
     state.operations.filter(op => op.enabled && op.type === 'text').forEach(op => {
       const el = safeQuery(doc, op.selector);
-      if (el) applyDirectText(el, op.value);
+      if (el) {
+        const baseline = captureTextBaseline(op.selector, el);
+        applyDirectText(el, op.value, baseline);
+      }
     });
     state.operations.filter(op => op.enabled && op.type === 'portal').forEach(op => applyPortalPreview(op, doc));
+    applyPreviewLayoutProtection(doc);
     renderOperations();
     requestAnimationFrame(syncSelectionOverlay);
   }
 
   function safeQuery(doc, selector) { try { return doc.querySelector(selector); } catch (_) { return null; } }
+  function safeQueryAll(doc, selector) { try { return Array.from(doc.querySelectorAll(selector)); } catch (_) { return []; } }
 
-  function applyDirectText(el, value) {
+  function captureTextBaseline(selector, el) {
+    if (state.previewBaselines.texts.has(selector)) return state.previewBaselines.texts.get(selector);
+    const nodes = Array.from(el.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
+    const baseline = {
+      el,
+      nodes,
+      values:nodes.map(node => node.nodeValue),
+      leafValue: nodes.length ? null : (!el.children.length ? el.textContent : null),
+      inserted:null
+    };
+    state.previewBaselines.texts.set(selector, baseline);
+    return baseline;
+  }
+
+  function restorePreviewBaselines() {
+    const texts = state.previewBaselines?.texts || new Map();
+    texts.forEach(baseline => {
+      if (baseline.inserted?.isConnected) baseline.inserted.remove();
+      baseline.nodes.forEach((node,index) => {
+        if (node.isConnected) node.nodeValue = baseline.values[index];
+      });
+      if (!baseline.nodes.length && baseline.leafValue !== null && baseline.el?.isConnected) {
+        baseline.el.textContent = baseline.leafValue;
+      }
+      baseline.inserted = null;
+    });
+    const portals = Array.from((state.previewBaselines?.portals || new Map()).values()).reverse();
+    portals.forEach(baseline => {
+      if (!baseline.el?.isConnected || !baseline.parent?.isConnected) return;
+      if (baseline.nextSibling?.parentNode === baseline.parent) baseline.parent.insertBefore(baseline.el, baseline.nextSibling);
+      else baseline.parent.appendChild(baseline.el);
+    });
+  }
+
+  function applyDirectText(el, value, baseline = null) {
     const nodes = Array.from(el.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
     if (nodes.length) {
       nodes[0].nodeValue = value;
       nodes.slice(1).forEach(node => node.nodeValue = '');
     } else if (!el.children.length) el.textContent = value;
-    else el.insertBefore(el.ownerDocument.createTextNode(value), el.firstChild);
+    else {
+      const inserted = el.ownerDocument.createTextNode(value);
+      el.insertBefore(inserted, el.firstChild);
+      if (baseline) baseline.inserted = inserted;
+    }
   }
 
   function applyPortalPreview(op, doc) {
@@ -1860,9 +3206,28 @@
         try { trigger.click(); } catch (_) {}
       }
     }
-    const source = safeQuery(doc, op.source);
-    const target = safeQuery(doc, op.target);
+    let refs = state.previewPortalRefs.get(op.id);
+    if (!refs || refs.sourceSelector !== op.source || refs.targetSelector !== op.target ||
+        !refs.source?.isConnected || !refs.target?.isConnected) {
+      refs = {
+        sourceSelector:op.source,
+        targetSelector:op.target,
+        source:safeQuery(doc, op.source),
+        target:safeQuery(doc, op.target)
+      };
+      state.previewPortalRefs.set(op.id, refs);
+    }
+    const source = refs.source;
+    const target = refs.target;
     if (!source || !target || source === target || source.contains(target)) return false;
+    if (op.mode === 'flow') source.setAttribute('data-rve-flow-moved','');
+    if (!state.previewBaselines.portals.has(op.source)) {
+      state.previewBaselines.portals.set(op.source, {
+        el:source,
+        parent:source.parentElement,
+        nextSibling:source.nextSibling
+      });
+    }
     if (op.forceVisible) {
       source.hidden = false;
       source.removeAttribute('hidden');
@@ -1882,6 +3247,72 @@
     return true;
   }
 
+  function applyPreviewLayoutProtection(doc) {
+    if (!state.layoutProtection) return;
+    const elements = new Set();
+    state.operations.filter(op => op.enabled).forEach(op => {
+      [op.selector, op.source, op.target].filter(Boolean).forEach(selector => {
+        const el = safeQuery(doc, selector);
+        if (el) elements.add(el);
+      });
+    });
+    elements.forEach(el => {
+      el.setAttribute('data-rve-layout-guard','');
+      el.parentElement?.setAttribute('data-rve-layout-parent','');
+      let ancestor = el.parentElement;
+      let depth = 0;
+      while (ancestor && depth < 5) {
+        const display = frameWindow()?.getComputedStyle(ancestor).display || '';
+        if (display.includes('grid') || display.includes('flex') || ['MAIN','SECTION'].includes(ancestor.tagName)) {
+          ancestor.setAttribute('data-rve-layout-parent','');
+          break;
+        }
+        ancestor = ancestor.parentElement;
+        depth++;
+      }
+      const tables = [el.matches?.('table') ? el : null, ...el.querySelectorAll('table')].filter(Boolean);
+      tables.forEach(table => {
+        table.setAttribute('data-rve-layout-guard','');
+        table.parentElement?.setAttribute('data-rve-table-scroll','');
+      });
+    });
+    doc.querySelectorAll('table').forEach(table => {
+      table.setAttribute('data-rve-layout-guard','');
+      table.parentElement?.setAttribute('data-rve-table-scroll','');
+      let ancestor = table.parentElement;
+      let depth = 0;
+      while (ancestor && depth < 5) {
+        const display = frameWindow()?.getComputedStyle(ancestor).display || '';
+        if (display.includes('grid') || display.includes('flex') || ['MAIN','SECTION'].includes(ancestor.tagName)) {
+          ancestor.setAttribute('data-rve-layout-parent','');
+          break;
+        }
+        ancestor = ancestor.parentElement;
+        depth++;
+      }
+    });
+    doc.querySelectorAll('[data-rve-layout-parent]').forEach(parent => {
+      const children = Array.from(parent.children).filter(child => {
+        const rect = child.getBoundingClientRect();
+        const style = frameWindow()?.getComputedStyle(child);
+        return rect.width > 1 && rect.height > 1 && style?.display !== 'none' && !['absolute','fixed'].includes(style?.position);
+      });
+      let collision = false;
+      for (let i = 0; i < children.length && !collision; i++) {
+        const a = children[i].getBoundingClientRect();
+        for (let j = i + 1; j < children.length; j++) {
+          const b = children[j].getBoundingClientRect();
+          if (Math.min(a.right,b.right)-Math.max(a.left,b.left)>4 &&
+              Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>4) {
+            collision = true;
+            break;
+          }
+        }
+      }
+      if (collision) parent.setAttribute('data-rve-stack-repair','');
+    });
+  }
+
   function triggerChartResize(root) {
     const win = frameWindow();
     if (!win || !root) return;
@@ -1899,6 +3330,21 @@
     });
   }
 
+  function renderGroupControls() {
+    const select = $('#activeGroupSelect');
+    if (!select) return;
+    const previous = state.activeGroup;
+    select.innerHTML = '';
+    state.groups.forEach(group => {
+      const option = document.createElement('option');
+      option.value = group;
+      option.textContent = group;
+      select.appendChild(option);
+    });
+    state.activeGroup = state.groups.includes(previous) ? previous : (state.groups[0] || 'Genel');
+    select.value = state.activeGroup;
+  }
+
   function renderOperations() {
     const list = $('#operationsList');
     $('#operationCount').textContent = state.operations.length + ' değişiklik';
@@ -1910,20 +3356,40 @@
       return;
     }
     list.innerHTML = '';
-    state.operations.forEach((op,index) => {
-      const item = document.createElement('div');
-      item.className = 'operation' + (op.enabled ? '' : ' off');
-      const target = op.selector || op.source || '';
-      let summary = '';
-      if (op.type === 'style') summary = Object.entries(op.declarations).map(([k,v]) => k + ': ' + v).join('; ');
-      if (op.type === 'hide') summary = 'display: none';
-      if (op.type === 'text') summary = '“' + op.value.slice(0,80) + '”';
-      if (op.type === 'portal') summary = '→ ' + op.target + ' (' + op.position + ')' + (op.trigger ? ' · tetikleyici: ' + op.trigger : '');
-      item.innerHTML =
-        '<div class="operation-head"><strong>' + escapeHtml(operationLabel(op)) + '</strong><span>#' + (index+1) + '</span></div>' +
-        '<code>' + escapeHtml(target) + '</code><p>' + escapeHtml(summary) + '</p>' +
-        '<div class="operation-actions"><button class="btn small" data-op-toggle="' + escapeHtml(op.id) + '">' + (op.enabled ? 'Devre dışı' : 'Etkinleştir') + '</button><button class="btn danger small" data-op-remove="' + escapeHtml(op.id) + '">Kaldır</button></div>';
-      list.appendChild(item);
+    const grouped = new Map();
+    state.operations.forEach(op => {
+      const group = op.group || 'Genel';
+      if (!grouped.has(group)) grouped.set(group, []);
+      grouped.get(group).push(op);
+    });
+    state.groups.filter(group => grouped.has(group)).forEach(group => {
+      const operations = grouped.get(group);
+      const wrapper = document.createElement('section');
+      const enabled = operations.some(op => op.enabled);
+      wrapper.className = 'operation-group' + (enabled ? '' : ' off');
+      wrapper.innerHTML =
+        '<div class="operation-group-head"><span>' + escapeHtml(group) + ' · ' + operations.length + '</span>' +
+        '<div class="button-row"><button class="btn small" data-group-focus="' + escapeHtml(group) + '">Aktif Yap</button>' +
+        '<button class="btn small" data-group-toggle="' + escapeHtml(group) + '">' + (enabled ? 'Grubu Kapat' : 'Grubu Aç') + '</button></div></div>' +
+        '<div class="operation-group-body"></div>';
+      const body = wrapper.querySelector('.operation-group-body');
+      operations.forEach(op => {
+        const index = state.operations.indexOf(op);
+        const item = document.createElement('div');
+        item.className = 'operation' + (op.enabled ? '' : ' off');
+        const target = op.selector || op.source || '';
+        let summary = '';
+        if (op.type === 'style') summary = Object.entries(op.declarations).map(([k,v]) => k + ': ' + v).join('; ');
+        if (op.type === 'hide') summary = 'display: none';
+        if (op.type === 'text') summary = '“' + op.value.slice(0,80) + '”';
+        if (op.type === 'portal') summary = '→ ' + op.target + ' (' + op.position + ')' + (op.trigger ? ' · tetikleyici: ' + op.trigger : '');
+        item.innerHTML =
+          '<div class="operation-head"><strong>' + escapeHtml(operationLabel(op)) + '</strong><span>#' + (index+1) + '</span></div>' +
+          '<code>' + escapeHtml(target) + '</code><p>' + escapeHtml(summary) + '</p>' +
+          '<div class="operation-actions"><button class="btn small" data-op-toggle="' + escapeHtml(op.id) + '">' + (op.enabled ? 'Devre dışı' : 'Etkinleştir') + '</button><button class="btn danger small" data-op-remove="' + escapeHtml(op.id) + '">Kaldır</button></div>';
+        body.appendChild(item);
+      });
+      list.appendChild(wrapper);
     });
   }
 
@@ -1946,7 +3412,7 @@
     const scriptCountBefore = (state.originalSource.match(/<script\b/gi) || []).length;
     const output = buildOutput();
     const scriptCountAfter = (output.match(/<script\b/gi) || []).length;
-    const expectedExtra = runtimeOperations().length ? 1 : 0;
+    const expectedExtra = (runtimeOperations().length || state.layoutProtection) ? 1 : 0;
     const scriptIntegrity = scriptCountAfter === scriptCountBefore + expectedExtra;
     const issues = [];
     if (duplicates.length) issues.push(duplicates.length + ' tekrarlanan ID');
@@ -1972,13 +3438,17 @@
       sourceName: state.sourceName,
       sourceHash: state.sourceHash,
       originalSource: state.originalSource,
+      layoutProtection: state.layoutProtection,
+      desktopStandard: state.desktopStandard,
+      groups: state.groups,
+      activeGroup: state.activeGroup,
       operations: state.operations
     };
   }
 
   function reportText() {
     const lines = [
-      'REGNUM EVRENSEL HTML EDİTÖRÜ V3',
+      'REGNUM EVRENSEL HTML EDİTÖRÜ V4.1',
       'DEĞİŞİKLİK RAPORU',
       '',
       'Dosya: ' + state.sourceName,
@@ -1989,6 +3459,7 @@
     ];
     state.operations.forEach((op,index) => {
       lines.push('='.repeat(70), (index+1) + '. ' + operationLabel(op), 'Durum: ' + (op.enabled ? 'Etkin' : 'Devre dışı'));
+      lines.push('Grup: ' + (op.group || 'Genel'));
       lines.push('Hedef: ' + (op.selector || op.source || '—'));
       if (op.type === 'style') lines.push('CSS: ' + Object.entries(op.declarations).map(([k,v]) => k + ': ' + v).join('; '), 'Kapsam: ' + op.scope);
       if (op.type === 'hide') lines.push('Yöntem: Güvenli CSS gizleme');
@@ -2222,12 +3693,95 @@
     $('#useColor').checked=false;$('#useBackground').checked=false;
   }
 
+  function setLivePreviewStyle(id, declarations) {
+    const doc = frameDocument();
+    if (!doc || !state.selectedSelector) return;
+    let style = doc.getElementById(id);
+    if (!style) {
+      style = doc.createElement('style');
+      style.id = id;
+      doc.head.appendChild(style);
+    }
+    const css = Object.entries(declarations || {}).map(([key,value]) => key + ':' + value + '!important;').join('');
+    doc.querySelectorAll('[data-rve-live-selected]').forEach(el => el.removeAttribute('data-rve-live-selected'));
+    state.selectedEl?.setAttribute('data-rve-live-selected','');
+    style.textContent = css ? state.selectedSelector + ',[data-rve-live-selected]{' + css + '}' : '';
+    requestAnimationFrame(syncSelectionOverlay);
+  }
+
+  function clearLivePreviewStyles() {
+    ['rve-live-preview-style','rve-live-width-style','rve-live-color-style'].forEach(id => {
+      const style = frameDocument()?.getElementById(id);
+      if (style) style.textContent = '';
+    });
+    frameDocument()?.querySelectorAll('[data-rve-live-selected]').forEach(el => el.removeAttribute('data-rve-live-selected'));
+  }
+
+  function appearanceDeclarationsFromControls() {
+    const declarations = {};
+    if ($('#useColor').checked) declarations.color = $('#colorValue').value;
+    if ($('#useBackground').checked) {
+      declarations['background-color'] = $('#backgroundValue').value;
+      if ($('#clearBackgroundImage').checked) declarations['background-image'] = 'none';
+    }
+    return declarations;
+  }
+
+  function commitAppearance() {
+    const entries = selectedEntries();
+    if (!entries.length) return;
+    const declarations = appearanceDeclarationsFromControls();
+    if (!Object.keys(declarations).length) return;
+    clearLivePreviewStyles();
+    let lastOperation = null;
+    entries.forEach(item => {
+      lastOperation = upsertModeStyleRecord(item.selector,'appearance',{...declarations},'all','Renk ve arka plan','Renkler');
+    });
+    pushHistory();
+    renderOperations();
+    applyOperationsToPreview();
+    renderGroupControls();
+    if (lastOperation) updateInstructionForOperation(lastOperation);
+    toast('Renk doğrudan uygulandı');
+  }
+
+  function hideSelectedElement() {
+    const entries = selectedEntries();
+    if (!entries.length) return;
+    entries.forEach(item => {
+      let operation = state.operations.find(op => op.type === 'hide' && op.selector === item.selector);
+      if (!operation) {
+        operation = {
+          id:operationId(),type:'hide',selector:item.selector,scope:'all',
+          context:'Çoklu/tekli güvenli gizleme',group:state.activeGroup||'Genel',
+          enabled:true,createdAt:new Date().toISOString()
+        };
+        state.operations.push(operation);
+      } else operation.enabled = true;
+    });
+    pushHistory();
+    renderOperations();
+    applyOperationsToPreview();
+    renderGroupControls();
+    toast(entries.length + ' öğe güvenli biçimde gizlendi');
+    Logger.ok('Güvenli gizleme eklendi: '+entries.map(item=>item.selector).join(', '));
+  }
+
+  function openSelectedTextEditor() {
+    if (!state.selectedEl) return;
+    $('#textEditValue').value=directText(state.selectedEl)||(state.selectedEl.textContent||'').trim();
+    $('#textEditHint').textContent=state.selectedEl.children.length?'Alt öğeler korunarak doğrudan metin düğümü değiştirilecektir.':'Seçili öğenin metni değiştirilecektir.';
+    openModal('textModal');
+  }
+
   function init() {
     for(let i=1;i<=12;i++){
       const option=document.createElement('option');option.value=String(i);option.textContent=i+'/12 kolon';$('#gridSpan').appendChild(option);
     }
-    Logger.ok('Regnum Evrensel HTML Editörü V3 başlatıldı.');
-    Logger.info('HTML açın; hedef dosyanın mevcut scriptleri kaynakta korunacaktır.');
+    Logger.ok('Regnum Evrensel HTML Editörü V4.1 başlatıldı.');
+    Logger.info('Manuel taşıma, ok tuşları, çoklu seçim ve masaüstü standardı hazır.');
+    renderGroupControls();
+    updateMultiSelectButton();
 
     $('#openHtmlButton').addEventListener('click',()=>$('#htmlFileInput').click());
     $('#welcomeOpenButton').addEventListener('click',()=>$('#htmlFileInput').click());
@@ -2236,10 +3790,36 @@
       loadSource(await file.text(),file.name);
       event.target.value='';
     });
-    $('#colorValue').addEventListener('input', () => $('#useColor').checked = true);
-    $('#backgroundValue').addEventListener('input', () => $('#useBackground').checked = true);
+    $('#colorValue').addEventListener('input', () => {
+      $('#useColor').checked = true;
+      setLivePreviewStyle('rve-live-color-style', appearanceDeclarationsFromControls());
+    });
+    $('#backgroundValue').addEventListener('input', () => {
+      $('#useBackground').checked = true;
+      setLivePreviewStyle('rve-live-color-style', appearanceDeclarationsFromControls());
+    });
+    $('#colorValue').addEventListener('change', commitAppearance);
+    $('#backgroundValue').addEventListener('change', commitAppearance);
+    $('#clearBackgroundImage').addEventListener('change', () => {
+      if ($('#useBackground').checked) commitAppearance();
+    });
+    $('#sourceContextViewButton').addEventListener('click', () => {
+      state.sourceViewMode = 'context';
+      $('#sourceContextViewButton').classList.add('active');
+      $('#loadFullSourceButton').classList.remove('active');
+      $('#sourceViewer').value = state.selectedEl ? ($('#sourceContext').textContent || '') : 'Çalışma alanından bir öğe seçin.';
+    });
+    $('#loadFullSourceButton').addEventListener('click', () => {
+      if (!state.originalSource) return;
+      state.sourceViewMode = 'full';
+      $('#loadFullSourceButton').classList.add('active');
+      $('#sourceContextViewButton').classList.remove('active');
+      $('#sourceViewer').value = state.originalSource;
+      toast('Tam kaynak görünümü yüklendi');
+    });
     $('#pasteHtmlButton').addEventListener('click',()=>openModal('pasteModal'));
     $('#helpButton').addEventListener('click',()=>openModal('helpModal'));
+    $('#shortcutsButton').addEventListener('click',()=>openModal('shortcutsModal'));
     $('#loadPastedSourceButton').addEventListener('click',()=>{
       loadSource($('#pasteSource').value,'yapistirilan-dashboard.html');closeModal('pasteModal');
     });
@@ -2252,6 +3832,23 @@
       state.viewport=button.dataset.viewport;
       $('#frameShell').style.width=state.viewport;
     }));
+    $('#autoLayoutButton').addEventListener('click',()=>{
+      state.layoutProtection=!state.layoutProtection;
+      updateLayoutButton();
+      pushHistory();
+      applyOperationsToPreview();
+      toast('Alan koruma '+(state.layoutProtection?'açıldı':'kapatıldı'));
+    });
+    $('#layoutAuditButton').addEventListener('click',runLayoutAudit);
+    $('#multiSelectButton').addEventListener('click',()=>{
+      state.multiSelectMode=!state.multiSelectMode;
+      updateMultiSelectButton();
+      if (!state.multiSelectMode && state.selectedItems.length > 1) {
+        const primary = state.selectedEl;
+        selectElement(primary);
+      }
+      toast('Çoklu seçim '+(state.multiSelectMode?'açıldı':'kapatıldı'));
+    });
 
     $('#designModeButton').addEventListener('click',()=>{
       state.designMode=!state.designMode;
@@ -2266,35 +3863,54 @@
     });
 
     $('#applyStyleButton').addEventListener('click',()=>{
-      if(!state.selectedSelector)return;
+      const entries=selectedEntries();
+      if(!entries.length)return;
       const declarations=declarationsFromInspector();
       if(!Object.keys(declarations).length){toast('Uygulanacak bir ölçü veya görünüm değeri girin','error');return}
-      addOperation({type:'style',selector:state.selectedSelector,declarations,scope:$('#styleScope').value,context:currentContextText()});
+      let lastOperation=null;
+      entries.forEach(item=>{
+        lastOperation=upsertModeStyleRecord(item.selector,'inspector-style',{...declarations},$('#styleScope').value,'Kutu ve görünüm ayarları',state.activeGroup);
+      });
+      pushHistory();
+      renderOperations();
+      applyOperationsToPreview();
+      renderGroupControls();
+      if(lastOperation)updateInstructionForOperation(lastOperation);
       clearInspectorInputs();
-      toast('Görünüm yaması eklendi');
-      Logger.ok('CSS yaması eklendi: '+state.selectedSelector);
+      toast(entries.length+' öğeye görünüm uygulandı');
+      Logger.ok('CSS yaması eklendi: '+entries.map(item=>item.selector).join(', '));
     });
-    $('#nudgeStep').addEventListener('change',updateNudgeControls);
-    updateNudgeControls();
-    $$('[data-nudge]').forEach(button=>button.addEventListener('click',()=>{
-      const [dx,dy]=button.dataset.nudge.split(',').map(Number);
-      const step=selectedNudgeStep();
-      nudgeSelected(dx*step,dy*step);
+    $$('[data-align]').forEach(button=>button.addEventListener('click',()=>alignSelected(button.dataset.align)));
+    $$('[data-table-tool]').forEach(button=>button.addEventListener('click',()=>applyTableTool(button.dataset.tableTool)));
+    $('#tableFontRange').addEventListener('input',event=>{
+      $('#tableFontValue').textContent=event.target.value+' px';
+    });
+    $('#tableFontRange').addEventListener('change',event=>applyTableTool('font',event.target.value));
+    $$('[data-size-preset]').forEach(button=>button.addEventListener('click',()=>{
+      const value=button.dataset.sizePreset;
+      applySizePreset(value==='auto'?'auto':Number(value));
     }));
-
-    $('#hideButton').addEventListener('click',()=>{
-      if(!state.selectedSelector)return;
-      addOperation({type:'hide',selector:state.selectedSelector,scope:'all',context:currentContextText()});
-      toast('Öğe güvenli biçimde gizlendi');
-      Logger.ok('Güvenli gizleme eklendi: '+state.selectedSelector);
+    $('#widthRange').addEventListener('input',event=>{
+      const value=Number(event.target.value)||100;
+      $('#widthRangeValue').textContent='%'+value;
+      setLivePreviewStyle('rve-live-width-style',{
+        width:value+'%',
+        'max-width':'100%',
+        'min-width':'0',
+        'box-sizing':'border-box'
+      });
+      triggerChartResize(state.selectedEl);
     });
-
-    $('#editTextButton').addEventListener('click',()=>{
-      if(!state.selectedEl)return;
-      $('#textEditValue').value=directText(state.selectedEl)||(state.selectedEl.textContent||'').trim();
-      $('#textEditHint').textContent=state.selectedEl.children.length?'Alt öğeler korunarak doğrudan metin düğümü değiştirilecektir.':'Seçili öğenin metni değiştirilecektir.';
-      openModal('textModal');
+    $('#widthRange').addEventListener('change',event=>{
+      clearLivePreviewStyles();
+      applySizePreset((Number(event.target.value)||100)/100,true);
     });
+    ['moveBeforeButton','moveBeforeButtonAlt'].forEach(id=>$('#'+id).addEventListener('click',()=>moveSelectedInFlow(-1)));
+    ['moveAfterButton','moveAfterButtonAlt'].forEach(id=>$('#'+id).addEventListener('click',()=>moveSelectedInFlow(1)));
+
+    $('#hideButton').addEventListener('click',hideSelectedElement);
+
+    $('#editTextButton').addEventListener('click',openSelectedTextEditor);
     $('#applyTextButton').addEventListener('click',()=>{
       const value=$('#textEditValue').value;
       addOperation({type:'text',selector:state.selectedSelector,value,context:currentContextText()});
@@ -2333,24 +3949,48 @@
 
     $('#operationsList').addEventListener('click',event=>{
       const toggle=event.target.closest('[data-op-toggle]'),remove=event.target.closest('[data-op-remove]');
+      const groupToggle=event.target.closest('[data-group-toggle]'),groupFocus=event.target.closest('[data-group-focus]');
       if(toggle){
-        const op=state.operations.find(item=>item.id===toggle.dataset.opToggle);if(op){op.enabled=!op.enabled;pushHistory();loadFrame(buildOutput());renderOperations()}
+        const op=state.operations.find(item=>item.id===toggle.dataset.opToggle);if(op){op.enabled=!op.enabled;pushHistory();applyOperationsToPreview();renderOperations()}
       }
       if(remove){
-        state.operations=state.operations.filter(item=>item.id!==remove.dataset.opRemove);pushHistory();loadFrame(buildOutput());renderOperations();
+        state.operations=state.operations.filter(item=>item.id!==remove.dataset.opRemove);pushHistory();applyOperationsToPreview();renderOperations();
       }
+      if(groupToggle){
+        const group=groupToggle.dataset.groupToggle;
+        const operations=state.operations.filter(op=>(op.group||'Genel')===group);
+        const enable=!operations.some(op=>op.enabled);
+        operations.forEach(op=>op.enabled=enable);
+        pushHistory();applyOperationsToPreview();renderOperations();
+      }
+      if(groupFocus){
+        state.activeGroup=groupFocus.dataset.groupFocus;
+        renderGroupControls();
+        toast('Aktif işlem grubu: '+state.activeGroup);
+      }
+    });
+    $('#activeGroupSelect').addEventListener('change',event=>{state.activeGroup=event.target.value});
+    $('#addGroupButton').addEventListener('click',()=>{
+      const name=$('#newGroupName').value.trim();
+      if(!name)return;
+      if(!state.groups.includes(name))state.groups.push(name);
+      state.activeGroup=name;
+      $('#newGroupName').value='';
+      renderGroupControls();
+      toast('İşlem grubu eklendi');
     });
     $('#clearOperationsButton').addEventListener('click',()=>{
       if(!state.operations.length)return;
-      state.operations=[];pushHistory();loadFrame(buildOutput());renderOperations();toast('Tüm değişiklikler kaldırıldı');
+      state.operations=[];pushHistory();applyOperationsToPreview();renderOperations();toast('Tüm değişiklikler kaldırıldı');
     });
 
     $('#undoButton').addEventListener('click',()=>restoreHistory(state.historyIndex-1));
     $('#redoButton').addEventListener('click',()=>restoreHistory(state.historyIndex+1));
     $('#validateButton').addEventListener('click',validateProject);
     $('#exportHtmlButton').addEventListener('click',()=>{
+      runLayoutAudit();
       validateProject();
-      downloadText(state.sourceName.replace(/\.html?$/i,'')+'_duzenlenmis.html',buildOutput(),'text/html;charset=utf-8');
+      downloadText(state.sourceName.replace(/\.html?$/i,'')+'_nihai.html',buildOutput(),'text/html;charset=utf-8');
       Logger.ok('Çalışan HTML çıktısı oluşturuldu.');
     });
     $('#exportProjectButton').addEventListener('click',()=>{
@@ -2362,7 +4002,13 @@
       try{
         const project=JSON.parse(await file.text());
         if(!project.originalSource||!Array.isArray(project.operations))throw new Error('Geçersiz proje dosyası');
-        loadSource(project.originalSource,project.sourceName||'proje.html',project.operations);
+        loadSource(project.originalSource,project.sourceName||'proje.html',{
+          operations:project.operations,
+          layoutProtection:project.layoutProtection !== false,
+          desktopStandard:project.desktopStandard !== false,
+          groups:project.groups,
+          activeGroup:project.activeGroup
+        });
         toast('Editör projesi açıldı');
       }catch(error){toast(error.message,'error');Logger.error(error.message)}
       event.target.value='';
@@ -2389,13 +4035,7 @@
     $('#toggleLogButton').addEventListener('click',()=>$('#app').classList.toggle('log-closed'));
     $('#clearLogButton').addEventListener('click',()=>$('#logBody').innerHTML='');
 
-    document.addEventListener('keydown',event=>{
-      handleNudgeKey(event);
-      if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='z'){event.preventDefault();restoreHistory(state.historyIndex-1)}
-      if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='y'){event.preventDefault();restoreHistory(state.historyIndex+1)}
-      if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='s'&&state.originalSource){event.preventDefault();$('#exportHtmlButton').click()}
-      if(event.key==='Escape'){$$('.modal-backdrop').forEach(modal=>modal.hidden=true)}
-    });
+    document.addEventListener('keydown',handleEditorShortcut);
   }
 
   function updatePortalButton() { $('#createPortalButton').disabled=!(state.portalSource&&state.portalTarget); }
