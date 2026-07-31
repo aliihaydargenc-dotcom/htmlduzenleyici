@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <title>Regnum Evrensel HTML Editörü V4.1</title>
+  <title>Regnum Evrensel HTML Editörü V4.3</title>
   <style>
     :root {
       --bg: #09120f;
@@ -23,7 +23,7 @@
       --orange: #ffae62;
       --shadow: 0 18px 48px rgba(0,0,0,.28);
       --top-h: 58px;
-      --side-w: 326px;
+      --side-w: 350px;
       --log-h: 124px;
     }
 
@@ -114,6 +114,8 @@
     .btn.icon { width: 32px; padding: 0; }
     .btn.active { border-color: var(--green); color: var(--green); background: rgba(75,211,160,.11); }
     .btn.small { min-height: 28px; padding: 4px 8px; font-size: 10px; }
+    .btn.verify { border-color: rgba(92,184,255,.55); color: #bfe3ff; background: rgba(92,184,255,.1); }
+    .btn.verify:hover:not(:disabled) { border-color: var(--blue); background: rgba(92,184,255,.17); }
 
     .side {
       min-width: 0;
@@ -363,6 +365,145 @@
       font-size: 9px;
     }
     .empty-list { padding: 18px 8px; color: var(--muted); text-align: center; font-size: 10px; }
+    .outline-search {
+      position: sticky;
+      top: -11px;
+      z-index: 3;
+      margin: -11px -11px 10px;
+      padding: 10px 11px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(16,28,24,.97);
+      backdrop-filter: blur(8px);
+    }
+    .outline-tools { display: flex; align-items: center; gap: 5px; margin-top: 6px; }
+    .outline-tools input { min-width: 0; flex: 1; }
+    .outline-list { display: grid; gap: 2px; }
+    .outline-node { min-width: 0; }
+    .outline-node-children { display: grid; gap: 2px; }
+    .outline-node.collapsed > .outline-node-children { display: none; }
+    .outline-row { min-width: 0; display: grid; grid-template-columns: 20px minmax(0,1fr); align-items: center; }
+    .outline-toggle {
+      width: 20px;
+      height: 28px;
+      padding: 0;
+      border: 0;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+      font: 900 11px/1 system-ui,sans-serif;
+    }
+    .outline-toggle:disabled { cursor: default; opacity: .28; }
+    .outline-item {
+      width: 100%;
+      min-height: 34px;
+      padding: 6px 8px;
+      display: grid;
+      grid-template-columns: 50px minmax(0,1fr);
+      gap: 7px;
+      align-items: center;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      color: var(--text);
+      background: transparent;
+      text-align: left;
+    }
+    .outline-item:hover { border-color: var(--line); background: var(--surface-2); }
+    .outline-item.active { border-color: var(--green-2); background: rgba(75,211,160,.09); }
+    .outline-tag { color: var(--green); font: 800 9px Consolas, monospace; }
+    .outline-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; }
+    .outline-count { margin-top: 7px; color: var(--muted); font-size: 9px; text-align: right; }
+    .move-mode-switch { display: inline-flex; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 8px; background: #091510; }
+    .move-mode-switch .btn { min-width: 52px; border-color: transparent; }
+    .move-mode-switch .btn.active { border-color: var(--green-2); color: var(--green); background: rgba(75,211,160,.12); }
+    .attribute-list { display: grid; gap: 5px; margin-bottom: 8px; }
+    .attribute-item {
+      display: grid;
+      grid-template-columns: minmax(0,84px) minmax(0,1fr) 24px;
+      gap: 5px;
+      align-items: center;
+    }
+    .attribute-item code { overflow: hidden; color: var(--gold); text-overflow: ellipsis; white-space: nowrap; font-size: 9px; }
+    .attribute-item span { overflow: hidden; color: #cde2da; text-overflow: ellipsis; white-space: nowrap; font-size: 9px; }
+    .attribute-item button { min-width: 24px; padding: 3px; }
+    .source-search-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 5px; margin-bottom: 7px; }
+    .workspace-breadcrumb {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 9px;
+    }
+    .workspace-breadcrumb button {
+      max-width: 135px;
+      padding: 3px 5px;
+      overflow: hidden;
+      border: 0;
+      border-radius: 5px;
+      color: #cde2da;
+      background: transparent;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font: 700 9px Consolas, monospace;
+    }
+    .workspace-breadcrumb button:hover { color: var(--green); background: rgba(75,211,160,.08); }
+    .workspace-breadcrumb i { color: #536d62; font-style: normal; }
+    .checklist { display: grid; gap: 6px; }
+    .check-item {
+      padding: 8px;
+      display: grid;
+      grid-template-columns: 18px minmax(0,1fr);
+      gap: 8px;
+      border: 1px solid var(--line-soft);
+      border-radius: 8px;
+      background: rgba(255,255,255,.015);
+    }
+    .check-icon {
+      width: 18px;
+      height: 18px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: var(--muted);
+      background: #0a1511;
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .check-item.pass .check-icon { color: #07130f; background: var(--green); }
+    .check-item.warn .check-icon { color: #1f1304; background: var(--orange); }
+    .check-item.fail .check-icon { color: #2b0808; background: var(--red); }
+    .check-item strong { display: block; font-size: 10px; }
+    .check-item p { margin: 2px 0 0; color: var(--muted); font-size: 9px; line-height: 1.4; }
+    .release-card {
+      padding: 11px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #091510;
+    }
+    .release-card.pass { border-color: rgba(75,211,160,.4); background: rgba(75,211,160,.06); }
+    .release-card.fail { border-color: rgba(255,120,120,.5); background: rgba(255,120,120,.06); }
+    .release-card strong { display: block; margin-bottom: 4px; font-size: 11px; }
+    .release-card span { color: var(--muted); font-size: 9px; }
+    .command-results { display: grid; gap: 5px; }
+    .command-item {
+      width: 100%;
+      min-height: 42px;
+      padding: 7px 9px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border: 1px solid var(--line-soft);
+      border-radius: 8px;
+      color: var(--text);
+      background: rgba(255,255,255,.018);
+      text-align: left;
+    }
+    .command-item:hover, .command-item.active { border-color: var(--green-2); background: rgba(75,211,160,.07); }
+    .command-item strong { display: block; font-size: 10px; }
+    .command-item span { color: var(--muted); font-size: 9px; }
+    .command-item kbd { padding: 2px 5px; border: 1px solid var(--line); border-radius: 5px; color: var(--gold); background: #091510; font-size: 8px; }
 
     .main {
       grid-area: main;
@@ -564,7 +705,7 @@
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark">R</div>
-        <div><strong>Evrensel HTML Editörü</strong><small>Akış-korumalı V4.1</small></div>
+        <div><strong>Evrensel HTML Editörü</strong><small>Kılavuzlu taşıma V4.3</small></div>
       </div>
       <div class="sep"></div>
       <input id="htmlFileInput" type="file" accept=".html,.htm,text/html" hidden>
@@ -572,16 +713,14 @@
       <button class="btn" id="pasteHtmlButton">Kaynak Yapıştır</button>
       <button class="btn active" id="designModeButton" disabled>Seçim Modu Açık</button>
       <button class="btn" id="selectParentButton" disabled>Üst Öğeyi Seç</button>
+      <button class="btn" id="commandPaletteButton" title="Öğe veya komut bul (Ctrl+K)">⌕ Hızlı Bul</button>
       <div class="sep"></div>
       <button class="btn" id="undoButton" title="Son işlemi geri al (Ctrl+Z)" disabled>↶ Geri</button>
       <button class="btn" id="redoButton" title="Geri alınan işlemi yinele (Ctrl+Y)" disabled>↷ İleri</button>
-      <button class="btn" id="validateButton" disabled>Doğrula</button>
+      <button class="btn verify" id="validateButton" disabled>Nihai Kontrol</button>
       <button class="btn active" id="autoLayoutButton" disabled>Alan Koruma Açık</button>
       <div class="spacer"></div>
-      <button class="btn gold" id="exportHtmlButton" disabled>Çalışan HTML İndir</button>
-      <button class="btn" id="exportProjectButton" disabled>Proje Kaydet</button>
-      <input id="projectFileInput" type="file" accept=".json,application/json" hidden>
-      <button class="btn icon" id="importProjectButton" title="Proje JSON aç">⇧</button>
+      <button class="btn gold" id="exportHtmlButton" disabled>Nihai HTML İndir</button>
       <button class="btn icon" id="toggleLeftButton" title="Sol panel">◧</button>
       <button class="btn icon" id="toggleRightButton" title="Sağ panel">◨</button>
       <button class="btn icon" id="toggleLogButton" title="Konsol">⌄</button>
@@ -595,11 +734,24 @@
         <button class="btn small" id="copyContextButton" disabled>Kopyala</button>
       </div>
       <div class="tabs" data-tab-group="left">
-        <button class="tab active" data-pane="sourcePane">Kaynak</button>
+        <button class="tab active" data-pane="layersPane">Öğeler</button>
+        <button class="tab" data-pane="sourcePane">Kaynak</button>
         <button class="tab" data-pane="contextPane">Bağlam</button>
         <button class="tab" data-pane="riskPane">Risk</button>
       </div>
-      <section class="pane active" id="sourcePane">
+      <section class="pane active" id="layersPane">
+        <div class="outline-search">
+          <label class="field" style="margin:0"><span>Öğe Gezgini <em id="outlineMeta">HTML bekleniyor</em></span>
+            <div class="outline-tools">
+              <input id="outlineSearch" type="search" autocomplete="off" placeholder="Başlık, metin, etiket, id veya sınıf ara">
+              <button class="btn small" id="outlineCollapseButton" title="Tüm dalları daralt">Daralt</button>
+              <button class="btn small" id="outlineRefreshButton" title="Canlı DOM ağacını yenile">↻</button>
+            </div>
+          </label>
+        </div>
+        <div class="outline-list" id="outlineList"><div class="empty-list">HTML yüklendiğinde sayfadaki düzenlenebilir alanlar burada listelenir.</div></div>
+      </section>
+      <section class="pane" id="sourcePane">
         <div class="group">
           <div class="group-title">Orijinal Kaynak</div>
           <div class="group-body">
@@ -607,6 +759,10 @@
             <div class="button-row" style="margin-bottom:8px">
               <button class="btn small grow active" id="sourceContextViewButton">Hızlı Bağlam</button>
               <button class="btn small grow" id="loadFullSourceButton">Tam Kaynak</button>
+            </div>
+            <div class="source-search-row">
+              <input id="sourceSearch" type="search" autocomplete="off" placeholder="Kaynakta ara">
+              <button class="btn small" id="sourceSearchNextButton">Sonraki</button>
             </div>
             <textarea id="sourceViewer" readonly spellcheck="false" style="height:calc(100vh - 240px);resize:none"></textarea>
           </div>
@@ -651,8 +807,15 @@
           <button class="btn small active" data-viewport="100%">Masaüstü</button>
         </div>
         <button class="btn small" id="multiSelectButton" disabled>Çoklu Seçim</button>
-        <button class="btn small" id="layoutAuditButton" disabled>Yerleşimi Düzelt</button>
+        <button class="btn small" id="layoutAuditButton" disabled>Taşmaları Onar</button>
+        <div class="move-mode-switch" aria-label="Taşıma modu">
+          <button class="btn small active" data-move-mode="flow" title="Gerçek yer tutucu ile akışta taşı">Akış</button>
+          <button class="btn small" data-move-mode="grid" title="Grid/flex alanlarına yerleştir">Grid</button>
+          <button class="btn small" data-move-mode="free" title="Piksel tabanlı serbest taşı">Serbest</button>
+        </div>
+        <div class="workspace-breadcrumb" id="selectionBreadcrumb"><span>Bir öğe seçin</span></div>
         <div class="spacer"></div>
+        <span class="status-badge" id="releaseStatus">Kontrol bekleniyor</span>
         <span class="status-badge" id="selectionStatus">Öğe seçilmedi</span>
       </div>
       <div class="canvas">
@@ -679,6 +842,7 @@
         <button class="tab active" data-pane="elementPane">Öğe</button>
         <button class="tab" data-pane="movePane">Taşı</button>
         <button class="tab" data-pane="excelPane">Excel Test</button>
+        <button class="tab" data-pane="checkPane">Kontrol</button>
         <button class="tab" data-pane="changesPane">Değişiklikler</button>
       </div>
 
@@ -705,9 +869,32 @@
               <button class="btn small grow" id="moveBeforeButton" disabled>↑ Akışta Öne Al</button>
               <button class="btn small grow" id="moveAfterButton" disabled>↓ Akışta Alta Al</button>
             </div>
+            <div class="nudge-grid" aria-label="Hassas taşıma">
+              <span></span><button class="btn" data-nudge="0,-1" title="Yukarı taşı" disabled>↑</button><span></span>
+              <button class="btn" data-nudge="-1,0" title="Sola taşı" disabled>←</button><span class="nudge-center">TAŞI</span><button class="btn" data-nudge="1,0" title="Sağa taşı" disabled>→</button>
+              <span></span><button class="btn" data-nudge="0,1" title="Aşağı taşı" disabled>↓</button><span></span>
+            </div>
+            <div class="nudge-toolbar">
+              <span>Adım</span>
+              <select id="nudgeStep" aria-label="Taşıma adımı"><option value="1">1 px</option><option value="5">5 px</option><option value="10">10 px</option></select>
+              <button class="btn small" id="centerElementButton" disabled>Yatay Ortala</button>
+            </div>
             <p class="hint" style="text-align:center;margin:8px 0 0">Sağ tıklayın veya yeşil <strong>TAŞI</strong> tutamacını hedef konuma sürükleyin.</p>
           </div>
         </div>
+
+        <details class="advanced" id="attributeEditor">
+          <summary>Güvenli öznitelikler</summary>
+          <div class="group-body">
+            <p class="hint">title, role, aria-* ve data-* değerleri yama olarak eklenir. id, class, style, bağlantı ve olay öznitelikleri kaynak bağımlılıklarını korumak için kilitlidir.</p>
+            <div class="attribute-list" id="attributeList"><div class="empty-list">Bir öğe seçin.</div></div>
+            <div class="row">
+              <label class="field"><span>Ad</span><input id="attributeName" placeholder="örn. aria-label"></label>
+              <label class="field"><span>Değer</span><input id="attributeValue" placeholder="örn. Satış grafiği"></label>
+            </div>
+            <button class="btn small primary" id="applyAttributeButton" disabled style="width:100%">Özniteliği Uygula</button>
+          </div>
+        </details>
 
         <div class="group" id="multiAlignGroup" hidden>
           <div class="group-title">Akıllı Hizalama <span id="multiSelectionCount">0 öğe</span></div>
@@ -840,9 +1027,9 @@
 
       <section class="pane" id="movePane">
         <div class="group">
-          <div class="group-title">Basit Sürükle-Bırak</div>
+          <div class="group-title">Kılavuzlu Sürükle-Bırak</div>
           <div class="group-body">
-            <p class="hint">Öğeyi seçin, yeşil TAŞI tutamacını basılı tutup hedef alanın üst veya alt kenarına bırakın. Konum sayfa akışı içinde korunur ve diğer tabloların üzerine binmez.</p>
+            <p class="hint">Akış ve Grid modlarında geçerli kapsayıcılar görünür, gerçek yer tutucu sayfayı anlık olarak açar ve “önce / içine / sonra” etiketi kesin konumu gösterir. Serbest mod yalnızca piksel kaydırır; riskler uyarı olarak kaydedilir.</p>
             <div class="button-row">
               <button class="btn grow" id="moveBeforeButtonAlt" disabled>↑ Bir Önceki Konum</button>
               <button class="btn grow" id="moveAfterButtonAlt" disabled>↓ Bir Sonraki Konum</button>
@@ -900,7 +1087,14 @@
           <div class="group-title">Hayalet XLSX Üret</div>
           <div class="group-body">
             <p class="hint">Başlıkları virgülle veya her satıra bir tane gelecek şekilde girin.</p>
-            <label class="field"><span>Sütun başlıkları</span><textarea id="ghostHeaders" spellcheck="false">ID,Kategori,Deger</textarea></label>
+            <label class="field"><span>Veri şablonu</span>
+              <select id="ghostPreset">
+                <option value="universal">Evrensel veri</option>
+                <option value="hotel">Regnum otel raporu</option>
+                <option value="custom">Özel başlıklar</option>
+              </select>
+            </label>
+            <label class="field"><span>Sütun başlıkları</span><textarea id="ghostHeaders" spellcheck="false">ID,Tarih,Kategori,Durum,Tutar,Oran,Eposta,Telefon,Aciklama</textarea></label>
             <div class="row">
               <label class="field"><span>Satır sayısı</span><input id="ghostRows" type="number" min="1" max="2000" value="25"></label>
               <label class="field"><span>Sayfa adı</span><input id="ghostSheet" value="Veri"></label>
@@ -912,6 +1106,30 @@
         <div class="group">
           <div class="group-title">Tetikleme Sonucu</div>
           <div class="group-body"><div class="context" id="excelResult" style="max-height:180px">Henüz test yapılmadı.</div></div>
+        </div>
+      </section>
+
+      <section class="pane" id="checkPane">
+        <div class="group">
+          <div class="group-title">V4.3 İhtiyaç Listesi <span>8 zorunlu kontrol</span></div>
+          <div class="group-body">
+            <p class="hint">Nihai dosya ancak kaynak bütünlüğünü bozan kritik bir hata yoksa indirilir. Uyarılar ayrıca gösterilir.</p>
+            <div class="checklist" id="needsChecklist"></div>
+          </div>
+        </div>
+        <div class="group">
+          <div class="group-title">Çıktı Eşdeğerliği</div>
+          <div class="group-body">
+            <div class="release-card" id="verificationSummary">
+              <strong>Kontrol bekleniyor</strong>
+              <span>HTML yüklendikten sonra Nihai Kontrol’ü çalıştırın.</span>
+            </div>
+            <button class="btn verify" id="runReleaseCheckButton" disabled style="width:100%;margin-top:9px">Tüm Kontrolleri Çalıştır</button>
+          </div>
+        </div>
+        <div class="group">
+          <div class="group-title">Kontrol Ayrıntıları</div>
+          <div class="group-body"><div id="verificationDetails" class="empty-list">Henüz kontrol sonucu yok.</div></div>
         </div>
       </section>
 
@@ -935,7 +1153,7 @@
     </aside>
 
     <section class="log">
-      <div class="log-head"><span>İşlem Konsolu</span><button class="btn ghost small" id="clearLogButton">Temizle</button></div>
+      <div class="log-head"><span>İşlem Konsolu</span><div class="button-row"><button class="btn ghost small" id="copyLogButton">Kopyala</button><button class="btn ghost small" id="clearLogButton">Temizle</button></div></div>
       <div class="log-body" id="logBody"></div>
     </section>
   </div>
@@ -963,6 +1181,17 @@
     </section>
   </div>
 
+  <div class="modal-backdrop" id="commandPaletteModal" hidden>
+    <section class="modal" style="width:min(680px,100%)">
+      <div class="modal-head"><h2>Hızlı Bul ve Uygula</h2><button class="btn icon" data-close-modal="commandPaletteModal">×</button></div>
+      <div class="modal-body">
+        <label class="field"><span>Öğe veya komut</span><input id="commandSearch" type="search" autocomplete="off" placeholder="Örn. tablo, başlık, gizle, kontrol..."></label>
+        <div class="command-results" id="commandResults"></div>
+      </div>
+      <div class="modal-foot"><span class="hint" style="margin:0 auto 0 0">↑ ↓ ile gezin · Enter ile seç · Esc ile kapat</span><button class="btn" data-close-modal="commandPaletteModal">Kapat</button></div>
+    </section>
+  </div>
+
   <div class="modal-backdrop" id="helpModal" hidden>
     <section class="modal" style="width:min(680px,100%)">
       <div class="modal-head"><h2>Kısa Kullanım Rehberi</h2><button class="btn icon" data-close-modal="helpModal">×</button></div>
@@ -974,7 +1203,7 @@
               <li><strong style="color:var(--text)">HTML Aç</strong> ile düzenleyeceğiniz tek dosyalı raporu yükleyin.</li>
               <li>Rapor Excel’den sonra oluşuyorsa <strong style="color:var(--text)">Excel Test</strong> sekmesinden gerçek dosyayı veya Hayalet XLSX’i enjekte edin.</li>
               <li><strong style="color:var(--text)">Seçim Modu Açık</strong> iken hedef öğeye tıklayın.</li>
-              <li>Yeşil TAŞI tutamacıyla öğeyi sürükleyin: boş alana bırakınca manuel konum, başka karta bırakınca akış sırası kaydedilir.</li>
+              <li><strong style="color:var(--text)">Akış</strong> veya <strong style="color:var(--text)">Grid</strong> modunu seçip yeşil TAŞI tutamacını sürükleyin; kapsayıcı vurgusu, yer tutucu ve hedef etiketi bırakılacak kesin konumu gösterir. Piksel kaydırma için Serbest modu kullanın.</li>
               <li>Ok tuşları 1 px, Shift + Ok 10 px taşır; Ctrl + Ok akış sırasını değiştirir.</li>
               <li>Çoklu Seçim’i açıp birden fazla öğeyi seçerek ortak boyut ve akıllı hizalama uygulayın.</li>
               <li>Çerçevenin kenar ve köşe tutamaçlarıyla öğeyi canlı olarak daraltıp büyütün; ölçü duyarlı biçimde kaydedilir.</li>
@@ -983,11 +1212,11 @@
               <li>Tablo seçildiğinde tabloya özel sığdırma, kaydırma, sabit başlık ve kompakt görünüm araçları açılır.</li>
               <li>Grafiği butonlu panelden çıkarmak için Taşı sekmesinde sırasıyla kaynak, hedef ve gerekiyorsa tetikleyici butonu belirleyin.</li>
               <li>Butonları normal biçimde denemek için seçim modunu kapatın.</li>
-              <li><strong style="color:var(--text)">Doğrula</strong> sonrasında Çalışan HTML’i indirin. Daha sonra düzenlemeye devam etmek için Proje Kaydet seçeneğini de kullanın.</li>
+              <li><strong style="color:var(--text)">Nihai Kontrol</strong> ile sekiz zorunlu kontrolü çalıştırın. Kaynak bütünlüğü doğrulanmadan indirme yapılmaz.</li>
             </ol>
           </div>
         </div>
-        <p class="hint">Editör mevcut scriptleri yeniden yazmaz. CSS değişiklikleri yama bloğu, metin ve taşıma işlemleri çalışma zamanı manifesti olarak eklenir.</p>
+        <p class="hint">Editör mevcut scriptleri yeniden yazmaz. CSS değişiklikleri yama bloğu; metin, güvenli öznitelik ve taşıma işlemleri çalışma zamanı manifesti olarak eklenir.</p>
       </div>
       <div class="modal-foot"><button class="btn primary" data-close-modal="helpModal">Anladım</button></div>
     </section>
@@ -1001,6 +1230,8 @@
           <div class="context">Ok tuşları     1 px taşı
 Shift + Ok      10 px taşı
 Ctrl + Ok       Akışta önce/sonra
+Ctrl + K        Hızlı Bul
+Esc             Etkin sürüklemeyi iptal et
 M               Çoklu seçimi aç/kapat
 H               Güvenli gizle</div>
           <div class="context">E               Metni düzenle
@@ -1023,7 +1254,17 @@ Ctrl + S        Nihai HTML indir</div>
   const PATCH_STYLE_ID = 'regnum-visual-editor-patches';
   const PATCH_RUNTIME_ID = 'regnum-visual-editor-runtime';
   const PATCH_MANIFEST_MARKER = 'REGNUM_VISUAL_EDITOR_MANIFEST:';
-  const PROJECT_VERSION = '4.1';
+  const PROJECT_VERSION = '4.3';
+  const REQUIREMENTS = [
+    {key:'source', label:'Geçerli HTML kaynağı', detail:'Dosya adı, kaynak boyutu ve kaynak özeti oluşturulmalı.'},
+    {key:'sourceExact', label:'Kaynak birebir korunmalı', detail:'Editör yamaları çıkarıldığında çıktı, giriş kaynağıyla karakter karakter aynı olmalı.'},
+    {key:'scripts', label:'Script bütünlüğü', detail:'Mevcut script blokları değişmeden korunmalı; yalnızca gerekli V4.3 çalışma zamanı eklenmeli.'},
+    {key:'manifest', label:'İşlem manifesti', detail:'Tüm etkin/devre dışı işlemler çıktıdan eksiksiz geri okunabilmeli.'},
+    {key:'selectors', label:'Hedef seçiciler', detail:'Geçersiz seçici bulunmamalı; dinamik hedefler uyarı olarak ayrıca gösterilmeli.'},
+    {key:'runtime', label:'Çalışma zamanı derlenebilirliği', detail:'Metin, taşıma ve alan koruma kodu JavaScript sözdizimi hatası vermemeli.'},
+    {key:'layout', label:'Yerleşim ve çalışma hataları', detail:'Taşma/çakışma denetimi ile hedef HTML hata kaydı gözden geçirilmeli.'},
+    {key:'release', label:'Nihai çıktı kapısı', detail:'Kritik kontroller geçmeden HTML indirilmemeli.'}
+  ];
 
   const state = {
     originalSource: '',
@@ -1048,7 +1289,7 @@ Ctrl + S        Nihai HTML indir</div>
     groups: ['Genel','Yerleşim','Tablolar','Renkler','Otomatik Onarım'],
     activeGroup: 'Genel',
     sourceViewMode: 'context',
-    previewBaselines: {texts:new Map(), portals:new Map()},
+    previewBaselines: {texts:new Map(), portals:new Map(), attributes:new Map()},
     previewPortalRefs: new Map(),
     portalSource: '',
     portalTarget: '',
@@ -1057,7 +1298,15 @@ Ctrl + S        Nihai HTML indir</div>
     uploadTargets: [],
     previewTriggers: new Set(),
     frameErrors: [],
-    viewport: '100%'
+    viewport: '100%',
+    outlineEntries: [],
+    outlineRoots: [],
+    outlineCollapsed: new Set(),
+    moveMode: 'flow',
+    activeDragCancel: null,
+    sourceSearchIndex: -1,
+    commandIndex: -1,
+    lastValidation: null
   };
 
   const Logger = {
@@ -1154,13 +1403,15 @@ Ctrl + S        Nihai HTML indir</div>
     state.selectedSelector = '';
     state.selectedItems = [];
     $('#selectionStatus').textContent = 'Öğe seçilmedi';
+    $('#selectionBreadcrumb').innerHTML = '<span>Bir öğe seçin</span>';
     $('#selectedCard').className = 'selected-card empty';
     $('#selectedCard').textContent = 'Önizlemeden bir başlık, buton, kart, tablo veya grafik alanı seçin.';
     $('#sourceContext').textContent = 'Bir öğe seçin.';
     if (state.sourceViewMode === 'context' && $('#sourceViewer')) $('#sourceViewer').value = 'Çalışma alanından bir öğe seçin.';
     $('#instructionOutput').value = 'Henüz işlem seçilmedi.';
     $('#riskResults').innerHTML = '<div class="empty-list">Bir öğe seçildiğinde kimlik ve sınıf kullanımları taranır.</div>';
-    ['hideButton','editTextButton','applyStyleButton','markPortalSourceButton','markPortalTargetButton','markPortalTriggerButton','selectParentButton','copyContextButton','moveBeforeButton','moveAfterButton','moveBeforeButtonAlt','moveAfterButtonAlt','widthRange'].forEach(id => {
+    $('#attributeList').innerHTML = '<div class="empty-list">Bir öğe seçin.</div>';
+    ['hideButton','editTextButton','applyStyleButton','applyAttributeButton','markPortalSourceButton','markPortalTargetButton','markPortalTriggerButton','selectParentButton','copyContextButton','moveBeforeButton','moveAfterButton','moveBeforeButtonAlt','moveAfterButtonAlt','widthRange','centerElementButton'].forEach(id => {
       const control = $('#' + id);
       if (control) control.disabled = true;
     });
@@ -1249,11 +1500,16 @@ Ctrl + S        Nihai HTML indir</div>
     state.multiSelectMode = false;
     state.selectedItems = [];
     state.sourceViewMode = 'context';
-    state.previewBaselines = {texts:new Map(), portals:new Map()};
+    state.previewBaselines = {texts:new Map(), portals:new Map(), attributes:new Map()};
     state.previewPortalRefs = new Map();
     state.history = [];
     state.historyIndex = -1;
     state.frameErrors = [];
+    state.outlineEntries = [];
+    state.outlineRoots = [];
+    state.outlineCollapsed = new Set();
+    state.sourceSearchIndex = -1;
+    state.lastValidation = null;
     state.previewTriggers = new Set();
     state.portalSource = '';
     state.portalTarget = '';
@@ -1262,8 +1518,15 @@ Ctrl + S        Nihai HTML indir</div>
     $('#portalTargetBox').textContent = 'Belirlenmedi';
     $('#portalTriggerBox').textContent = 'Belirlenmedi';
     $('#sourceViewer').value = 'Hızlı kaynak görünümü hazır. Çalışma alanından bir öğe seçin.';
+    $('#sourceSearch').value = '';
     $('#sourceContextViewButton').classList.add('active');
     $('#loadFullSourceButton').classList.remove('active');
+    $('#outlineSearch').value = '';
+    $('#outlineList').innerHTML = '<div class="empty-list">Sayfa öğeleri hazırlanıyor…</div>';
+    $('#outlineMeta').textContent = 'Hazırlanıyor';
+    $('#releaseStatus').className = 'status-badge';
+    $('#releaseStatus').textContent = 'Kontrol bekleniyor';
+    renderNeedsChecklist();
     updateLayoutButton();
     renderGroupControls();
     updateMultiSelectButton();
@@ -1278,7 +1541,7 @@ Ctrl + S        Nihai HTML indir</div>
   }
 
   function setControlsEnabled(enabled) {
-    ['designModeButton','validateButton','exportHtmlButton','exportProjectButton','scanUploadTargetsButton','injectGhostButton','autoLayoutButton','multiSelectButton','layoutAuditButton'].forEach(id => $('#' + id).disabled = !enabled);
+    ['designModeButton','validateButton','exportHtmlButton','scanUploadTargetsButton','injectGhostButton','autoLayoutButton','multiSelectButton','layoutAuditButton','runReleaseCheckButton'].forEach(id => $('#' + id).disabled = !enabled);
     $('#clearOperationsButton').disabled = !enabled || state.operations.length === 0;
   }
 
@@ -1286,13 +1549,11 @@ Ctrl + S        Nihai HTML indir</div>
     resetSelection();
     state.frameLoaded = false;
     state.previewTriggers = new Set();
-    state.previewBaselines = {texts:new Map(), portals:new Map()};
+    state.previewBaselines = {texts:new Map(), portals:new Map(), attributes:new Map()};
     state.previewPortalRefs = new Map();
     state.frameErrors = [];
     $('#frameStatus').className = 'status-badge';
     $('#frameStatus').textContent = 'Yükleniyor…';
-    if (state.frameUrl) URL.revokeObjectURL(state.frameUrl);
-    state.frameUrl = URL.createObjectURL(new Blob([html], {type:'text/html'}));
     const frame = $('#targetFrame');
     frame.onload = () => {
       state.frameLoaded = true;
@@ -1301,6 +1562,7 @@ Ctrl + S        Nihai HTML indir</div>
       installFrameBridge();
       applyOperationsToPreview();
       scanUploadTargets();
+      buildOutlineIndex();
       Logger.ok('HTML çalışma alanında çalıştırıldı.');
     };
     frame.onerror = () => {
@@ -1308,7 +1570,8 @@ Ctrl + S        Nihai HTML indir</div>
       $('#frameStatus').textContent = 'Yükleme hatası';
       Logger.error('HTML çalışma alanına yüklenemedi.');
     };
-    frame.src = state.frameUrl;
+    frame.removeAttribute('src');
+    frame.srcdoc = html;
   }
 
   function installFrameBridge() {
@@ -1323,6 +1586,8 @@ Ctrl + S        Nihai HTML indir</div>
       '[data-rve-selected]{outline:3px solid #15c886!important;outline-offset:2px!important;}' +
       '[data-rve-multi-selected]{outline:3px solid #ffbe55!important;outline-offset:2px!important;}' +
       '[data-rve-dragging]{opacity:.82!important;filter:drop-shadow(0 12px 18px rgba(0,0,0,.28))!important;cursor:grabbing!important;}' +
+      '[data-rve-drop-container]{outline:2px dashed rgba(0,169,255,.6)!important;outline-offset:-3px!important;background-image:linear-gradient(rgba(0,169,255,.035),rgba(0,169,255,.035))!important;}' +
+      '[data-rve-drop-active]{outline:3px solid #15c886!important;outline-offset:-4px!important;background-image:linear-gradient(rgba(21,200,134,.09),rgba(21,200,134,.09))!important;}' +
       '[data-rve-hidden-preview]{opacity:.16!important;filter:grayscale(1)!important;display:block!important;min-height:16px!important;}' +
       '#rve-selection-overlay{position:fixed;display:none;z-index:2147483646;pointer-events:none;border:2px solid #15c886;box-sizing:border-box;}' +
       '#rve-selection-overlay .rve-move{position:absolute!important;left:50%!important;top:-30px;transform:translateX(-50%)!important;width:auto!important;height:24px!important;min-width:82px!important;padding:0 9px!important;border:2px solid #fff!important;border-radius:6px!important;background:#087f5b!important;color:#fff!important;box-shadow:0 2px 8px rgba(0,0,0,.4)!important;font:800 10px/20px system-ui,sans-serif!important;letter-spacing:.06em!important;text-align:center!important;white-space:nowrap!important;pointer-events:auto!important;touch-action:none!important;cursor:grab!important;user-select:none!important;box-sizing:border-box!important;}' +
@@ -1338,6 +1603,9 @@ Ctrl + S        Nihai HTML indir</div>
       '#rve-selection-overlay .rve-se{right:-7px;bottom:-7px;cursor:nwse-resize;}' +
       '#rve-selection-overlay .rve-sw{left:-7px;bottom:-7px;cursor:nesw-resize;}' +
       '#rve-drop-indicator{position:fixed;display:none;z-index:2147483647;height:4px;border-radius:4px;background:#ffbe55;box-shadow:0 0 0 2px rgba(0,0,0,.4),0 0 18px rgba(255,190,85,.75);pointer-events:none;}' +
+      '#rve-drop-placeholder{min-height:28px!important;margin:6px!important;border:2px dashed #15c886!important;border-radius:8px!important;background:rgba(21,200,134,.12)!important;box-shadow:inset 0 0 0 2px rgba(255,255,255,.5)!important;pointer-events:none!important;box-sizing:border-box!important;}' +
+      '#rve-drop-placeholder::before{content:"BURAYA YERLEŞECEK";display:grid!important;min-height:24px!important;place-items:center!important;color:#075a42!important;font:900 10px/1 system-ui,sans-serif!important;letter-spacing:.06em!important;}' +
+      '#rve-drop-label{position:fixed;display:none;z-index:2147483647;max-width:min(520px,calc(100vw - 24px));padding:7px 10px;border:1px solid #63e6be;border-radius:8px;background:#062a20;color:#effff9;box-shadow:0 8px 24px rgba(0,0,0,.38);pointer-events:none;font:800 11px/1.25 system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
       '.rve-smart-guide{position:fixed;display:none;z-index:2147483645;pointer-events:none;background:#00b7ff;box-shadow:0 0 0 1px rgba(255,255,255,.75);}' +
       '#rve-guide-x{top:0;bottom:0;width:1px;}' +
       '#rve-guide-y{left:0;right:0;height:1px;}' +
@@ -1354,7 +1622,7 @@ Ctrl + S        Nihai HTML indir</div>
     const moveHandle = doc.createElement('span');
     moveHandle.className = 'rve-move';
     moveHandle.textContent = '✥ TAŞI';
-    moveHandle.title = 'Öğeyi serbestçe taşımak için sürükleyin';
+    moveHandle.title = 'Öğeyi seçili taşıma moduyla konumlandırmak için sürükleyin';
     moveHandle.addEventListener('pointerdown', event => startMoveDrag(event, moveHandle));
     selectionOverlay.appendChild(moveHandle);
     const sizeBadge = doc.createElement('span');
@@ -1373,6 +1641,15 @@ Ctrl + S        Nihai HTML indir</div>
     const dropIndicator = doc.createElement('div');
     dropIndicator.id = 'rve-drop-indicator';
     doc.body.appendChild(dropIndicator);
+    const dropPlaceholder = doc.createElement('div');
+    dropPlaceholder.id = 'rve-drop-placeholder';
+    dropPlaceholder.setAttribute('data-rve-editor-ui','');
+    dropPlaceholder.style.display = 'none';
+    doc.body.appendChild(dropPlaceholder);
+    const dropLabel = doc.createElement('div');
+    dropLabel.id = 'rve-drop-label';
+    dropLabel.setAttribute('data-rve-editor-ui','');
+    doc.body.appendChild(dropLabel);
     const guideX = doc.createElement('div');
     guideX.id = 'rve-guide-x';
     guideX.className = 'rve-smart-guide';
@@ -1481,7 +1758,7 @@ Ctrl + S        Nihai HTML indir</div>
 
   function normalizeSelectable(target) {
     if (!target || target.nodeType !== 1) return null;
-    if (target.closest?.('#rve-selection-overlay,#rve-context-menu,#rve-drop-indicator')) return null;
+    if (target.closest?.('#rve-selection-overlay,#rve-context-menu,#rve-drop-indicator,#rve-drop-placeholder,#rve-drop-label,[data-rve-editor-ui]')) return null;
     if (target.closest && target.closest('html') === null) return null;
     if (['HTML','BODY'].includes(target.tagName)) return target === frameDocument()?.body ? target : null;
     if (target.closest('canvas') && target.tagName !== 'CANVAS') return target.closest('canvas');
@@ -1633,7 +1910,7 @@ Ctrl + S        Nihai HTML indir</div>
       '<div class="selector-box">' + escapeHtml(state.selectedSelector) + '</div>' +
       '<div class="selected-meta">display: ' + escapeHtml(computed.display) + ' · position: ' + escapeHtml(computed.position) + ' · ' + Math.round(rect.width) + '×' + Math.round(rect.height) + ' px</div>';
 
-    ['hideButton','editTextButton','applyStyleButton','markPortalSourceButton','markPortalTargetButton','markPortalTriggerButton','selectParentButton','copyContextButton','moveBeforeButton','moveAfterButton','moveBeforeButtonAlt','moveAfterButtonAlt','widthRange'].forEach(id => {
+    ['hideButton','editTextButton','applyStyleButton','applyAttributeButton','markPortalSourceButton','markPortalTargetButton','markPortalTriggerButton','selectParentButton','copyContextButton','moveBeforeButton','moveAfterButton','moveBeforeButtonAlt','moveAfterButtonAlt','widthRange','centerElementButton'].forEach(id => {
       const control = $('#' + id);
       if (control) control.disabled = false;
     });
@@ -1647,7 +1924,203 @@ Ctrl + S        Nihai HTML indir</div>
     updateSourceContext(state.selectedEl);
     scanElementRisk(state.selectedEl);
     populateInspectorFromElement(state.selectedEl);
+    renderAttributeEditor();
+    renderSelectionBreadcrumb();
+    revealOutlineSelection();
+    renderOutline();
     syncSelectionOverlay();
+  }
+
+  function elementLabel(el) {
+    if (!el) return '';
+    const tag = el.tagName?.toLowerCase() || 'öğe';
+    const aria = el.getAttribute?.('aria-label') || el.getAttribute?.('title') || '';
+    const text = (aria || directText(el) || el.innerText || el.textContent || '')
+      .trim().replace(/\s+/g,' ').slice(0,90);
+    const identity = el.id ? '#' + el.id : Array.from(el.classList || []).filter(cls => !cls.startsWith('rve-')).slice(0,2).map(cls => '.' + cls).join('');
+    return text || identity || tag;
+  }
+
+  function buildOutlineIndex() {
+    const doc = frameDocument();
+    if (!doc) return;
+    state.outlineEntries = [];
+    state.outlineRoots = [];
+    const skipped = new Set(['SCRIPT','STYLE','LINK','META','NOSCRIPT','TEMPLATE','TITLE']);
+    const walk = (el, parent = null, depth = 0) => {
+      if (!el || state.outlineEntries.length >= 1200 || skipped.has(el.tagName)) return;
+      if (el.closest?.('#rve-selection-overlay,#rve-context-menu,#rve-drop-indicator,#rve-drop-placeholder,#rve-drop-label,[data-rve-editor-ui]')) return;
+      const selector = selectorForEditing(el);
+      const label = elementLabel(el);
+      const tag = el.tagName.toLowerCase();
+      const search = [tag,label,selector,el.id,el.className].join(' ').toLocaleLowerCase('tr-TR');
+      const item = {el, selector, label, tag, search, depth, parent, children:[]};
+      state.outlineEntries.push(item);
+      if (parent) parent.children.push(item);
+      else state.outlineRoots.push(item);
+      Array.from(el.children || []).forEach(child => walk(child,item,depth+1));
+    };
+    if (doc.body) walk(doc.body,null,0);
+    if (!state.outlineCollapsed.size) {
+      state.outlineEntries.filter(item => item.depth >= 2 && item.children.length).forEach(item => state.outlineCollapsed.add(item.selector));
+    }
+    $('#outlineMeta').textContent = state.outlineEntries.length.toLocaleString('tr-TR') + ' canlı öğe';
+    renderOutline();
+  }
+
+  function outlineSubtreeMatches(item, query) {
+    return item.search.includes(query) || item.children.some(child => outlineSubtreeMatches(child,query));
+  }
+
+  function revealOutlineSelection() {
+    const item = state.outlineEntries.find(entry => entry.el === state.selectedEl);
+    let parent = item?.parent;
+    while (parent) {
+      state.outlineCollapsed.delete(parent.selector);
+      parent = parent.parent;
+    }
+  }
+
+  function renderOutline() {
+    const list = $('#outlineList');
+    if (!list) return;
+    const query = ($('#outlineSearch')?.value || '').trim().toLocaleLowerCase('tr-TR');
+    const roots = state.outlineRoots.filter(item => !query || outlineSubtreeMatches(item,query));
+    if (!roots.length) {
+      list.innerHTML = '<div class="empty-list">' + (state.originalSource ? 'Aramayla eşleşen öğe bulunamadı.' : 'HTML yüklenmedi.') + '</div>';
+      return;
+    }
+    list.innerHTML = '';
+    let shown = 0;
+    const appendNode = (item, host) => {
+      if (shown >= 500 || (query && !outlineSubtreeMatches(item,query))) return;
+      shown++;
+      const collapsed = !query && state.outlineCollapsed.has(item.selector);
+      const node = document.createElement('div');
+      node.className = 'outline-node' + (collapsed ? ' collapsed' : '');
+      const row = document.createElement('div');
+      row.className = 'outline-row';
+      row.style.paddingLeft = Math.min(10,item.depth) * 9 + 'px';
+      const toggle = document.createElement('button');
+      toggle.className = 'outline-toggle';
+      toggle.type = 'button';
+      toggle.dataset.outlineToggle = item.selector;
+      toggle.disabled = !item.children.length;
+      toggle.textContent = item.children.length ? (collapsed ? '▸' : '▾') : '·';
+      toggle.setAttribute('aria-label',collapsed ? 'Dalı aç' : 'Dalı daralt');
+      const button = document.createElement('button');
+      button.className = 'outline-item' + (item.el === state.selectedEl ? ' active' : '');
+      button.dataset.outlineSelector = item.selector;
+      button.innerHTML = '<span class="outline-tag">&lt;' + escapeHtml(item.tag) + '&gt;</span><span class="outline-label">' + escapeHtml(item.label) + '</span>';
+      row.append(toggle,button);
+      node.appendChild(row);
+      if (item.children.length && (!collapsed || query)) {
+        const children = document.createElement('div');
+        children.className = 'outline-node-children';
+        item.children.forEach(child => appendNode(child,children));
+        node.appendChild(children);
+      }
+      host.appendChild(node);
+    };
+    roots.forEach(root => appendNode(root,list));
+    const suffix = state.outlineEntries.length > shown ? ' · ilk ' + shown + ' gösteriliyor' : '';
+    const meta = document.createElement('div');
+    meta.className = 'outline-count';
+    meta.textContent = shown.toLocaleString('tr-TR') + ' görünür öğe' + suffix;
+    list.appendChild(meta);
+  }
+
+  function breadcrumbLabel(el) {
+    const tag = el.tagName?.toLowerCase() || 'öğe';
+    if (el.id) return tag + '#' + el.id;
+    const cls = Array.from(el.classList || []).find(value => !value.startsWith('rve-'));
+    return tag + (cls ? '.' + cls : '');
+  }
+
+  function renderSelectionBreadcrumb() {
+    const root = $('#selectionBreadcrumb');
+    if (!root || !state.selectedEl) return;
+    const chain = [];
+    let current = state.selectedEl;
+    while (current && current !== frameDocument()?.documentElement && chain.length < 6) {
+      chain.unshift(current);
+      if (current === frameDocument()?.body) break;
+      current = current.parentElement;
+    }
+    root.innerHTML = '';
+    chain.forEach((el,index) => {
+      if (index) {
+        const separator = document.createElement('i');
+        separator.textContent = '›';
+        root.appendChild(separator);
+      }
+      const button = document.createElement('button');
+      button.dataset.breadcrumbSelector = selectorForEditing(el);
+      button.textContent = breadcrumbLabel(el);
+      button.title = button.dataset.breadcrumbSelector;
+      root.appendChild(button);
+    });
+  }
+
+  function paletteActions() {
+    return [
+      {type:'action', key:'verify', label:'Nihai kontrolleri çalıştır', hint:'Kontrol', run:() => validateProject()},
+      {type:'action', key:'repair', label:'Taşma ve çakışmaları tara/onarmayı dene', hint:'Yerleşim', run:() => runLayoutAudit()},
+      {type:'action', key:'multi', label:'Çoklu seçimi aç veya kapat', hint:'M', run:() => $('#multiSelectButton').click()},
+      {type:'action', key:'full', label:'Seçili öğeyi tam genişlik yap', hint:'F', run:() => state.selectedEl && applySizePreset(1)},
+      {type:'action', key:'hide', label:'Seçili öğeyi güvenli gizle', hint:'H', run:() => state.selectedEl && hideSelectedElement()},
+      {type:'action', key:'export', label:'Kontrollü nihai HTML indir', hint:'Ctrl+S', run:() => $('#exportHtmlButton').click()}
+    ];
+  }
+
+  function paletteItems() {
+    const query = ($('#commandSearch')?.value || '').trim().toLocaleLowerCase('tr-TR');
+    const actions = paletteActions().filter(item => !query || (item.label + ' ' + item.hint).toLocaleLowerCase('tr-TR').includes(query));
+    const elements = state.outlineEntries.filter(item => !query || item.search.includes(query)).slice(0,40).map(item => ({
+      type:'element',
+      key:item.selector,
+      label:item.label,
+      hint:'<' + item.tag + '>',
+      element:item.el
+    }));
+    return [...actions,...elements].slice(0,50);
+  }
+
+  function renderCommandPalette() {
+    const host = $('#commandResults');
+    const items = paletteItems();
+    state.commandIndex = Math.max(0, Math.min(state.commandIndex, items.length - 1));
+    if (!items.length) {
+      host.innerHTML = '<div class="empty-list">Eşleşen öğe veya komut bulunamadı.</div>';
+      return;
+    }
+    host.innerHTML = '';
+    items.forEach((item,index) => {
+      const button = document.createElement('button');
+      button.className = 'command-item' + (index === state.commandIndex ? ' active' : '');
+      button.dataset.commandIndex = String(index);
+      button.innerHTML = '<span><strong>' + escapeHtml(item.label) + '</strong><span>' + escapeHtml(item.type === 'element' ? item.key : item.hint) + '</span></span><kbd>' + escapeHtml(item.hint) + '</kbd>';
+      host.appendChild(button);
+    });
+  }
+
+  function executePaletteItem(index) {
+    const item = paletteItems()[index];
+    if (!item) return;
+    closeModal('commandPaletteModal');
+    if (item.type === 'action') item.run();
+    else if (item.element?.isConnected) {
+      item.element.scrollIntoView?.({behavior:'smooth',block:'center',inline:'center'});
+      selectElement(item.element);
+    }
+  }
+
+  function openCommandPalette() {
+    openModal('commandPaletteModal');
+    state.commandIndex = 0;
+    $('#commandSearch').value = '';
+    renderCommandPalette();
+    requestAnimationFrame(() => $('#commandSearch').focus());
   }
 
   function syncSelectionOverlay() {
@@ -1848,6 +2321,11 @@ Ctrl + S        Nihai HTML indir</div>
   }
 
   function upsertFlowMove(sourceSelector, targetSelector, position) {
+    const freeGeometry = geometryOperation(sourceSelector);
+    if (freeGeometry) {
+      freeGeometry.enabled = false;
+      freeGeometry.placementRisk = false;
+    }
     let operation = null;
     for (let i = state.operations.length - 1; i >= 0; i--) {
       const candidate = state.operations[i];
@@ -1884,7 +2362,9 @@ Ctrl + S        Nihai HTML indir</div>
       node !== el &&
       node.id !== 'rve-selection-overlay' &&
       node.id !== 'rve-context-menu' &&
-      node.id !== 'rve-drop-indicator'
+      node.id !== 'rve-drop-indicator' &&
+      node.id !== 'rve-drop-placeholder' &&
+      node.id !== 'rve-drop-label'
     );
   }
 
@@ -1892,7 +2372,7 @@ Ctrl + S        Nihai HTML indir</div>
     const source = state.selectedEl;
     if (!source || !state.selectedSelector || !source.parentElement) return;
     const children = Array.from(source.parentElement.children).filter(node =>
-      !['rve-selection-overlay','rve-context-menu','rve-drop-indicator'].includes(node.id)
+      !['rve-selection-overlay','rve-context-menu','rve-drop-indicator','rve-drop-placeholder','rve-drop-label'].includes(node.id)
     );
     const index = children.indexOf(source);
     const target = children[index + direction];
@@ -2034,6 +2514,12 @@ Ctrl + S        Nihai HTML indir</div>
       Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>tolerance;
   }
 
+  function overlapArea(a, b) {
+    const width = Math.max(0, Math.min(a.right,b.right)-Math.max(a.left,b.left));
+    const height = Math.max(0, Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top));
+    return width * height;
+  }
+
   function canPlaceElement(el, dx, dy) {
     const rect = el.getBoundingClientRect();
     const candidate = shiftedRect(rect, dx, dy);
@@ -2047,7 +2533,13 @@ Ctrl + S        Nihai HTML indir</div>
       const siblingRect = sibling.getBoundingClientRect();
       return style?.display !== 'none' && style?.visibility !== 'hidden' && siblingRect.width > 1 && siblingRect.height > 1;
     });
-    return !siblings.some(sibling => rectsOverlap(candidate, sibling.getBoundingClientRect()));
+    return !siblings.some(sibling => {
+      const siblingRect = sibling.getBoundingClientRect();
+      const before = overlapArea(rect, siblingRect);
+      const after = overlapArea(candidate, siblingRect);
+      const tolerance = Math.max(12, before + 4);
+      return after > tolerance;
+    });
   }
 
   function nudgeSelection(dx, dy) {
@@ -2069,6 +2561,25 @@ Ctrl + S        Nihai HTML indir</div>
     applyOperationsToPreview();
     if (lastOperation) updateInstructionForOperation(lastOperation);
     syncSelectionOverlay();
+  }
+
+  function centerSelectionHorizontally() {
+    const entries = selectedEntries();
+    if (!entries.length) return;
+    let lastOperation = null;
+    entries.forEach(item => {
+      lastOperation = upsertModeStyleRecord(item.selector,'center-horizontal',{
+        'margin-left':'auto',
+        'margin-right':'auto',
+        'justify-self':'center'
+      },'all','Üst alan içinde yatay ortalama','Yerleşim');
+    });
+    pushHistory();
+    renderOperations();
+    applyOperationsToPreview();
+    renderGroupControls();
+    if (lastOperation) updateInstructionForOperation(lastOperation);
+    toast(entries.length + ' öğe yatay ortalandı');
   }
 
   function alignSelected(mode) {
@@ -2308,8 +2819,13 @@ Ctrl + S        Nihai HTML indir</div>
   function handleEditorShortcut(event) {
     const tag = event.target?.tagName;
     const editing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || event.target?.isContentEditable;
-    if (!editing) handleNudgeKey(event);
     const key = String(event.key || '').toLowerCase();
+    if ((event.ctrlKey || event.metaKey) && key === 'k') {
+      event.preventDefault();
+      openCommandPalette();
+      return;
+    }
+    if (!editing) handleNudgeKey(event);
     if ((event.ctrlKey || event.metaKey) && key === 'z') {
       event.preventDefault();
       restoreHistory(state.historyIndex - 1);
@@ -2355,6 +2871,11 @@ Ctrl + S        Nihai HTML indir</div>
       moveSelectedInFlow(1);
     }
     if (event.key === 'Escape') {
+      if (state.activeDragCancel) {
+        event.preventDefault();
+        state.activeDragCancel();
+        return;
+      }
       frameDocument()?.getElementById('rve-context-menu')?.style.setProperty('display','none');
       $$('.modal-backdrop').forEach(modal=>modal.hidden=true);
     }
@@ -2408,6 +2929,118 @@ Ctrl + S        Nihai HTML indir</div>
     return {dx:snappedX,dy:snappedY,guideX,guideY};
   }
 
+  function isEditorUiNode(node) {
+    return Boolean(node?.closest?.('#rve-selection-overlay,#rve-context-menu,#rve-drop-indicator,#rve-drop-placeholder,#rve-drop-label,[data-rve-editor-ui]'));
+  }
+
+  function isSafeDropContainer(el, source, mode = state.moveMode) {
+    if (!el || !source || el === source || source.contains(el) || isEditorUiNode(el)) return false;
+    if (['HTML','HEAD','SCRIPT','STYLE','LINK','META','TITLE','TABLE','THEAD','TFOOT','TR','SELECT','OPTION','SVG','CANVAS'].includes(el.tagName)) return false;
+    const display = frameWindow()?.getComputedStyle(el).display || '';
+    if (mode === 'grid') return display.includes('grid') || display.includes('flex');
+    return ['BODY','MAIN','SECTION','ARTICLE','ASIDE','NAV','HEADER','FOOTER','DIV','UL','OL','FORM','FIELDSET','TBODY'].includes(el.tagName) ||
+      display.includes('grid') || display.includes('flex');
+  }
+
+  function markDropContainers(source, mode) {
+    const doc = source.ownerDocument;
+    [doc.body,...Array.from(doc.body?.querySelectorAll('*') || []).slice(0,1499)].filter(Boolean).forEach(el => {
+      if (isSafeDropContainer(el,source,mode)) el.setAttribute('data-rve-drop-container','');
+    });
+  }
+
+  function clearDropGuidance(doc) {
+    const placeholder = doc.getElementById('rve-drop-placeholder');
+    if (placeholder) {
+      placeholder.remove();
+      placeholder.style.display = 'none';
+      doc.body.appendChild(placeholder);
+    }
+    const label = doc.getElementById('rve-drop-label');
+    if (label) label.style.display = 'none';
+    const indicator = doc.getElementById('rve-drop-indicator');
+    if (indicator) indicator.style.display = 'none';
+    doc.querySelectorAll('[data-rve-drop-container],[data-rve-drop-active]').forEach(el => {
+      el.removeAttribute('data-rve-drop-container');
+      el.removeAttribute('data-rve-drop-active');
+    });
+  }
+
+  function directChildFor(container, node) {
+    let current = node;
+    while (current && current.parentElement !== container) current = current.parentElement;
+    return current?.parentElement === container ? current : null;
+  }
+
+  function findGuidedDropPlan(node, source, clientX, clientY, mode) {
+    if (!node || !source || node === source || source.contains(node) || isEditorUiNode(node)) return null;
+    const win = frameWindow();
+    if (mode === 'grid') {
+      let container = node;
+      while (container && !isSafeDropContainer(container,source,'grid')) container = container.parentElement;
+      if (!container) return null;
+      const child = directChildFor(container,node);
+      if (!child || child === source) {
+        return {target:container,targetSelector:selectorForEditing(container),position:'inside-end',container};
+      }
+      const rect = child.getBoundingClientRect();
+      const horizontal = (win?.getComputedStyle(container).flexDirection || '').startsWith('row') ||
+        (win?.getComputedStyle(container).display || '').includes('grid');
+      const before = horizontal ? clientX < rect.left + rect.width / 2 : clientY < rect.top + rect.height / 2;
+      return {target:child,targetSelector:selectorForEditing(child),position:before?'before':'after',container};
+    }
+    if (node === source.parentElement && isSafeDropContainer(node,source,'flow')) {
+      return {target:node,targetSelector:selectorForEditing(node),position:'inside-end',container:node};
+    }
+    if (node === source.ownerDocument.body && isSafeDropContainer(node,source,'flow')) {
+      return {target:node,targetSelector:selectorForEditing(node),position:'inside-end',container:node};
+    }
+    const target = findFlowDropTarget(node,source);
+    if (!target) return null;
+    const rect = target.getBoundingClientRect();
+    const ratio = rect.height ? (clientY - rect.top) / rect.height : .5;
+    if (ratio >= .3 && ratio <= .7 && isSafeDropContainer(target,source,'flow')) {
+      return {target,targetSelector:selectorForEditing(target),position:'inside-end',container:target};
+    }
+    return {
+      target,
+      targetSelector:selectorForEditing(target),
+      position:ratio < .5 ? 'before' : 'after',
+      container:target.parentElement
+    };
+  }
+
+  function placeDropPlan(plan, placeholder, indicator, label, clientX, clientY) {
+    if (!placeholder) return false;
+    placeholder.remove();
+    placeholder.style.display = 'block';
+    if (!plan?.target?.isConnected || !plan.targetSelector) return false;
+    if (plan.position === 'inside-start') plan.target.insertBefore(placeholder,plan.target.firstChild);
+    else if (plan.position === 'inside-end') plan.target.appendChild(placeholder);
+    else if (plan.position === 'before' && plan.target.parentNode) plan.target.parentNode.insertBefore(placeholder,plan.target);
+    else if (plan.position === 'after' && plan.target.parentNode) plan.target.parentNode.insertBefore(placeholder,plan.target.nextSibling);
+    else return false;
+    plan.container?.setAttribute('data-rve-drop-active','');
+    const rect = placeholder.getBoundingClientRect();
+    indicator.style.display = 'block';
+    indicator.style.left = Math.max(4,rect.left) + 'px';
+    indicator.style.width = Math.max(30,rect.width) + 'px';
+    indicator.style.top = Math.max(2,rect.top - 2) + 'px';
+    const action = ({before:'öncesine',after:'sonrasına','inside-start':'içine · başa','inside-end':'içine · sona'})[plan.position] || plan.position;
+    label.textContent = elementLabel(plan.target) + ' · ' + action;
+    label.style.display = 'block';
+    label.style.left = Math.max(8,Math.min(clientX+14,(frameWindow()?.innerWidth || 800)-label.offsetWidth-8)) + 'px';
+    label.style.top = Math.max(8,Math.min(clientY+14,(frameWindow()?.innerHeight || 600)-label.offsetHeight-8)) + 'px';
+    return true;
+  }
+
+  function edgeAutoScroll(win, clientY) {
+    if (!win) return;
+    const edge = 58;
+    if (clientY < edge) win.scrollBy(0,-18);
+    else if (clientY > win.innerHeight-edge) win.scrollBy(0,18);
+  }
+
   function startMoveDrag(event, handle) {
     if (!state.selectedEl || !state.selectedSelector) return;
     event.preventDefault();
@@ -2416,7 +3049,10 @@ Ctrl + S        Nihai HTML indir</div>
     const win = frameWindow();
     const source = state.selectedEl;
     const sourceSelector = state.selectedSelector;
+    const mode = selectedEntries().length > 1 ? 'free' : state.moveMode;
     const indicator = doc.getElementById('rve-drop-indicator');
+    const placeholder = doc.getElementById('rve-drop-placeholder');
+    const dropLabel = doc.getElementById('rve-drop-label');
     const guideX = doc.getElementById('rve-guide-x');
     const guideY = doc.getElementById('rve-guide-y');
     const startRect = source.getBoundingClientRect();
@@ -2430,12 +3066,13 @@ Ctrl + S        Nihai HTML indir</div>
       liveStyle.id = 'rve-live-drag-style';
       doc.head.appendChild(liveStyle);
     }
-    let dropTarget = null;
-    let dropPosition = 'after';
+    let dropPlan = null;
     let latest = {dx:0,dy:0};
     let moved = false;
+    let cancelled = false;
 
     try { handle.setPointerCapture(event.pointerId); } catch (_) {}
+    if (mode !== 'free') markDropContainers(source,mode);
 
     const onMove = moveEvent => {
       const rawDx = moveEvent.clientX - startX;
@@ -2445,92 +3082,107 @@ Ctrl + S        Nihai HTML indir</div>
       source.setAttribute('data-rve-dragging','');
       source.setAttribute('data-rve-live-drag','');
       source.style.pointerEvents = 'none';
-      latest = smartSnapForDrag(source, startRect, rawDx, rawDy);
-      liveStyle.textContent = '[data-rve-live-drag]{translate:' +
+      edgeAutoScroll(win,moveEvent.clientY);
+      latest = mode === 'free' ? smartSnapForDrag(source,startRect,rawDx,rawDy) : {dx:rawDx,dy:rawDy,guideX:null,guideY:null};
+      liveStyle.textContent = mode === 'free' ? '[data-rve-live-drag]{translate:' +
         Math.round((startGeometry.x || 0) + latest.dx) + 'px ' +
-        Math.round((startGeometry.y || 0) + latest.dy) + 'px!important;}';
-      guideX.style.display = latest.guideX === null ? 'none' : 'block';
-      guideY.style.display = latest.guideY === null ? 'none' : 'block';
-      if (latest.guideX !== null) guideX.style.left = latest.guideX + 'px';
-      if (latest.guideY !== null) guideY.style.top = latest.guideY + 'px';
-      const raw = (doc.elementsFromPoint?.(moveEvent.clientX, moveEvent.clientY) || [doc.elementFromPoint(moveEvent.clientX, moveEvent.clientY)])
-        .find(node => node && node !== source && !source.contains(node) && !node.closest?.('#rve-selection-overlay,#rve-context-menu'));
-      const selectable = normalizeSelectable(raw);
-      dropTarget = findFlowDropTarget(selectable, source);
-      if (!dropTarget) {
+        Math.round((startGeometry.y || 0) + latest.dy) + 'px!important;}' : '';
+      guideX.style.display = mode === 'free' && latest.guideX !== null ? 'block' : 'none';
+      guideY.style.display = mode === 'free' && latest.guideY !== null ? 'block' : 'none';
+      if (mode === 'free' && latest.guideX !== null) guideX.style.left = latest.guideX + 'px';
+      if (mode === 'free' && latest.guideY !== null) guideY.style.top = latest.guideY + 'px';
+      if (mode === 'free') {
         indicator.style.display = 'none';
+        dropLabel.style.display = 'block';
+        dropLabel.textContent = 'Serbest konum · ' + Math.round(latest.dx) + ', ' + Math.round(latest.dy) + ' px';
+        dropLabel.style.left = Math.max(8,Math.min(moveEvent.clientX+14,win.innerWidth-dropLabel.offsetWidth-8)) + 'px';
+        dropLabel.style.top = Math.max(8,Math.min(moveEvent.clientY+14,win.innerHeight-dropLabel.offsetHeight-8)) + 'px';
         return;
       }
-      const rect = dropTarget.getBoundingClientRect();
-      dropPosition = moveEvent.clientY < rect.top + rect.height / 2 ? 'before' : 'after';
-      indicator.style.display = 'block';
-      indicator.style.left = Math.max(4, rect.left) + 'px';
-      indicator.style.width = Math.max(30, Math.min(rect.width, win.innerWidth - Math.max(4, rect.left) - 4)) + 'px';
-      indicator.style.top = (dropPosition === 'before' ? rect.top - 2 : rect.bottom - 2) + 'px';
+      placeholder.remove();
+      doc.querySelectorAll('[data-rve-drop-active]').forEach(el => el.removeAttribute('data-rve-drop-active'));
+      const raw = (doc.elementsFromPoint?.(moveEvent.clientX, moveEvent.clientY) || [doc.elementFromPoint(moveEvent.clientX, moveEvent.clientY)])
+        .find(node => node && node !== source && !source.contains(node) && !isEditorUiNode(node));
+      const selectable = normalizeSelectable(raw);
+      dropPlan = findGuidedDropPlan(selectable,source,moveEvent.clientX,moveEvent.clientY,mode);
+      if (!placeDropPlan(dropPlan,placeholder,indicator,dropLabel,moveEvent.clientX,moveEvent.clientY)) {
+        dropPlan = null;
+        indicator.style.display = 'none';
+        dropLabel.style.display = 'block';
+        dropLabel.textContent = mode === 'grid' ? 'Geçerli bir grid/flex alanı seçin' : 'Geçerli bir akış alanı seçin';
+        return;
+      }
     };
 
-    const onUp = () => {
+    const finish = shouldCancel => {
+      cancelled = cancelled || shouldCancel;
       doc.removeEventListener('pointermove', onMove, true);
       doc.removeEventListener('pointerup', onUp, true);
-      doc.removeEventListener('pointercancel', onUp, true);
+      doc.removeEventListener('pointercancel', onCancel, true);
       try { handle.releasePointerCapture(event.pointerId); } catch (_) {}
-      indicator.style.display = 'none';
+      const committedPlan = dropPlan;
+      clearDropGuidance(doc);
       guideX.style.display = 'none';
       guideY.style.display = 'none';
       liveStyle.textContent = '';
       source.removeAttribute('data-rve-dragging');
       source.removeAttribute('data-rve-live-drag');
       source.style.pointerEvents = originalPointerEvents;
-      if (!moved) return;
+      state.activeDragCancel = null;
+      if (cancelled || !moved) {
+        syncSelectionOverlay();
+        if (cancelled && moved) toast('Taşıma iptal edildi','error');
+        return;
+      }
       const dragEntries = selectedEntries();
       if (dragEntries.length > 1) {
-        if (!dragEntries.every(item => canPlaceElement(item.el,latest.dx,latest.dy))) {
-          toast('Çoklu taşıma alan dışına çıkıyor veya başka bir alanla çakışıyor','error');
-          syncSelectionOverlay();
-          return;
-        }
+        const risky = !dragEntries.every(item => canPlaceElement(item.el,latest.dx,latest.dy));
         dragEntries.forEach(item => {
           const geometry = geometryState(item.selector);
           geometry.x = (geometry.x || 0) + latest.dx;
           geometry.y = (geometry.y || 0) + latest.dy;
-          geometryRecord(item.selector,geometry,item.el);
+          const operation = geometryRecord(item.selector,geometry,item.el);
+          operation.placementRisk = risky;
         });
         pushHistory();
         renderOperations();
         applyOperationsToPreview();
-        toast(dragEntries.length+' öğe birlikte taşındı');
+        toast(risky ? dragEntries.length+' öğe taşındı; çakışma riski kontrol listesine eklendi' : dragEntries.length+' öğe birlikte taşındı',risky?'error':'ok');
         return;
       }
-      if (dropTarget) {
-        const targetSelector = selectorForEditing(dropTarget);
-        if (targetSelector && targetSelector !== sourceSelector) {
-          upsertFlowMove(sourceSelector, targetSelector, dropPosition);
+      if (mode !== 'free') {
+        if (committedPlan?.targetSelector && committedPlan.targetSelector !== sourceSelector) {
+          upsertFlowMove(sourceSelector,committedPlan.targetSelector,committedPlan.position);
           const movedElement = safeQuery(doc, sourceSelector);
           if (movedElement) selectElement(movedElement);
-          toast('Öğe akış içinde yeni konumuna taşındı');
+          buildOutlineIndex();
+          toast(mode === 'grid' ? 'Öğe grid/flex alanındaki gösterilen konuma taşındı' : 'Öğe akıştaki gösterilen konuma taşındı');
           return;
         }
-      }
-      if (!canPlaceElement(source, latest.dx, latest.dy)) {
-        toast('Konum alan dışına taşıyor veya başka bir öğeyle çakışıyor', 'error');
+        toast('Geçerli bir bırakma konumu seçilmedi','error');
         syncSelectionOverlay();
         return;
       }
-      geometryRecord(sourceSelector, {
+      const risky = !canPlaceElement(source,latest.dx,latest.dy);
+      const operation = geometryRecord(sourceSelector, {
         ...startGeometry,
         x:(startGeometry.x || 0) + latest.dx,
         y:(startGeometry.y || 0) + latest.dy
       }, source);
+      operation.placementRisk = risky;
       pushHistory();
       renderOperations();
       applyOperationsToPreview();
       selectElement(source, {additive:state.selectedItems.length>1});
-      toast('Manuel konum kaydedildi');
+      toast(risky ? 'Serbest konum kaydedildi; alan/çakışma riski kontrol listesine eklendi' : 'Serbest konum kaydedildi',risky?'error':'ok');
     };
+    const onUp = () => finish(false);
+    const onCancel = () => finish(true);
+    state.activeDragCancel = onCancel;
 
     doc.addEventListener('pointermove', onMove, true);
     doc.addEventListener('pointerup', onUp, true);
-    doc.addEventListener('pointercancel', onUp, true);
+    doc.addEventListener('pointercancel', onCancel, true);
   }
 
   function startEdgeResize(event, direction, grip) {
@@ -2613,6 +3265,59 @@ Ctrl + S        Nihai HTML indir</div>
     $('#widthRangeValue').textContent = '%' + percent;
   }
 
+  function isSafeAttributeName(name) {
+    const value = String(name || '').trim().toLowerCase();
+    if (!/^[a-z_:][a-z0-9_.:-]*$/.test(value)) return false;
+    if (['id','class','style','src','srcset','href','action','formaction'].includes(value) || value.startsWith('on')) return false;
+    return value === 'title' || value === 'role' || value === 'hidden' || value.startsWith('aria-') || value.startsWith('data-');
+  }
+
+  function renderAttributeEditor() {
+    const host = $('#attributeList');
+    const el = state.selectedEl;
+    if (!host || !el) return;
+    const attributes = Array.from(el.attributes || []).filter(attribute =>
+      !attribute.name.startsWith('data-rve-') && !attribute.name.startsWith('data-rv-')
+    ).slice(0,30);
+    host.innerHTML = attributes.length ? '' : '<div class="empty-list">Öznitelik yok.</div>';
+    attributes.forEach(attribute => {
+      const safe = isSafeAttributeName(attribute.name);
+      const row = document.createElement('div');
+      row.className = 'attribute-item';
+      row.innerHTML = '<code title="' + escapeHtml(attribute.name) + '">' + escapeHtml(attribute.name) + '</code>' +
+        '<span title="' + escapeHtml(attribute.value) + '">' + escapeHtml(attribute.value || '(boş)') + '</span>' +
+        (safe ? '<button class="btn danger small" data-attribute-remove="' + escapeHtml(attribute.name) + '" title="Özniteliği yama ile kaldır">×</button>' : '<button class="btn small" disabled title="Kaynak bağımlılıklarını korumak için kilitli">•</button>');
+      host.appendChild(row);
+    });
+  }
+
+  function upsertAttribute(selector, name, value) {
+    const cleanName = String(name || '').trim().toLowerCase();
+    if (!isSafeAttributeName(cleanName)) {
+      toast('Yalnızca title, role, hidden, aria-* ve data-* öznitelikleri güvenle değiştirilebilir','error');
+      return null;
+    }
+    let operation = state.operations.find(op => op.type === 'attribute' && op.selector === selector && op.name === cleanName);
+    const values = {
+      type:'attribute',
+      selector,
+      name:cleanName,
+      value:value === null ? null : String(value),
+      group:'Genel',
+      context:currentContextText(),
+      enabled:true
+    };
+    if (!operation) addOperation(values);
+    else {
+      Object.assign(operation,values,{updatedAt:new Date().toISOString()});
+      pushHistory();
+      applyOperationsToPreview();
+      updateInstructionForOperation(operation);
+    }
+    renderAttributeEditor();
+    return operation || values;
+  }
+
   function findSourceNeedle(el) {
     if (!state.originalSource) return null;
     const cacheKey = state.selectedSelector || selectorFor(el);
@@ -2670,6 +3375,37 @@ Ctrl + S        Nihai HTML indir</div>
       'KAYNAK SATIRI: yaklaşık ' + line + '\n' +
       'EŞLEŞEN BAŞLANGIÇ: ' + found.match.slice(0,180) + '\n\n' +
       'ÜST/ALT BAĞLAM:\n' + numbered;
+  }
+
+  function searchSource() {
+    const needle = ($('#sourceSearch')?.value || '').trim();
+    if (!needle || !state.originalSource) {
+      toast('Aranacak kaynak metnini yazın','error');
+      return;
+    }
+    if (state.sourceViewMode !== 'full') {
+      state.sourceViewMode = 'full';
+      $('#loadFullSourceButton').classList.add('active');
+      $('#sourceContextViewButton').classList.remove('active');
+      $('#sourceViewer').value = state.originalSource;
+    }
+    const source = state.originalSource;
+    const lower = source.toLocaleLowerCase('tr-TR');
+    const query = needle.toLocaleLowerCase('tr-TR');
+    let index = lower.indexOf(query,Math.max(0,state.sourceSearchIndex+1));
+    if (index < 0) index = lower.indexOf(query);
+    if (index < 0) {
+      toast('Kaynakta eşleşme bulunamadı','error');
+      state.sourceSearchIndex = -1;
+      return;
+    }
+    state.sourceSearchIndex = index;
+    const viewer = $('#sourceViewer');
+    viewer.focus();
+    viewer.setSelectionRange(index,index+needle.length);
+    const line = source.slice(0,index).split('\n').length;
+    viewer.scrollTop = Math.max(0,(line-4) * 15);
+    toast('Eşleşme · yaklaşık satır ' + line);
   }
 
   function scriptBlocks(source) {
@@ -2731,6 +3467,7 @@ Ctrl + S        Nihai HTML indir</div>
     if (op.type === 'style') lines.push('CSS: ' + Object.entries(op.declarations).map(([k,v]) => k + ': ' + v).join('; '), 'KAPSAM: ' + op.scope);
     if (op.type === 'hide') lines.push('YÖNTEM: Kaynaktan silme yok; CSS ile güvenli gizleme.');
     if (op.type === 'text') lines.push('YENİ METİN: ' + op.value, 'YÖNTEM: Sayfa çalıştıktan sonra metin düğümü güncellenir.');
+    if (op.type === 'attribute') lines.push('ÖZNİTELİK: ' + op.name, 'DEĞER: ' + (op.value === null ? '(kaldır)' : op.value), 'YÖNTEM: Güvenli öznitelik çalışma zamanında uygulanır.');
     if (op.type === 'portal') {
       lines.push('HEDEF KONUM: ' + op.target, 'YERLEŞTİRME: ' + op.position, 'YÖNTEM: Öğe kopyalanmadan gerçek DOM düğümü taşınır.');
       if (op.trigger) lines.push('OTOMATİK TETİKLEYİCİ: ' + op.trigger);
@@ -2746,10 +3483,25 @@ Ctrl + S        Nihai HTML indir</div>
     if (op.type === 'style' && String(op.mode || '').startsWith('table-')) return 'Tablo aracı';
     if (op.type === 'style' && String(op.mode || '').startsWith('auto-repair')) return 'Otomatik yerleşim onarımı';
     if (op.type === 'portal' && op.mode === 'flow') return 'Akışta taşıma';
-    return ({style:'Boyut / görünüm', hide:'Güvenli gizle', text:'Metin değişikliği', portal:'Dinamik taşıma'}[op.type] || op.type);
+    return ({style:'Boyut / görünüm', hide:'Güvenli gizle', text:'Metin değişikliği', attribute:'Güvenli öznitelik', portal:'Dinamik taşıma'}[op.type] || op.type);
   }
 
   function currentContextText() { return $('#sourceContext').textContent || ''; }
+
+  function invalidateValidation() {
+    state.lastValidation = null;
+    const status = $('#releaseStatus');
+    if (status) {
+      status.className = 'status-badge';
+      status.textContent = state.originalSource ? 'Kontrol güncel değil' : 'Kontrol bekleniyor';
+    }
+    const summary = $('#verificationSummary');
+    if (summary) {
+      summary.className = 'release-card';
+      summary.innerHTML = '<strong>Kontrol güncel değil</strong><span>Son değişikliklerden sonra nihai kontrolleri yeniden çalıştırın.</span>';
+    }
+    renderNeedsChecklist();
+  }
 
   function pushHistory() {
     const snapshot = JSON.stringify({
@@ -2764,6 +3516,7 @@ Ctrl + S        Nihai HTML indir</div>
     state.history.push(snapshot);
     if (state.history.length > 80) state.history.shift();
     state.historyIndex = state.history.length - 1;
+    invalidateValidation();
     updateHistoryButtons();
   }
 
@@ -2786,6 +3539,7 @@ Ctrl + S        Nihai HTML indir</div>
       const selected = safeQuery(frameDocument(), selector);
       if (selected) selectElement(selected, {additive:index>0});
     });
+    invalidateValidation();
     updateHistoryButtons();
     Logger.ok('Geçmiş adımı uygulandı; çalışma alanı yeniden yüklenmeden korundu.');
   }
@@ -2839,7 +3593,7 @@ Ctrl + S        Nihai HTML indir</div>
   }
 
   function generatePatchCss() {
-    const chunks = ['/* Regnum Evrensel HTML Editörü V4.1 · Akış, masaüstü ve alan korumalı yamalar */'];
+    const chunks = ['/* Regnum Evrensel HTML Editörü V4.3 · Kılavuzlu akış, masaüstü ve alan korumalı yamalar */'];
     if (state.layoutProtection) {
       chunks.push(
         '[data-rve-layout-guard]{box-sizing:border-box!important;min-width:0!important;max-width:100%!important;}',
@@ -2865,7 +3619,7 @@ Ctrl + S        Nihai HTML indir</div>
   }
 
   function runtimeOperations() {
-    return state.operations.filter(op => op.enabled && (op.type === 'text' || op.type === 'portal')).map(op => {
+    return state.operations.filter(op => op.enabled && (op.type === 'text' || op.type === 'portal' || op.type === 'attribute')).map(op => {
       const clean = {...op};
       delete clean.context;
       delete clean.createdAt;
@@ -2995,6 +3749,14 @@ Ctrl + S        Nihai HTML indir</div>
           var textRef=references[op.id];
           if(!textRef||!textRef.el||!textRef.el.isConnected)textRef=references[op.id]={el:one(op.selector)};
           if(textRef.el)directText(textRef.el,op.value);
+        }
+        if(op.type==='attribute'){
+          var attrRef=references[op.id];
+          if(!attrRef||!attrRef.el||!attrRef.el.isConnected)attrRef=references[op.id]={el:one(op.selector)};
+          if(attrRef.el){
+            if(op.value===null)attrRef.el.removeAttribute(op.name);
+            else attrRef.el.setAttribute(op.name,op.value);
+          }
         }
         if(op.type==='portal'){
           if(op.trigger&&!triggered[op.id]){
@@ -3142,9 +3904,17 @@ Ctrl + S        Nihai HTML indir</div>
         applyDirectText(el, op.value, baseline);
       }
     });
+    state.operations.filter(op => op.enabled && op.type === 'attribute').forEach(op => {
+      const el = safeQuery(doc,op.selector);
+      if (!el || !isSafeAttributeName(op.name)) return;
+      captureAttributeBaseline(op.selector,op.name,el);
+      if (op.value === null) el.removeAttribute(op.name);
+      else el.setAttribute(op.name,String(op.value));
+    });
     state.operations.filter(op => op.enabled && op.type === 'portal').forEach(op => applyPortalPreview(op, doc));
     applyPreviewLayoutProtection(doc);
     renderOperations();
+    if (state.selectedEl?.isConnected) renderAttributeEditor();
     requestAnimationFrame(syncSelectionOverlay);
   }
 
@@ -3165,6 +3935,14 @@ Ctrl + S        Nihai HTML indir</div>
     return baseline;
   }
 
+  function captureAttributeBaseline(selector, name, el) {
+    const key = selector + '\u0000' + name;
+    if (state.previewBaselines.attributes.has(key)) return state.previewBaselines.attributes.get(key);
+    const baseline = {el,name,had:el.hasAttribute(name),value:el.getAttribute(name)};
+    state.previewBaselines.attributes.set(key,baseline);
+    return baseline;
+  }
+
   function restorePreviewBaselines() {
     const texts = state.previewBaselines?.texts || new Map();
     texts.forEach(baseline => {
@@ -3176,6 +3954,12 @@ Ctrl + S        Nihai HTML indir</div>
         baseline.el.textContent = baseline.leafValue;
       }
       baseline.inserted = null;
+    });
+    const attributes = state.previewBaselines?.attributes || new Map();
+    attributes.forEach(baseline => {
+      if (!baseline.el?.isConnected) return;
+      if (baseline.had) baseline.el.setAttribute(baseline.name,baseline.value);
+      else baseline.el.removeAttribute(baseline.name);
     });
     const portals = Array.from((state.previewBaselines?.portals || new Map()).values()).reverse();
     portals.forEach(baseline => {
@@ -3382,52 +4166,191 @@ Ctrl + S        Nihai HTML indir</div>
         if (op.type === 'style') summary = Object.entries(op.declarations).map(([k,v]) => k + ': ' + v).join('; ');
         if (op.type === 'hide') summary = 'display: none';
         if (op.type === 'text') summary = '“' + op.value.slice(0,80) + '”';
+        if (op.type === 'attribute') summary = op.name + ': ' + (op.value === null ? '(kaldır)' : op.value);
         if (op.type === 'portal') summary = '→ ' + op.target + ' (' + op.position + ')' + (op.trigger ? ' · tetikleyici: ' + op.trigger : '');
+        if (op.placementRisk) summary += ' · yerleşim riski';
         item.innerHTML =
           '<div class="operation-head"><strong>' + escapeHtml(operationLabel(op)) + '</strong><span>#' + (index+1) + '</span></div>' +
           '<code>' + escapeHtml(target) + '</code><p>' + escapeHtml(summary) + '</p>' +
-          '<div class="operation-actions"><button class="btn small" data-op-toggle="' + escapeHtml(op.id) + '">' + (op.enabled ? 'Devre dışı' : 'Etkinleştir') + '</button><button class="btn danger small" data-op-remove="' + escapeHtml(op.id) + '">Kaldır</button></div>';
+          '<div class="operation-actions"><button class="btn small" data-op-focus="' + escapeHtml(op.id) + '">Hedefi Bul</button><button class="btn small" data-op-toggle="' + escapeHtml(op.id) + '">' + (op.enabled ? 'Devre dışı' : 'Etkinleştir') + '</button><button class="btn danger small" data-op-remove="' + escapeHtml(op.id) + '">Kaldır</button></div>';
         body.appendChild(item);
       });
       list.appendChild(wrapper);
     });
   }
 
-  function validateProject() {
-    if (!state.originalSource) return;
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(state.originalSource, 'text/html');
-    const ids = new Map();
-    doc.querySelectorAll('[id]').forEach(el => ids.set(el.id, (ids.get(el.id) || 0) + 1));
-    const duplicates = Array.from(ids).filter(([,count]) => count > 1);
-    const missing = [];
-    const previewDoc = frameDocument();
-    state.operations.filter(op => op.enabled).forEach(op => {
-      if (op.selector && !safeQuery(previewDoc, op.selector)) missing.push(op.selector);
-      if (op.type === 'portal') {
-        if (!safeQuery(previewDoc, op.source)) missing.push(op.source);
-        if (!safeQuery(previewDoc, op.target)) missing.push(op.target);
-      }
+  function fullScriptBlocks(source) {
+    return String(source || '').match(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi) || [];
+  }
+
+  function countOutputBlock(source, id, tagName) {
+    const pattern = new RegExp("<" + tagName + "\\b[^>]*\\bid=[\"']" + escapeRegExp(id) + "[\"']", 'gi');
+    return (String(source || '').match(pattern) || []).length;
+  }
+
+  function inspectLayoutIssues() {
+    const doc = frameDocument();
+    if (!doc) return {overflow:0, collision:0};
+    let overflow = 0;
+    const candidates = Array.from(doc.querySelectorAll('table,canvas,svg,[class*="table" i],[class*="chart" i],[class*="panel" i],[class*="card" i]')).slice(0,500);
+    candidates.forEach(el => {
+      if (el.closest?.('#rve-selection-overlay,#rve-context-menu')) return;
+      const rect = el.getBoundingClientRect();
+      const parentRect = el.parentElement?.getBoundingClientRect();
+      if (parentRect && rect.width > 1 && rect.height > 1 &&
+          (rect.right > parentRect.right + 2 || rect.left < parentRect.left - 2 || el.scrollWidth > el.clientWidth + 2)) overflow++;
     });
-    const scriptCountBefore = (state.originalSource.match(/<script\b/gi) || []).length;
-    const output = buildOutput();
-    const scriptCountAfter = (output.match(/<script\b/gi) || []).length;
-    const expectedExtra = (runtimeOperations().length || state.layoutProtection) ? 1 : 0;
-    const scriptIntegrity = scriptCountAfter === scriptCountBefore + expectedExtra;
-    const issues = [];
-    if (duplicates.length) issues.push(duplicates.length + ' tekrarlanan ID');
-    if (missing.length) issues.push(missing.length + ' bulunamayan seçici');
-    if (!scriptIntegrity) issues.push('script sayısı beklenenden farklı');
-    if (state.frameErrors.length) issues.push(state.frameErrors.length + ' çalışma zamanı hatası');
-    $('#integritySummary').className = 'selected-card' + (issues.length ? '' : '');
+    return {
+      overflow,
+      collision:doc.querySelectorAll('[data-rve-stack-repair]').length
+    };
+  }
+
+  function renderNeedsChecklist() {
+    const host = $('#needsChecklist');
+    if (!host) return;
+    const results = state.lastValidation?.checks || {};
+    host.innerHTML = REQUIREMENTS.map(item => {
+      const result = results[item.key];
+      const status = result?.status || (item.key === 'source' && state.originalSource ? 'pass' : '');
+      const icon = status === 'pass' ? '✓' : status === 'warn' ? '!' : status === 'fail' ? '×' : '·';
+      const detail = result?.detail || item.detail;
+      return '<div class="check-item ' + status + '"><span class="check-icon">' + icon + '</span><div><strong>' +
+        escapeHtml(item.label) + '</strong><p>' + escapeHtml(detail) + '</p></div></div>';
+    }).join('');
+  }
+
+  function showCheckPane() {
+    const button = document.querySelector('[data-pane="checkPane"]');
+    if (button) setActivePane(button);
+    $('#app').classList.remove('right-closed');
+  }
+
+  function renderValidationResult(result) {
+    state.lastValidation = result;
+    renderNeedsChecklist();
+    const summary = $('#verificationSummary');
+    summary.className = 'release-card ' + (result.ok ? 'pass' : 'fail');
+    summary.innerHTML = '<strong>' + (result.ok ? 'Nihai çıktı hazır' : 'Nihai çıktı engellendi') + '</strong><span>' +
+      escapeHtml(result.ok
+        ? 'Kaynak birebir korundu · #' + result.outputHash + (result.warnings.length ? ' · ' + result.warnings.length + ' uyarı' : '')
+        : result.errors.length + ' kritik hata düzeltilmeli') + '</span>';
+    $('#releaseStatus').className = 'status-badge ' + (result.ok ? 'ready' : '');
+    $('#releaseStatus').textContent = result.ok ? 'Çıktı doğrulandı' : result.errors.length + ' kritik hata';
+    const rows = [
+      ...result.errors.map(text => ({type:'fail',label:'Kritik',text})),
+      ...result.warnings.map(text => ({type:'warn',label:'Uyarı',text}))
+    ];
+    $('#verificationDetails').innerHTML = rows.length ? rows.map(item =>
+      '<div class="check-item ' + item.type + '"><span class="check-icon">' + (item.type === 'fail' ? '×' : '!') +
+      '</span><div><strong>' + item.label + '</strong><p>' + escapeHtml(item.text) + '</p></div></div>'
+    ).join('') : '<div class="check-item pass"><span class="check-icon">✓</span><div><strong>Tüm kontroller temiz</strong><p>Kritik hata veya uyarı bulunmadı.</p></div></div>';
+    $('#integritySummary').className = 'selected-card';
     $('#integritySummary').innerHTML =
-      '<div class="' + (issues.length ? 'risk' : 'risk safe') + '">' + (issues.length ? issues.join(' · ') : 'Kaynak koruma ve seçici kontrolleri başarılı.') + '</div>' +
-      '<div class="selected-meta">Orijinal script: ' + scriptCountBefore + ' · Çıktı script: ' + scriptCountAfter + ' · Yama: ' + state.operations.length + '</div>';
-    if (duplicates.length) Logger.warn('Tekrarlanan ID: ' + duplicates.map(([id,count]) => id + '×' + count).join(', '));
-    if (missing.length) Logger.warn('Bulunamayan seçiciler: ' + Array.from(new Set(missing)).join(', '));
-    if (!scriptIntegrity) Logger.error('Script bütünlüğü kontrolü başarısız.');
-    else Logger.ok('Doğrulama tamamlandı. Orijinal script blokları korundu.');
-    toast(issues.length ? 'Doğrulama uyarılarla tamamlandı' : 'Doğrulama başarılı', issues.length ? 'error' : 'ok');
+      '<div class="risk ' + (result.ok ? 'safe' : '') + '">' + (result.ok ? 'Kaynak ve çıktı bütünlüğü doğrulandı.' : result.errors.join(' · ')) + '</div>' +
+      '<div class="selected-meta">Kaynak #' + state.sourceHash + ' · Çıktı #' + result.outputHash + ' · ' + state.operations.length + ' işlem</div>';
+  }
+
+  function validateProject(options = {}) {
+    if (!state.originalSource) return null;
+    const output = buildOutput();
+    const strippedOutput = sourceWithoutPreviousPatches(output);
+    const parser = new DOMParser();
+    const sourceDoc = parser.parseFromString(state.originalSource, 'text/html');
+    const previewDoc = frameDocument();
+    const errors = [];
+    const warnings = [];
+    const checks = {};
+    const check = (key, status, detail) => { checks[key] = {status, detail}; };
+
+    const sourceHashValid = hashText(state.originalSource) === state.sourceHash;
+    check('source', sourceHashValid ? 'pass' : 'fail', sourceHashValid ? 'Kaynak yüklendi ve özeti doğrulandı: #' + state.sourceHash : 'Bellekteki kaynak özeti değişti.');
+    if (!sourceHashValid) errors.push('Yüklenen kaynak özeti değişti.');
+
+    const sourceExact = strippedOutput === state.originalSource;
+    check('sourceExact', sourceExact ? 'pass' : 'fail', sourceExact ? 'Yamalar çıkarıldığında çıktı giriş kaynağıyla karakter karakter aynı.' : 'Yamalar çıkarıldığında kaynak birebir geri alınamıyor.');
+    if (!sourceExact) errors.push('Çıktıdan V4.3 yamaları çıkarıldığında orijinal kaynak birebir geri alınamadı.');
+
+    const originalScripts = fullScriptBlocks(state.originalSource);
+    const preservedScripts = fullScriptBlocks(strippedOutput);
+    const runtimeExpected = Boolean(runtimeOperations().length || state.layoutProtection);
+    const runtimeCount = countOutputBlock(output, PATCH_RUNTIME_ID, 'script');
+    const scriptsExact = JSON.stringify(originalScripts) === JSON.stringify(preservedScripts) && runtimeCount === (runtimeExpected ? 1 : 0);
+    check('scripts', scriptsExact ? 'pass' : 'fail', scriptsExact
+      ? originalScripts.length + ' orijinal script değişmeden korundu; V4.3 çalışma zamanı sayısı doğru.'
+      : 'Script blokları veya V4.3 çalışma zamanı sayısı beklenenle eşleşmiyor.');
+    if (!scriptsExact) errors.push('Script bütünlüğü veya ek çalışma zamanı sayısı uyuşmuyor.');
+
+    const embedded = extractEmbeddedOperations(output);
+    const manifestCount = (output.match(new RegExp('<!--\\s*' + PATCH_MANIFEST_MARKER, 'gi')) || []).length;
+    const manifestExact = manifestCount === 1 && embedded && JSON.stringify(embedded.operations) === JSON.stringify(state.operations) &&
+      embedded.layoutProtection === state.layoutProtection && embedded.desktopStandard === state.desktopStandard;
+    check('manifest', manifestExact ? 'pass' : 'fail', manifestExact ? state.operations.length + ' işlem çıktıdan eksiksiz geri okundu.' : 'Çıktı manifesti eksik veya editör durumu ile farklı.');
+    if (!manifestExact) errors.push('İşlem manifesti çıktıdan eksiksiz geri okunamadı.');
+
+    const invalidSelectors = [];
+    const missingSelectors = [];
+    const testedSelectors = new Set();
+    state.operations.filter(op => op.enabled).forEach(op => {
+      [op.selector, op.source, op.target].filter(Boolean).forEach(selector => {
+        if (testedSelectors.has(selector)) return;
+        testedSelectors.add(selector);
+        try {
+          if (!previewDoc?.querySelector(selector)) missingSelectors.push(selector);
+        } catch (_) { invalidSelectors.push(selector); }
+      });
+    });
+    if (invalidSelectors.length) errors.push(invalidSelectors.length + ' geçersiz CSS seçicisi var: ' + invalidSelectors.slice(0,4).join(', '));
+    if (missingSelectors.length) warnings.push(missingSelectors.length + ' seçici şu anki çalışma alanında bulunamadı; dinamik içerikse Excel/buton testiyle doğrulayın.');
+    check('selectors', invalidSelectors.length ? 'fail' : (missingSelectors.length ? 'warn' : 'pass'),
+      invalidSelectors.length ? invalidSelectors.length + ' geçersiz seçici bulundu.' :
+      missingSelectors.length ? missingSelectors.length + ' dinamik veya bulunamayan hedef var.' :
+      testedSelectors.size + ' hedef seçici geçerli ve çalışma alanında mevcut.');
+
+    let runtimeValid = true;
+    try { if (runtimeExpected) new Function(buildRuntimeScript()); } catch (error) {
+      runtimeValid = false;
+      errors.push('V4.3 çalışma zamanı derlenemedi: ' + error.message);
+    }
+    check('runtime', runtimeValid ? 'pass' : 'fail', runtimeValid ? 'Eklenen JavaScript çalışma zamanı sözdizimi doğrulandı.' : 'Çalışma zamanı JavaScript sözdizimi hatalı.');
+
+    const ids = new Map();
+    sourceDoc.querySelectorAll('[id]').forEach(el => ids.set(el.id, (ids.get(el.id) || 0) + 1));
+    const duplicates = Array.from(ids).filter(([,count]) => count > 1);
+    if (duplicates.length) warnings.push(duplicates.length + ' tekrarlanan ID kaynak dosyada zaten mevcut: ' + duplicates.slice(0,5).map(([id,count]) => id + '×' + count).join(', '));
+    if (state.frameErrors.length) warnings.push(state.frameErrors.length + ' hedef HTML çalışma zamanı hatası kaydedildi.');
+    const placementRisks = state.operations.filter(op => op.enabled && op.placementRisk).length;
+    if (placementRisks) warnings.push(placementRisks + ' serbest taşıma işlemi alan/çakışma riski taşıyor; hedef ekran boyutlarında gözden geçirin.');
+    const layout = inspectLayoutIssues();
+    if (layout.overflow) warnings.push(layout.overflow + ' olası taşma bulundu; gerekirse “Taşmaları Onar” aracını çalıştırın.');
+    if (layout.collision) warnings.push(layout.collision + ' alan çakışmaya karşı otomatik istiflendi.');
+    const layoutStatus = state.frameErrors.length || layout.overflow || layout.collision || duplicates.length || placementRisks ? 'warn' : 'pass';
+    check('layout', layoutStatus, layoutStatus === 'pass'
+      ? 'Görünür taşma, çakışma veya kayıtlı çalışma hatası bulunmadı.'
+      : [duplicates.length + ' tekrar ID', state.frameErrors.length + ' çalışma hatası', layout.overflow + ' taşma', layout.collision + ' korunan çakışma', placementRisks + ' serbest taşıma riski'].join(' · '));
+
+    const styleExpected = Boolean(state.operations.some(op => op.enabled && (op.type === 'style' || op.type === 'hide')) || state.layoutProtection);
+    const styleCount = countOutputBlock(output, PATCH_STYLE_ID, 'style');
+    if (styleCount !== (styleExpected ? 1 : 0)) errors.push('V4.3 CSS yama bloğu sayısı beklenenle eşleşmiyor.');
+    const ok = errors.length === 0;
+    check('release', ok ? 'pass' : 'fail', ok ? 'Kritik kontroller geçti; kontrollü indirme açık.' : errors.length + ' kritik hata nedeniyle indirme kapalı.');
+
+    const result = {
+      ok,
+      checks,
+      errors,
+      warnings:Array.from(new Set(warnings)),
+      output,
+      outputHash:hashText(output),
+      checkedAt:new Date().toISOString()
+    };
+    renderValidationResult(result);
+    if (options.openPanel !== false) showCheckPane();
+    if (!options.quiet) toast(ok ? (result.warnings.length ? 'Kontrol tamamlandı; uyarıları inceleyin' : 'Nihai kontrol başarılı') : 'Kritik hata: çıktı engellendi', ok ? 'ok' : 'error');
+    result.warnings.forEach(message => Logger.warn(message));
+    result.errors.forEach(message => Logger.error(message));
+    if (ok) Logger.ok('Nihai kontrol tamamlandı. Orijinal kaynak birebir korundu; çıktı #' + result.outputHash + '.');
+    return result;
   }
 
   function projectData() {
@@ -3448,7 +4371,7 @@ Ctrl + S        Nihai HTML indir</div>
 
   function reportText() {
     const lines = [
-      'REGNUM EVRENSEL HTML EDİTÖRÜ V4.1',
+      'REGNUM EVRENSEL HTML EDİTÖRÜ V4.3',
       'DEĞİŞİKLİK RAPORU',
       '',
       'Dosya: ' + state.sourceName,
@@ -3553,6 +4476,19 @@ Ctrl + S        Nihai HTML indir</div>
     return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'');
   }
 
+  const GHOST_PRESETS = {
+    universal:{
+      headers:'ID,Tarih,Kategori,Durum,Tutar,Oran,Eposta,Telefon,Aciklama',
+      sheet:'Veri',
+      rows:25
+    },
+    hotel:{
+      headers:'RezervasyonNo,OdaNo,MisafirAdi,GelisTarihi,CikisTarihi,OdaTipi,Pansiyon,Acenta,Milliyet,Departman,VIP,KartTipi,YorumDurumu,Yorum',
+      sheet:'Rezervasyonlar',
+      rows:40
+    }
+  };
+
   function ghostValue(header, index) {
     const key=normalizeHeader(header);
     const date=new Date(); date.setDate(date.getDate()+1+(index%20));
@@ -3565,12 +4501,19 @@ Ctrl + S        Nihai HTML indir</div>
     if (/paychd|fchd|infant|child|cocuk|bebek/.test(key)) return index%3===0?1:0;
     if (/rtype|rrtype|odatipi/.test(key)) return ['PPR','SPR','DLX'][index%3];
     if (/agent|acenta|agency/.test(key)) return ['TEST ACENTA','ODEON TEST','DIREKT'][index%3];
+    if (/board|pansiyon/.test(key)) return ['Ultra Her Şey Dahil','Yarım Pansiyon','Oda Kahvaltı'][index%3];
+    if (/nationality|milliyet|uyruk/.test(key)) return ['TR','DE','GB','NL'][index%4];
+    if (/department|departman|birim/.test(key)) return ['Ön Büro','Yiyecek İçecek','Misafir İlişkileri'][index%3];
     if (/commentstatus|yorumdurum/.test(key)) return ['Olumlu','Olumsuz','Öneri'][index%3];
     if (/commentsource|yorumkaynak/.test(key)) return 'Test';
     if (/comment|yorum|feedback/.test(key)) return 'Editör test kaydı '+(index+1);
     if (/vip/.test(key)) return index%4===0?'VIP':'';
     if (/cardtype|karttipi/.test(key)) return index%4===0?'Silver Card':'';
     if (/value|deger|gelir|revenue|amount|tutar|point|puan/.test(key)) return 100+(index*25);
+    if (/ratio|oran|rate|yuzde/.test(key)) return Number(((index%10+1)/10).toFixed(2));
+    if (/email|eposta|mail/.test(key)) return 'test'+(index+1)+'@example.com';
+    if (/phone|telefon|gsm/.test(key)) return '+90 555 000 '+String(index+1).padStart(4,'0');
+    if (/description|aciklama|not/.test(key)) return 'Otomatik test kaydı '+(index+1);
     if (/id$|no$|number|sayi/.test(key)) return index+1;
     if (/status|durum/.test(key)) return ['Aktif','Bekliyor','Tamamlandı'][index%3];
     if (/category|kategori/.test(key)) return ['A','B','C'][index%3];
@@ -3668,6 +4611,7 @@ Ctrl + S        Nihai HTML indir</div>
       toast('Dosya aktarıldı; içerik değişimi doğrulanamadı','error');
     }
     scanUploadTargets();
+    buildOutlineIndex();
   }
 
   function signed(value){return (value>=0?'+':'')+value}
@@ -3778,10 +4722,11 @@ Ctrl + S        Nihai HTML indir</div>
     for(let i=1;i<=12;i++){
       const option=document.createElement('option');option.value=String(i);option.textContent=i+'/12 kolon';$('#gridSpan').appendChild(option);
     }
-    Logger.ok('Regnum Evrensel HTML Editörü V4.1 başlatıldı.');
-    Logger.info('Manuel taşıma, ok tuşları, çoklu seçim ve masaüstü standardı hazır.');
+    Logger.ok('Regnum Evrensel HTML Editörü V4.3 başlatıldı.');
+    Logger.info('Canlı DOM ağacı, kılavuzlu taşıma, güvenli öznitelikler ve kontrollü çıktı kapısı hazır.');
     renderGroupControls();
     updateMultiSelectButton();
+    renderNeedsChecklist();
 
     $('#openHtmlButton').addEventListener('click',()=>$('#htmlFileInput').click());
     $('#welcomeOpenButton').addEventListener('click',()=>$('#htmlFileInput').click());
@@ -3817,20 +4762,90 @@ Ctrl + S        Nihai HTML indir</div>
       $('#sourceViewer').value = state.originalSource;
       toast('Tam kaynak görünümü yüklendi');
     });
+    $('#sourceSearch').addEventListener('input',()=>{state.sourceSearchIndex=-1});
+    $('#sourceSearch').addEventListener('keydown',event=>{
+      if(event.key==='Enter'){event.preventDefault();searchSource()}
+    });
+    $('#sourceSearchNextButton').addEventListener('click',searchSource);
     $('#pasteHtmlButton').addEventListener('click',()=>openModal('pasteModal'));
     $('#helpButton').addEventListener('click',()=>openModal('helpModal'));
     $('#shortcutsButton').addEventListener('click',()=>openModal('shortcutsModal'));
+    $('#commandPaletteButton').addEventListener('click',openCommandPalette);
     $('#loadPastedSourceButton').addEventListener('click',()=>{
       loadSource($('#pasteSource').value,'yapistirilan-dashboard.html');closeModal('pasteModal');
     });
     $$('[data-close-modal]').forEach(button=>button.addEventListener('click',()=>closeModal(button.dataset.closeModal)));
     $$('.modal-backdrop').forEach(modal=>modal.addEventListener('click',event=>{if(event.target===modal)modal.hidden=true}));
+    $('#outlineSearch').addEventListener('input',renderOutline);
+    $('#outlineList').addEventListener('click',event=>{
+      const toggle=event.target.closest('[data-outline-toggle]');
+      if(toggle){
+        event.preventDefault();
+        const selector=toggle.dataset.outlineToggle;
+        if(state.outlineCollapsed.has(selector))state.outlineCollapsed.delete(selector);
+        else state.outlineCollapsed.add(selector);
+        renderOutline();
+        return;
+      }
+      const button=event.target.closest('[data-outline-selector]');
+      if(!button)return;
+      const el=safeQuery(frameDocument(),button.dataset.outlineSelector);
+      if(!el)return;
+      el.scrollIntoView?.({behavior:'smooth',block:'center',inline:'center'});
+      selectElement(el);
+    });
+    $('#outlineList').addEventListener('mouseover',event=>{
+      const button=event.target.closest('[data-outline-selector]');
+      const el=button?safeQuery(frameDocument(),button.dataset.outlineSelector):null;
+      if(el&&el!==state.selectedEl)el.setAttribute('data-rve-hover','');
+    });
+    $('#outlineList').addEventListener('mouseout',event=>{
+      const button=event.target.closest('[data-outline-selector]');
+      const el=button?safeQuery(frameDocument(),button.dataset.outlineSelector):null;
+      if(el&&el!==state.selectedEl)el.removeAttribute('data-rve-hover');
+    });
+    $('#outlineCollapseButton').addEventListener('click',()=>{
+      const allCollapsed=state.outlineEntries.filter(item=>item.children.length).every(item=>state.outlineCollapsed.has(item.selector));
+      state.outlineCollapsed = allCollapsed ? new Set() : new Set(state.outlineEntries.filter(item=>item.children.length).map(item=>item.selector));
+      $('#outlineCollapseButton').textContent=allCollapsed?'Daralt':'Tümünü Aç';
+      renderOutline();
+    });
+    $('#outlineRefreshButton').addEventListener('click',()=>{
+      buildOutlineIndex();
+      toast('Canlı DOM ağacı yenilendi');
+    });
+    $('#selectionBreadcrumb').addEventListener('click',event=>{
+      const button=event.target.closest('[data-breadcrumb-selector]');
+      if(!button)return;
+      const el=safeQuery(frameDocument(),button.dataset.breadcrumbSelector);
+      if(el)selectElement(el);
+    });
+    $('#commandSearch').addEventListener('input',()=>{
+      state.commandIndex=0;
+      renderCommandPalette();
+    });
+    $('#commandSearch').addEventListener('keydown',event=>{
+      const count=paletteItems().length;
+      if(event.key==='ArrowDown'&&count){event.preventDefault();state.commandIndex=(state.commandIndex+1)%count;renderCommandPalette()}
+      if(event.key==='ArrowUp'&&count){event.preventDefault();state.commandIndex=(state.commandIndex-1+count)%count;renderCommandPalette()}
+      if(event.key==='Enter'){event.preventDefault();executePaletteItem(state.commandIndex)}
+      if(event.key==='Escape'){event.preventDefault();closeModal('commandPaletteModal')}
+    });
+    $('#commandResults').addEventListener('click',event=>{
+      const button=event.target.closest('[data-command-index]');
+      if(button)executePaletteItem(Number(button.dataset.commandIndex));
+    });
 
     $$('.tab').forEach(button=>button.addEventListener('click',()=>setActivePane(button)));
     $$('.viewport-buttons .btn').forEach(button=>button.addEventListener('click',()=>{
       $$('.viewport-buttons .btn').forEach(item=>item.classList.remove('active'));button.classList.add('active');
       state.viewport=button.dataset.viewport;
       $('#frameShell').style.width=state.viewport;
+    }));
+    $$('[data-move-mode]').forEach(button=>button.addEventListener('click',()=>{
+      state.moveMode=button.dataset.moveMode;
+      $$('[data-move-mode]').forEach(item=>item.classList.toggle('active',item===button));
+      toast(({flow:'Akış modu: önce, içine veya sonra konumları gösterilir',grid:'Grid modu: grid/flex hücreleri hedeflenir',free:'Serbest mod: piksel konumu uyarıyla birlikte kaydedilir'})[state.moveMode]);
     }));
     $('#autoLayoutButton').addEventListener('click',()=>{
       state.layoutProtection=!state.layoutProtection;
@@ -3907,10 +4922,31 @@ Ctrl + S        Nihai HTML indir</div>
     });
     ['moveBeforeButton','moveBeforeButtonAlt'].forEach(id=>$('#'+id).addEventListener('click',()=>moveSelectedInFlow(-1)));
     ['moveAfterButton','moveAfterButtonAlt'].forEach(id=>$('#'+id).addEventListener('click',()=>moveSelectedInFlow(1)));
+    $$('[data-nudge]').forEach(button=>button.addEventListener('click',()=>{
+      const [dx,dy]=button.dataset.nudge.split(',').map(Number);
+      const step=Number($('#nudgeStep').value)||1;
+      nudgeSelection(dx*step,dy*step);
+    }));
+    $('#centerElementButton').addEventListener('click',centerSelectionHorizontally);
 
     $('#hideButton').addEventListener('click',hideSelectedElement);
 
     $('#editTextButton').addEventListener('click',openSelectedTextEditor);
+    $('#applyAttributeButton').addEventListener('click',()=>{
+      if(!state.selectedSelector)return;
+      const name=$('#attributeName').value.trim();
+      const value=$('#attributeValue').value;
+      if(upsertAttribute(state.selectedSelector,name,value)){
+        $('#attributeName').value='';
+        $('#attributeValue').value='';
+        toast('Güvenli öznitelik yaması eklendi');
+      }
+    });
+    $('#attributeList').addEventListener('click',event=>{
+      const button=event.target.closest('[data-attribute-remove]');
+      if(!button||!state.selectedSelector)return;
+      if(upsertAttribute(state.selectedSelector,button.dataset.attributeRemove,null))toast('Öznitelik kaldırma yaması eklendi');
+    });
     $('#applyTextButton').addEventListener('click',()=>{
       const value=$('#textEditValue').value;
       addOperation({type:'text',selector:state.selectedSelector,value,context:currentContextText()});
@@ -3948,8 +4984,15 @@ Ctrl + S        Nihai HTML indir</div>
     });
 
     $('#operationsList').addEventListener('click',event=>{
-      const toggle=event.target.closest('[data-op-toggle]'),remove=event.target.closest('[data-op-remove]');
+      const toggle=event.target.closest('[data-op-toggle]'),remove=event.target.closest('[data-op-remove]'),focus=event.target.closest('[data-op-focus]');
       const groupToggle=event.target.closest('[data-group-toggle]'),groupFocus=event.target.closest('[data-group-focus]');
+      if(focus){
+        const op=state.operations.find(item=>item.id===focus.dataset.opFocus);
+        const selector=op?.selector||op?.source;
+        const el=selector?safeQuery(frameDocument(),selector):null;
+        if(el){el.scrollIntoView?.({behavior:'smooth',block:'center',inline:'center'});selectElement(el)}
+        else toast('İşlem hedefi çalışma alanında bulunamadı','error');
+      }
       if(toggle){
         const op=state.operations.find(item=>item.id===toggle.dataset.opToggle);if(op){op.enabled=!op.enabled;pushHistory();applyOperationsToPreview();renderOperations()}
       }
@@ -3986,32 +5029,17 @@ Ctrl + S        Nihai HTML indir</div>
 
     $('#undoButton').addEventListener('click',()=>restoreHistory(state.historyIndex-1));
     $('#redoButton').addEventListener('click',()=>restoreHistory(state.historyIndex+1));
-    $('#validateButton').addEventListener('click',validateProject);
+    $('#validateButton').addEventListener('click',()=>validateProject());
+    $('#runReleaseCheckButton').addEventListener('click',()=>validateProject());
     $('#exportHtmlButton').addEventListener('click',()=>{
-      runLayoutAudit();
-      validateProject();
-      downloadText(state.sourceName.replace(/\.html?$/i,'')+'_nihai.html',buildOutput(),'text/html;charset=utf-8');
-      Logger.ok('Çalışan HTML çıktısı oluşturuldu.');
-    });
-    $('#exportProjectButton').addEventListener('click',()=>{
-      downloadText(state.sourceName.replace(/\.html?$/i,'')+'_editor_projesi.json',JSON.stringify(projectData(),null,2),'application/json;charset=utf-8');
-    });
-    $('#importProjectButton').addEventListener('click',()=>$('#projectFileInput').click());
-    $('#projectFileInput').addEventListener('change',async event=>{
-      const file=event.target.files[0];if(!file)return;
-      try{
-        const project=JSON.parse(await file.text());
-        if(!project.originalSource||!Array.isArray(project.operations))throw new Error('Geçersiz proje dosyası');
-        loadSource(project.originalSource,project.sourceName||'proje.html',{
-          operations:project.operations,
-          layoutProtection:project.layoutProtection !== false,
-          desktopStandard:project.desktopStandard !== false,
-          groups:project.groups,
-          activeGroup:project.activeGroup
-        });
-        toast('Editör projesi açıldı');
-      }catch(error){toast(error.message,'error');Logger.error(error.message)}
-      event.target.value='';
+      const result=validateProject({openPanel:true,quiet:true});
+      if(!result?.ok){
+        toast('Nihai HTML indirilmedi; kritik kontrol hatalarını düzeltin','error');
+        return;
+      }
+      downloadText(state.sourceName.replace(/\.html?$/i,'')+'_nihai.html',result.output,'text/html;charset=utf-8');
+      toast(result.warnings.length?'Nihai HTML indirildi; uyarılar raporda mevcut':'Nihai HTML doğrulanarak indirildi');
+      Logger.ok('Kontrollü HTML çıktısı oluşturuldu: #'+result.outputHash);
     });
     $('#copyManifestButton').addEventListener('click',()=>copyText(JSON.stringify(state.operations,null,2)));
     $('#downloadReportButton').addEventListener('click',()=>downloadText(state.sourceName.replace(/\.html?$/i,'')+'_degisiklik_raporu.txt',reportText()));
@@ -4023,6 +5051,13 @@ Ctrl + S        Nihai HTML indir</div>
       if(state.testFile)Logger.info('Test dosyası seçildi: '+state.testFile.name);
     });
     $('#scanUploadTargetsButton').addEventListener('click',scanUploadTargets);
+    $('#ghostPreset').addEventListener('change',event=>{
+      const preset=GHOST_PRESETS[event.target.value];
+      if(!preset)return;
+      $('#ghostHeaders').value=preset.headers;
+      $('#ghostRows').value=String(preset.rows);
+      $('#ghostSheet').value=preset.sheet;
+    });
     $('#injectRealFileButton').addEventListener('click',async()=>{
       try{await injectFile(state.testFile)}catch(error){Logger.error(error.message);toast(error.message,'error')}
     });
@@ -4033,6 +5068,10 @@ Ctrl + S        Nihai HTML indir</div>
     $('#toggleLeftButton').addEventListener('click',()=>$('#app').classList.toggle('left-closed'));
     $('#toggleRightButton').addEventListener('click',()=>$('#app').classList.toggle('right-closed'));
     $('#toggleLogButton').addEventListener('click',()=>$('#app').classList.toggle('log-closed'));
+    $('#copyLogButton').addEventListener('click',()=>{
+      const lines=$$('.log-line',$('#logBody')).map(line=>line.textContent.trim()).join('\n');
+      copyText(lines||'İşlem kaydı yok.');
+    });
     $('#clearLogButton').addEventListener('click',()=>$('#logBody').innerHTML='');
 
     document.addEventListener('keydown',handleEditorShortcut);
