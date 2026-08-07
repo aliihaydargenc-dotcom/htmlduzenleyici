@@ -547,16 +547,19 @@
       min-height: 0;
       flex: 1;
       position: relative;
-      display: grid;
-      place-items: center;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
       overflow: auto;
       padding: 14px;
+      /* safe centering: child margin auto centers when it fits, but avoids left clipping on overflow (common cause of right shift) */
     }
     .frame-shell {
       width: 100%;
       height: 100%;
       min-width: 320px;
       min-height: 420px;
+      max-width: 100%;
       position: relative;
       overflow: hidden;
       border: 1px solid #345046;
@@ -564,8 +567,20 @@
       background: white;
       box-shadow: var(--shadow);
       transition: width .2s ease;
+      flex: 0 0 auto;
+      margin: 0 auto; /* centers horizontally, but stays at left on overflow */
+      box-sizing: border-box;
+      align-self: stretch;
     }
-    iframe { width: 100%; height: 100%; display: block; border: 0; background: white; }
+    iframe {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      display: block;
+      border: 0;
+      background: white;
+      box-sizing: border-box;
+    }
     .welcome {
       position: absolute;
       inset: 0;
@@ -1582,6 +1597,15 @@ Ctrl + S        Nihai HTML indir</div>
     const bridgeStyle = doc.createElement('style');
     bridgeStyle.id = 'rve-editor-bridge-style';
     bridgeStyle.textContent =
+      '/* rve: preview normalization to prevent dashboard right shift / overflow in editor */' +
+      'html,body{margin:0!important;padding:0!important;box-sizing:border-box!important;max-width:100%!important;}' +
+      'html{overflow-x:clip!important;overflow-y:auto!important;box-sizing:border-box!important;scrollbar-gutter:stable!important;}' +
+      'body{overflow-x:clip!important;overflow-anchor:none!important;min-width:0!important;max-width:100%!important;position:relative!important;left:0!important;right:0!important;top:0!important;transform:none!important;filter:none!important;}' +
+      '*,*::before,*::after{box-sizing:border-box;min-width:0;}' +
+      'img,video,canvas,svg,iframe{max-width:100%!important;height:auto;box-sizing:border-box!important;}' +
+      'table{max-width:100%!important;box-sizing:border-box!important;}' +
+      '[style*=\"100vw\"],[style*=\"100VW\"]{max-width:100%!important;}' +
+      /* editor marks */
       '[data-rve-hover]{outline:2px dashed #00a9ff!important;outline-offset:2px!important;}' +
       '[data-rve-selected]{outline:3px solid #15c886!important;outline-offset:2px!important;}' +
       '[data-rve-multi-selected]{outline:3px solid #ffbe55!important;outline-offset:2px!important;}' +
@@ -1589,36 +1613,39 @@ Ctrl + S        Nihai HTML indir</div>
       '[data-rve-drop-container]{outline:2px dashed rgba(0,169,255,.6)!important;outline-offset:-3px!important;background-image:linear-gradient(rgba(0,169,255,.035),rgba(0,169,255,.035))!important;}' +
       '[data-rve-drop-active]{outline:3px solid #15c886!important;outline-offset:-4px!important;background-image:linear-gradient(rgba(21,200,134,.09),rgba(21,200,134,.09))!important;}' +
       '[data-rve-hidden-preview]{opacity:.16!important;filter:grayscale(1)!important;display:block!important;min-height:16px!important;}' +
-      '#rve-selection-overlay{position:fixed;display:none;z-index:2147483646;pointer-events:none;border:2px solid #15c886;box-sizing:border-box;}' +
-      '#rve-selection-overlay .rve-move{position:absolute!important;left:50%!important;top:-30px;transform:translateX(-50%)!important;width:auto!important;height:24px!important;min-width:82px!important;padding:0 9px!important;border:2px solid #fff!important;border-radius:6px!important;background:#087f5b!important;color:#fff!important;box-shadow:0 2px 8px rgba(0,0,0,.4)!important;font:800 10px/20px system-ui,sans-serif!important;letter-spacing:.06em!important;text-align:center!important;white-space:nowrap!important;pointer-events:auto!important;touch-action:none!important;cursor:grab!important;user-select:none!important;box-sizing:border-box!important;}' +
+      /* isolated editor UI - all with !important to resist user global div{...} rules */
+      '#rve-selection-overlay{all:initial!important;position:fixed!important;display:none!important;z-index:2147483646!important;pointer-events:none!important;border:2px solid #15c886!important;box-sizing:border-box!important;font:initial!important;}' +
+      '#rve-selection-overlay .rve-move{all:initial!important;position:absolute!important;left:50%!important;top:-30px!important;transform:translateX(-50%)!important;width:auto!important;height:24px!important;min-width:82px!important;padding:0 9px!important;border:2px solid #fff!important;border-radius:6px!important;background:#087f5b!important;color:#fff!important;box-shadow:0 2px 8px rgba(0,0,0,.4)!important;font:800 10px/20px system-ui,sans-serif!important;letter-spacing:.06em!important;text-align:center!important;white-space:nowrap!important;pointer-events:auto!important;touch-action:none!important;cursor:grab!important;user-select:none!important;box-sizing:border-box!important;display:block!important;}' +
       '#rve-selection-overlay .rve-move:active{cursor:grabbing!important;background:#065f46!important;}' +
-      '#rve-selection-overlay .rve-size-badge{position:absolute!important;right:6px!important;bottom:6px!important;padding:2px 6px!important;border-radius:5px!important;background:rgba(5,30,22,.88)!important;color:#fff!important;font:700 9px/1.4 Consolas,monospace!important;pointer-events:none!important;white-space:nowrap!important;}' +
-      '#rve-selection-overlay .rve-grip{position:absolute;width:11px;height:11px;border:2px solid #fff;border-radius:3px;background:#15c886;box-shadow:0 1px 5px rgba(0,0,0,.35);pointer-events:auto;touch-action:none;box-sizing:border-box;}' +
-      '#rve-selection-overlay .rve-n{left:50%;top:-7px;transform:translateX(-50%);cursor:ns-resize;}' +
-      '#rve-selection-overlay .rve-s{left:50%;bottom:-7px;transform:translateX(-50%);cursor:ns-resize;}' +
-      '#rve-selection-overlay .rve-e{right:-7px;top:50%;transform:translateY(-50%);cursor:ew-resize;}' +
-      '#rve-selection-overlay .rve-w{left:-7px;top:50%;transform:translateY(-50%);cursor:ew-resize;}' +
-      '#rve-selection-overlay .rve-ne{right:-7px;top:-7px;cursor:nesw-resize;}' +
-      '#rve-selection-overlay .rve-nw{left:-7px;top:-7px;cursor:nwse-resize;}' +
-      '#rve-selection-overlay .rve-se{right:-7px;bottom:-7px;cursor:nwse-resize;}' +
-      '#rve-selection-overlay .rve-sw{left:-7px;bottom:-7px;cursor:nesw-resize;}' +
-      '#rve-drop-indicator{position:fixed;display:none;z-index:2147483647;height:4px;border-radius:4px;background:#ffbe55;box-shadow:0 0 0 2px rgba(0,0,0,.4),0 0 18px rgba(255,190,85,.75);pointer-events:none;}' +
-      '#rve-drop-placeholder{min-height:28px!important;margin:6px!important;border:2px dashed #15c886!important;border-radius:8px!important;background:rgba(21,200,134,.12)!important;box-shadow:inset 0 0 0 2px rgba(255,255,255,.5)!important;pointer-events:none!important;box-sizing:border-box!important;}' +
-      '#rve-drop-placeholder::before{content:"BURAYA YERLEŞECEK";display:grid!important;min-height:24px!important;place-items:center!important;color:#075a42!important;font:900 10px/1 system-ui,sans-serif!important;letter-spacing:.06em!important;}' +
-      '#rve-drop-label{position:fixed;display:none;z-index:2147483647;max-width:min(520px,calc(100vw - 24px));padding:7px 10px;border:1px solid #63e6be;border-radius:8px;background:#062a20;color:#effff9;box-shadow:0 8px 24px rgba(0,0,0,.38);pointer-events:none;font:800 11px/1.25 system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
-      '.rve-smart-guide{position:fixed;display:none;z-index:2147483645;pointer-events:none;background:#00b7ff;box-shadow:0 0 0 1px rgba(255,255,255,.75);}' +
-      '#rve-guide-x{top:0;bottom:0;width:1px;}' +
-      '#rve-guide-y{left:0;right:0;height:1px;}' +
-      '#rve-context-menu{position:fixed;display:none;z-index:2147483647;width:218px;padding:6px;border:1px solid #315b4a;border-radius:10px;background:#0d1d17;color:#eef7f3;box-shadow:0 18px 48px rgba(0,0,0,.5);font:600 11px/1.3 system-ui,sans-serif;}' +
-      '#rve-context-menu button{display:flex;width:100%;min-height:31px;align-items:center;gap:8px;padding:6px 9px;border:0;border-radius:6px;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer;}' +
-      '#rve-context-menu button:hover{background:#18372c;color:#62e0b2;}' +
-      '#rve-context-menu .rve-menu-sep{height:1px;margin:5px 3px;background:#28463b;}' +
-      '#rve-context-menu .rve-menu-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;}' +
-      '#rve-context-menu .rve-menu-grid button{justify-content:center;padding:4px;min-height:29px;}';
+      '#rve-selection-overlay .rve-size-badge{all:initial!important;position:absolute!important;right:6px!important;bottom:6px!important;padding:2px 6px!important;border-radius:5px!important;background:rgba(5,30,22,.88)!important;color:#fff!important;font:700 9px/1.4 Consolas,monospace!important;pointer-events:none!important;white-space:nowrap!important;display:block!important;}' +
+      '#rve-selection-overlay .rve-grip{all:initial!important;position:absolute!important;width:11px!important;height:11px!important;border:2px solid #fff!important;border-radius:3px!important;background:#15c886!important;box-shadow:0 1px 5px rgba(0,0,0,.35)!important;pointer-events:auto!important;touch-action:none!important;box-sizing:border-box!important;display:block!important;}' +
+      '#rve-selection-overlay .rve-n{left:50%!important;top:-7px!important;transform:translateX(-50%)!important;cursor:ns-resize!important;}' +
+      '#rve-selection-overlay .rve-s{left:50%!important;bottom:-7px!important;transform:translateX(-50%)!important;cursor:ns-resize!important;}' +
+      '#rve-selection-overlay .rve-e{right:-7px!important;top:50%!important;transform:translateY(-50%)!important;cursor:ew-resize!important;}' +
+      '#rve-selection-overlay .rve-w{left:-7px!important;top:50%!important;transform:translateY(-50%)!important;cursor:ew-resize!important;}' +
+      '#rve-selection-overlay .rve-ne{right:-7px!important;top:-7px!important;cursor:nesw-resize!important;}' +
+      '#rve-selection-overlay .rve-nw{left:-7px!important;top:-7px!important;cursor:nwse-resize!important;}' +
+      '#rve-selection-overlay .rve-se{right:-7px!important;bottom:-7px!important;cursor:nwse-resize!important;}' +
+      '#rve-selection-overlay .rve-sw{left:-7px!important;bottom:-7px!important;cursor:nesw-resize!important;}' +
+      '#rve-drop-indicator{all:initial!important;position:fixed!important;display:none!important;z-index:2147483647!important;height:4px!important;border-radius:4px!important;background:#ffbe55!important;box-shadow:0 0 0 2px rgba(0,0,0,.4),0 0 18px rgba(255,190,85,.75)!important;pointer-events:none!important;}' +
+      '#rve-drop-placeholder{min-height:28px!important;margin:6px!important;border:2px dashed #15c886!important;border-radius:8px!important;background:rgba(21,200,134,.12)!important;box-shadow:inset 0 0 0 2px rgba(255,255,255,.5)!important;pointer-events:none!important;box-sizing:border-box!important;max-width:calc(100% - 12px)!important;}' +
+      '#rve-drop-placeholder::before{content:"BURAYA YERLEŞECEK"!important;display:grid!important;min-height:24px!important;place-items:center!important;color:#075a42!important;font:900 10px/1 system-ui,sans-serif!important;letter-spacing:.06em!important;}' +
+      '#rve-drop-label{all:initial!important;position:fixed!important;display:none!important;z-index:2147483647!important;max-width:min(520px,calc(100vw - 24px))!important;padding:7px 10px!important;border:1px solid #63e6be!important;border-radius:8px!important;background:#062a20!important;color:#effff9!important;box-shadow:0 8px 24px rgba(0,0,0,.38)!important;pointer-events:none!important;font:800 11px/1.25 system-ui,sans-serif!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}' +
+      '.rve-smart-guide{all:initial!important;position:fixed!important;display:none!important;z-index:2147483645!important;pointer-events:none!important;background:#00b7ff!important;box-shadow:0 0 0 1px rgba(255,255,255,.75)!important;}' +
+      '#rve-guide-x{top:0!important;bottom:0!important;width:1px!important;}' +
+      '#rve-guide-y{left:0!important;right:0!important;height:1px!important;}' +
+      '#rve-context-menu{all:initial!important;position:fixed!important;display:none!important;z-index:2147483647!important;width:218px!important;padding:6px!important;border:1px solid #315b4a!important;border-radius:10px!important;background:#0d1d17!important;color:#eef7f3!important;box-shadow:0 18px 48px rgba(0,0,0,.5)!important;font:600 11px/1.3 system-ui,sans-serif!important;box-sizing:border-box!important;}' +
+      '#rve-context-menu button{all:initial!important;display:flex!important;width:100%!important;min-height:31px!important;align-items:center!important;gap:8px!important;padding:6px 9px!important;border:0!important;border-radius:6px!important;background:transparent!important;color:inherit!important;text-align:left!important;font:inherit!important;cursor:pointer!important;box-sizing:border-box!important;}' +
+      '#rve-context-menu button:hover{background:#18372c!important;color:#62e0b2!important;}' +
+      '#rve-context-menu .rve-menu-sep{height:1px!important;margin:5px 3px!important;background:#28463b!important;}' +
+      '#rve-context-menu .rve-menu-grid{display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:3px!important;}' +
+      '#rve-context-menu .rve-menu-grid button{justify-content:center!important;padding:4px!important;min-height:29px!important;}';
     doc.head.appendChild(bridgeStyle);
 
+    const editorRoot = doc.documentElement || doc.body;
     const selectionOverlay = doc.createElement('div');
     selectionOverlay.id = 'rve-selection-overlay';
+    selectionOverlay.setAttribute('data-rve-editor-ui','');
     const moveHandle = doc.createElement('span');
     moveHandle.className = 'rve-move';
     moveHandle.textContent = '✥ TAŞI';
@@ -1636,11 +1663,12 @@ Ctrl + S        Nihai HTML indir</div>
       grip.addEventListener('pointerdown', event => startEdgeResize(event, direction, grip));
       selectionOverlay.appendChild(grip);
     });
-    doc.body.appendChild(selectionOverlay);
+    editorRoot.appendChild(selectionOverlay);
 
     const dropIndicator = doc.createElement('div');
     dropIndicator.id = 'rve-drop-indicator';
-    doc.body.appendChild(dropIndicator);
+    dropIndicator.setAttribute('data-rve-editor-ui','');
+    editorRoot.appendChild(dropIndicator);
     const dropPlaceholder = doc.createElement('div');
     dropPlaceholder.id = 'rve-drop-placeholder';
     dropPlaceholder.setAttribute('data-rve-editor-ui','');
@@ -1649,15 +1677,17 @@ Ctrl + S        Nihai HTML indir</div>
     const dropLabel = doc.createElement('div');
     dropLabel.id = 'rve-drop-label';
     dropLabel.setAttribute('data-rve-editor-ui','');
-    doc.body.appendChild(dropLabel);
+    editorRoot.appendChild(dropLabel);
     const guideX = doc.createElement('div');
     guideX.id = 'rve-guide-x';
     guideX.className = 'rve-smart-guide';
-    doc.body.appendChild(guideX);
+    guideX.setAttribute('data-rve-editor-ui','');
+    editorRoot.appendChild(guideX);
     const guideY = doc.createElement('div');
     guideY.id = 'rve-guide-y';
     guideY.className = 'rve-smart-guide';
-    doc.body.appendChild(guideY);
+    guideY.setAttribute('data-rve-editor-ui','');
+    editorRoot.appendChild(guideY);
 
     const contextMenu = doc.createElement('div');
     contextMenu.id = 'rve-context-menu';
@@ -1685,7 +1715,8 @@ Ctrl + S        Nihai HTML indir</div>
       contextMenu.style.display = 'none';
       handleContextAction(button.dataset.rveAction);
     });
-    doc.body.appendChild(contextMenu);
+    contextMenu.setAttribute('data-rve-editor-ui','');
+    editorRoot.appendChild(contextMenu);
 
     doc.addEventListener('pointerover', event => {
       if (!state.designMode) return;
@@ -4076,11 +4107,18 @@ Ctrl + S        Nihai HTML indir</div>
       }
     });
     doc.querySelectorAll('[data-rve-layout-parent]').forEach(parent => {
+      // Prevent BODY/HTML being forced into grid which causes entire dashboard to shift right
+      if (!parent || ['HTML','BODY'].includes(parent.tagName)) return;
+      if (parent.closest?.('[data-rve-editor-ui],#rve-selection-overlay,#rve-context-menu')) return;
       const children = Array.from(parent.children).filter(child => {
+        if (child.closest?.('[data-rve-editor-ui],#rve-selection-overlay,#rve-context-menu,#rve-drop-placeholder,#rve-drop-label,#rve-drop-indicator')) return false;
+        if (child.id && child.id.startsWith('rve-')) return false;
+        if (child.hasAttribute && child.hasAttribute('data-rve-editor-ui')) return false;
         const rect = child.getBoundingClientRect();
         const style = frameWindow()?.getComputedStyle(child);
         return rect.width > 1 && rect.height > 1 && style?.display !== 'none' && !['absolute','fixed'].includes(style?.position);
       });
+      if (children.length < 2) return;
       let collision = false;
       for (let i = 0; i < children.length && !collision; i++) {
         const a = children[i].getBoundingClientRect();
