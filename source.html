@@ -583,6 +583,39 @@ article:nth-of-type(7) > div:nth-of-type(1) > div > p,[data-rve-op-op-ms7em0ll-n
     .chart-grid > article.panel.chart-card .chart-wrap.short { height: 205px !important; }
   }
 
+  /*
+   * Rapor tabloları geniş içerikte sayfayı sağa itmesin: yatay taşma yalnızca
+   * kendi kaydırma alanında kalır. Eski editör yaması tablonun min/max-width
+   * değerlerini ezebildiği için burada iki rapor tablosunu açıkça tanımlıyoruz.
+   */
+  #detailsPane .table-wrap,
+  #qualityPane .table-wrap {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto !important;
+    overflow-y: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #detailsPane .table-wrap > table {
+    width: 100% !important;
+    min-width: 1520px !important;
+    max-width: none !important;
+  }
+
+  #qualityPane .table-wrap > table {
+    width: 100% !important;
+    min-width: 1000px !important;
+    max-width: none !important;
+  }
+
+  /* Veri satırlarındaki tarih sütunuyla başlığını tekrar hizala. */
+  #qualityPane .table-wrap > table > thead > tr > th:first-child {
+    display: table-cell !important;
+  }
+
   @media print {
     .chart-open-button, .category-modal { display: none !important; }
   }
