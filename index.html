@@ -3482,6 +3482,13 @@ Ctrl + S        Nihai HTML indir</div>
     operation.group = operation.group || state.activeGroup || 'Genel';
     if (!state.groups.includes(operation.group)) state.groups.push(operation.group);
     operation.createdAt = operation.createdAt || new Date().toISOString();
+    if (operation.type === 'portal') {
+      operation.mode = operation.mode || 'flow';
+      const targetSel = operation.source || operation.selector;
+      if (targetSel) {
+        state.operations = state.operations.filter(op => !(op.type === 'style' && op.mode === 'geometry' && (op.selector === targetSel || op.source === targetSel)));
+      }
+    }
     state.operations.push(operation);
     pushHistory();
     renderOperations();
@@ -3629,7 +3636,7 @@ Ctrl + S        Nihai HTML indir</div>
       chunks.push(
         '[data-rve-layout-guard]{box-sizing:border-box!important;min-width:0!important;max-width:100%!important;}',
         '[data-rve-layout-parent]{box-sizing:border-box!important;min-width:0!important;max-width:100%!important;}',
-        '[data-rve-flow-moved]{position:relative!important;inset:auto!important;translate:none!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;}',
+        '[data-rve-flow-moved]{position:relative!important;inset:auto!important;translate:none!important;transform:none!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;}',
         '[data-rve-table-scroll]{max-width:100%!important;min-width:0!important;overflow-x:auto!important;overscroll-behavior-inline:contain;}',
         '[data-rve-table-scroll]>table{max-width:100%!important;}',
         '[data-rve-layout-guard] :where(img,video,svg,canvas){max-width:100%!important;}',
@@ -3637,7 +3644,15 @@ Ctrl + S        Nihai HTML indir</div>
         '@media print{[data-rve-layout-guard]{translate:none!important;transform:none!important;max-width:100%!important;break-inside:avoid;page-break-inside:avoid;}[data-rve-table-scroll]{overflow:visible!important;}[data-rve-table-scroll]>table{width:100%!important;table-layout:auto;}}'
       );
     }
-    state.operations.filter(op => op.enabled && (op.type === 'style' || op.type === 'hide')).forEach(op => {
+    const portalSelectors = new Set(
+      state.operations
+        .filter(op => op.enabled && op.type === 'portal')
+        .map(op => op.source || op.selector)
+        .filter(Boolean)
+    );
+    state.operations.filter(op => op.enabled && (op.type === 'style' || op.type === 'hide'))
+      .filter(op => !(op.type === 'style' && op.mode === 'geometry' && portalSelectors.has(op.selector)))
+      .forEach(op => {
       let declarations;
       if (op.type === 'hide') declarations = 'display:none!important;';
       else declarations = Object.entries(op.declarations).map(([key,value]) => key + ':' + value + '!important;').join('');
@@ -3800,7 +3815,15 @@ Ctrl + S        Nihai HTML indir</div>
           }
           var source=refs.source,target=refs.target;
           if(!source||!target||source===target||source.contains(target))return;
-          if(op.mode==='flow')source.setAttribute('data-rve-flow-moved','');
+          var isFlow=(!op.mode||op.mode==='flow');
+          if(isFlow){
+            source.setAttribute('data-rve-flow-moved','');
+            if(source.style){
+              source.style.setProperty('translate','none','important');
+              source.style.setProperty('transform','none','important');
+              source.style.setProperty('inset','auto','important');
+            }
+          }
           if(op.forceVisible){source.hidden=false;source.removeAttribute('hidden');if(source.style&&source.style.display==='none')source.style.removeProperty('display')}
           var placed=(op.position==='inside-start'&&source.parentNode===target&&target.firstChild===source)||
             (op.position==='inside-end'&&source.parentNode===target&&target.lastChild===source)||
@@ -4035,7 +4058,15 @@ Ctrl + S        Nihai HTML indir</div>
     const source = refs.source;
     const target = refs.target;
     if (!source || !target || source === target || source.contains(target)) return false;
-    if (op.mode === 'flow') source.setAttribute('data-rve-flow-moved','');
+    const isFlow = (!op.mode || op.mode === 'flow');
+    if (isFlow) {
+      source.setAttribute('data-rve-flow-moved','');
+      if (source.style) {
+        source.style.setProperty('translate', 'none', 'important');
+        source.style.setProperty('transform', 'none', 'important');
+        source.style.setProperty('inset', 'auto', 'important');
+      }
+    }
     if (!state.previewBaselines.portals.has(op.source)) {
       state.previewBaselines.portals.set(op.source, {
         el:source,
@@ -4228,7 +4259,7 @@ Ctrl + S        Nihai HTML indir</div>
 
   function inspectLayoutIssues() {
     const doc = frameDocument();
-    if (!doc) return {overflow:0, collision:0};
+    if (!doc) return {overflow:0, collision:0, pageOverflow:false, exportBtnIssues:[]};
     let overflow = 0;
     const candidates = Array.from(doc.querySelectorAll('table,canvas,svg,[class*="table" i],[class*="chart" i],[class*="panel" i],[class*="card" i]')).slice(0,500);
     candidates.forEach(el => {
@@ -4238,9 +4269,36 @@ Ctrl + S        Nihai HTML indir</div>
       if (parentRect && rect.width > 1 && rect.height > 1 &&
           (rect.right > parentRect.right + 2 || rect.left < parentRect.left - 2 || el.scrollWidth > el.clientWidth + 2)) overflow++;
     });
+
+    const pageOverflow = doc.documentElement ? (doc.documentElement.scrollWidth > doc.documentElement.clientWidth + 1) : false;
+
+    const exportBtnIssues = [];
+    const exportBtn = doc.querySelector('#exportReportBtn');
+    if (exportBtn) {
+      const win = frameWindow();
+      const compStyle = win ? win.getComputedStyle(exportBtn) : null;
+      if (compStyle) {
+        const trans = compStyle.translate;
+        if (trans && trans !== 'none' && trans !== '0px' && trans !== '0px 0px' && trans !== '0px 0px 0px') {
+          exportBtnIssues.push('translate: ' + trans);
+        }
+      }
+      const nav = doc.querySelector('nav[aria-label="Rapor bölümleri"]') || exportBtn.closest('nav');
+      if (nav) {
+        const detailsBtn = nav.querySelector('button[data-tab="detailsPane"]');
+        if (detailsBtn) {
+          if (!(exportBtn.compareDocumentPosition(detailsBtn) & Node.DOCUMENT_POSITION_PRECEDING)) {
+            exportBtnIssues.push('sıralama hatası: #exportReportBtn, button[data-tab="detailsPane"] sonrasında olmalı');
+          }
+        }
+      }
+    }
+
     return {
       overflow,
-      collision:doc.querySelectorAll('[data-rve-stack-repair]').length
+      collision: doc.querySelectorAll('[data-rve-stack-repair]').length,
+      pageOverflow,
+      exportBtnIssues
     };
   }
 
@@ -4362,7 +4420,11 @@ Ctrl + S        Nihai HTML indir</div>
     const layout = inspectLayoutIssues();
     if (layout.overflow) warnings.push(layout.overflow + ' olası taşma bulundu; gerekirse “Taşmaları Onar” aracını çalıştırın.');
     if (layout.collision) warnings.push(layout.collision + ' alan çakışmaya karşı otomatik istiflendi.');
-    const layoutStatus = state.frameErrors.length || layout.overflow || layout.collision || duplicates.length || placementRisks ? 'warn' : 'pass';
+    if (layout.pageOverflow) warnings.push('Sayfa genelinde yatay taşma tespit edildi (document.scrollWidth > clientWidth).');
+    if (layout.exportBtnIssues && layout.exportBtnIssues.length) {
+      warnings.push('#exportReportBtn yerleşim kontrolü: ' + layout.exportBtnIssues.join(' · '));
+    }
+    const layoutStatus = state.frameErrors.length || layout.overflow || layout.collision || layout.pageOverflow || (layout.exportBtnIssues && layout.exportBtnIssues.length) || duplicates.length || placementRisks ? 'warn' : 'pass';
     check('layout', layoutStatus, layoutStatus === 'pass'
       ? 'Görünür taşma, çakışma veya kayıtlı çalışma hatası bulunmadı.'
       : [duplicates.length + ' tekrar ID', state.frameErrors.length + ' çalışma hatası', layout.overflow + ' taşma', layout.collision + ' korunan çakışma', placementRisks + ' serbest taşıma riski'].join(' · '));
