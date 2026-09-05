@@ -1,3 +1,22 @@
+# Regnum Evrensel HTML Editörü V4.4
+
+## V4.4 — 5 Eylül 2026
+
+- Ana dosya işlemleri, geçmiş ve panel kontrolleri ayrıldı; yardımcı araçlar **Diğer** menüsünde.
+- Daha büyük yazılar, geniş boşluklar, katlanabilir yerleşim ayarları ve ekran genişliğine uyumlu araç çubukları.
+- Mobilde açılır paneller, panel kapatma katmanı ve gizli panellere klavye odağının geçmesini engelleme.
+- İletişim kutularında odak yönetimi, Tab döngüsü ve metin alanında da çalışan Escape.
+- Metin alanlarında Ctrl+Z / Ctrl+Y tarayıcının kendi düzenleme geçmişini kullanır. Editör için Ctrl+Shift+Z yineleme desteği eklendi.
+- Alan Koruma kapalı ve işlem listesi boş olduğunda manifestin eksik kalması düzeltildi.
+- Depodaki V4.3 taşıma ve yerleşim düzeltmeleri korundu; source.html değiştirilmedi.
+
+### Doğrulama
+
+`node checks-v4.4.mjs` ile 11 kontrol: JavaScript sözdizimi, kaynak ve script bütünlüğü, çalışma zamanı sözdizimi, Unicode manifest, boş işlem çıktısı, CSS yaması, yerel metin geri alma, editör geri/ileri ve güvenli öznitelikler. HTML etiket dengesi, benzersiz kimlikler ve önceki kontrollerin korunması ayrıca doğrulandı.
+
+Tarayıcı önizlemesi bu çalışma ortamının erişim politikası nedeniyle açılamadı. Görsel yerleşim, gerçek tarayıcı sürükle-bırak ve Excel enjeksiyonu bu sürümde uçtan uca doğrulanmadı.
+
+## Kullanım
 
 1. **HTML Aç** ile raporu yükleyin.
 2. **Öğeler** panelindeki canlı DOM ağacından hedefi bulun.
