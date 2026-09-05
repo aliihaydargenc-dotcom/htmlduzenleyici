@@ -1,3 +1,15 @@
+# V4.6 — Gizleme odaklı çalışma alanı
+
+- Başlangıçta sade görünüm: seçim, gizleme, kontrol ve indirme. Gelişmiş araçlar düğmesi taşıma, Excel testi ve ayrıntılı görünüm araçlarını açar. Görünüm değişikliği mevcut işlemleri değiştirmez.
+- **Gizlenenler** sekmesinde etkin gizlemeler ve her öğe için **Geri Göster**. Geri gösterme normal işlem geçmişine kaydedilir.
+- Gizleme açıklamaları alanı koruma/kaldırma seçeneğini doğru gösterir; seçilen öğenin kayıtlı modu açılır kutuyla eşleşir.
+- Öğe ağacı, işlem detayları, arama açıklamaları ve kaynak metni daha büyük yazıyla gösterilir.
+- Renk ve görünüm alanları artık **Boyut ve Görünümü Uygula** ile kaydedilir. Hızlı boyut ve sürükleme araçları anında uygulanır.
+- Uygulanmış fakat indirilmemiş değişiklikler için durum göstergesi, başka HTML açarken onay ve tarayıcı desteklediğinde sayfadan ayrılma uyarısı. Otomatik yedekleme değildir; henüz Uygula denmemiş alan taslaklarını kapsamaz.
+- Başarılı doğrulama etiketi **Kod kontrolleri geçti** olarak değişti. Kaynak bütünlüğü görsel doğrulama garantisi değildir.
+
+`node checks-v4.6.mjs`: 21 kod kontrolü geçti; HTML etiket dengesi, benzersiz kimlikler ve önceki kontrol kimliklerinin korunması ayrıca doğrulandı. Tarayıcı görsel doğrulaması erişim politikası nedeniyle yapılmadı.
+
 # V4.5 — Güvenli Gizle odaklı çıktı
 
 Sadece etkin gizleme işlemleri bulunan projelerde, Alan Koruma açık olsa bile çıktı otomatik yerleşim onarımı veya ek JavaScript içermez. Önizleme ve çıktı aynı gizleme CSS’ini kullanır. Orijinal DOM ve scriptler korunur.
