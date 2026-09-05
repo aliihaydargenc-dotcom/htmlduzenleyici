@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <title>Regnum Evrensel HTML Editörü V4.4</title>
+  <title>Regnum Evrensel HTML Editörü V4.5</title>
   <style>
     :root {
       --bg: #09120f;
@@ -714,7 +714,7 @@
       .topbar .brand small { display: none; }
     }
 
-    /* V4.4: readable controls, adaptive workspace and quieter visual hierarchy. */
+    /* V4.5: readable controls, adaptive workspace and quieter visual hierarchy. */
     :root { --bg:#101916; --surface:#17231f; --surface-2:#1d2d26; --surface-3:#263b31;
       --line:#364b40; --line-soft:#2b3d33; --muted:#a8bcb0; --side-w:360px; --top-h:auto; }
     .app { grid-template-rows:auto minmax(0,1fr) var(--log-h); }
@@ -799,7 +799,7 @@
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark">R</div>
-        <div><strong>Evrensel HTML Editörü</strong><small>Kılavuzlu taşıma V4.4</small></div>
+        <div><strong>Evrensel HTML Editörü</strong><small>Kılavuzlu taşıma V4.5</small></div>
       </div>
       <input id="htmlFileInput" type="file" accept=".html,.htm,text/html" hidden>
       <div class="toolbar-group" aria-label="Dosya"><button class="btn primary" id="openHtmlButton">HTML Aç</button><button class="btn gold" id="exportHtmlButton" disabled>Nihai HTML İndir</button></div>
@@ -935,6 +935,10 @@
           <div class="group-title">Seçili Öğe</div>
           <div class="group-body">
             <div class="selected-card empty" id="selectedCard">Önizlemeden bir başlık, buton, kart, tablo veya grafik alanı seçin.</div>
+            <label class="field" style="margin-top:12px"><span>Gizleme davranışı</span>
+              <select id="hideMode"><option value="preserve">Düzeni koru — alanı boş bırak</option><option value="collapse">Alanı da kaldır — yerleşim değişebilir</option></select>
+            </label>
+            <p class="hint">Düzeni koru, öğeyi görünmez yapar ve ölçülerini korur. Yalnız gizleme yapılan çıktıda otomatik yerleşim onarımı çalışmaz. Gizlenen içerik dosyada kalır.</p>
             <div class="button-row" style="margin-top:8px">
               <button class="btn small grow" id="hideButton" disabled>Güvenli Gizle</button>
               <button class="btn small grow" id="editTextButton" disabled>Metni Düzenle</button>
@@ -1195,7 +1199,7 @@
 
       <section class="pane" id="checkPane">
         <div class="group">
-          <div class="group-title">V4.4 İhtiyaç Listesi <span>8 zorunlu kontrol</span></div>
+          <div class="group-title">V4.5 İhtiyaç Listesi <span>8 zorunlu kontrol</span></div>
           <div class="group-body">
             <p class="hint">Nihai dosya ancak kaynak bütünlüğünü bozan kritik bir hata yoksa indirilir. Uyarılar ayrıca gösterilir.</p>
             <div class="checklist" id="needsChecklist"></div>
@@ -1338,11 +1342,11 @@ Ctrl + S        Nihai HTML indir</div>
   const PATCH_STYLE_ID = 'regnum-visual-editor-patches';
   const PATCH_RUNTIME_ID = 'regnum-visual-editor-runtime';
   const PATCH_MANIFEST_MARKER = 'REGNUM_VISUAL_EDITOR_MANIFEST:';
-  const PROJECT_VERSION = '4.4';
+  const PROJECT_VERSION = '4.5';
   const REQUIREMENTS = [
     {key:'source', label:'Geçerli HTML kaynağı', detail:'Dosya adı, kaynak boyutu ve kaynak özeti oluşturulmalı.'},
     {key:'sourceExact', label:'Kaynak birebir korunmalı', detail:'Editör yamaları çıkarıldığında çıktı, giriş kaynağıyla karakter karakter aynı olmalı.'},
-    {key:'scripts', label:'Script bütünlüğü', detail:'Mevcut script blokları değişmeden korunmalı; yalnızca gerekli V4.4 çalışma zamanı eklenmeli.'},
+    {key:'scripts', label:'Script bütünlüğü', detail:'Mevcut script blokları değişmeden korunmalı; yalnızca gerekli V4.5 çalışma zamanı eklenmeli.'},
     {key:'manifest', label:'İşlem manifesti', detail:'Tüm etkin/devre dışı işlemler çıktıdan eksiksiz geri okunabilmeli.'},
     {key:'selectors', label:'Hedef seçiciler', detail:'Geçersiz seçici bulunmamalı; dinamik hedefler uyarı olarak ayrıca gösterilmeli.'},
     {key:'runtime', label:'Çalışma zamanı derlenebilirliği', detail:'Metin, taşıma ve alan koruma kodu JavaScript sözdizimi hatası vermemeli.'},
@@ -3711,9 +3715,14 @@ Ctrl + S        Nihai HTML indir</div>
     return 'data-rve-op-' + String(op.id || '').replace(/[^a-zA-Z0-9_-]/g,'');
   }
 
+  // Hide-only exports must not run layout repair, resize hooks or DOM observers.
+  function effectiveLayoutProtection() {
+    return state.layoutProtection && state.operations.some(op => op.enabled && op.type !== 'hide');
+  }
+
   function generatePatchCss() {
-    const chunks = ['/* Regnum Evrensel HTML Editörü V4.4 · Kılavuzlu akış, masaüstü ve alan korumalı yamalar */'];
-    if (state.layoutProtection) {
+    const chunks = ['/* Regnum Evrensel HTML Editörü V4.5 · Kılavuzlu akış, masaüstü ve alan korumalı yamalar */'];
+    if (effectiveLayoutProtection()) {
       chunks.push(
         '[data-rve-layout-guard]{box-sizing:border-box!important;min-width:0!important;max-width:100%!important;}',
         '[data-rve-layout-parent]{box-sizing:border-box!important;min-width:0!important;max-width:100%!important;}',
@@ -3735,7 +3744,16 @@ Ctrl + S        Nihai HTML indir</div>
       .filter(op => !(op.type === 'style' && op.mode === 'geometry' && portalSelectors.has(op.selector)))
       .forEach(op => {
       let declarations;
-      if (op.type === 'hide') declarations = 'display:none!important;';
+      if (op.type === 'hide') {
+        // No runtime marker: the exact same CSS is used in preview and export.
+        // Keep layout measurements available to charts and existing page scripts.
+        const target = ':is(' + op.selector + ')';
+        const rule = op.hideMode === 'collapse'
+          ? target + '{display:none!important;}'
+          : target + ',' + target + ' *{visibility:hidden!important;pointer-events:none!important;}';
+        chunks.push(scopeWrap(op.scope || 'all', rule));
+        return;
+      }
       else declarations = Object.entries(op.declarations).map(([key,value]) => key + ':' + value + '!important;').join('');
       const attribute = operationAttribute(op);
       const targets = attribute ? op.selector + ',[' + attribute + ']' : op.selector;
@@ -3756,20 +3774,20 @@ Ctrl + S        Nihai HTML indir</div>
 
   function buildRuntimeScript() {
     const opsJson = JSON.stringify(runtimeOperations()).replace(/</g, '\\u003c');
-    const visualJson = JSON.stringify(state.operations.filter(op => op.enabled && (op.type === 'style' || op.type === 'hide')).map(op => ({
+    const visualJson = JSON.stringify(state.operations.filter(op => op.enabled && op.type === 'style').map(op => ({
       id:op.id,
       selector:op.selector,
       attribute:operationAttribute(op),
       allMatches:op.allMatches === true
     }))).replace(/</g, '\\u003c');
-    const guardSelectors = Array.from(new Set(state.operations.filter(op => op.enabled).flatMap(op => [op.selector, op.source, op.target]).filter(Boolean)));
+    const guardSelectors = Array.from(new Set(state.operations.filter(op => op.enabled && op.type !== 'hide').flatMap(op => [op.selector, op.source, op.target]).filter(Boolean)));
     const guardsJson = JSON.stringify(guardSelectors).replace(/</g, '\\u003c');
     return `(function(){
   'use strict';
   var operations=${opsJson};
   var visualOperations=${visualJson};
   var guardSelectors=${guardsJson};
-  var layoutProtection=${state.layoutProtection ? 'true' : 'false'};
+  var layoutProtection=${effectiveLayoutProtection() ? 'true' : 'false'};
   var busy=false;
   var triggered={};
   var references={};
@@ -3988,7 +4006,7 @@ Ctrl + S        Nihai HTML indir</div>
     if (!state.originalSource) return '';
     let output = sourceWithoutPreviousPatches(state.originalSource);
     const visualOperations = state.operations.filter(op => op.enabled && (op.type === 'style' || op.type === 'hide'));
-    if (visualOperations.length || state.layoutProtection) {
+    if (visualOperations.length || effectiveLayoutProtection()) {
       const css = generatePatchCss();
       const styleBlock = '<style id="' + PATCH_STYLE_ID + '">\n' + css + '\n</style>';
       output = injectBeforeClosing(output, 'head', styleBlock);
@@ -3996,7 +4014,7 @@ Ctrl + S        Nihai HTML indir</div>
     const manifestBlock = '<!--' + PATCH_MANIFEST_MARKER + encodeManifest(state.operations) + '-->';
     output = injectBeforeClosing(output, 'body', manifestBlock);
     const runtime = runtimeOperations();
-    if (runtime.length || state.layoutProtection) {
+    if (runtime.length || effectiveLayoutProtection()) {
       const open = '<scr' + 'ipt id="' + PATCH_RUNTIME_ID + '">';
       const close = '</scr' + 'ipt>';
       output = injectBeforeClosing(output, 'body', open + '\n' + buildRuntimeScript() + '\n' + close);
@@ -4024,6 +4042,7 @@ Ctrl + S        Nihai HTML indir</div>
     style.textContent = generatePatchCss();
     state.operations.filter(op => op.enabled && (op.type === 'style' || op.type === 'hide')).forEach(op => {
       const attribute = operationAttribute(op);
+      if (op.type === 'hide') return;
       const elements = op.allMatches ? safeQueryAll(doc,op.selector) : [safeQuery(doc, op.selector)].filter(Boolean);
       if (attribute) elements.forEach(el => el.setAttribute(attribute, ''));
     });
@@ -4174,9 +4193,9 @@ Ctrl + S        Nihai HTML indir</div>
   }
 
   function applyPreviewLayoutProtection(doc) {
-    if (!state.layoutProtection) return;
+    if (!effectiveLayoutProtection()) return;
     const elements = new Set();
-    state.operations.filter(op => op.enabled).forEach(op => {
+    state.operations.filter(op => op.enabled && op.type !== 'hide').forEach(op => {
       [op.selector, op.source, op.target].filter(Boolean).forEach(selector => {
         const el = safeQuery(doc, selector);
         if (el) elements.add(el);
@@ -4445,16 +4464,16 @@ Ctrl + S        Nihai HTML indir</div>
 
     const sourceExact = strippedOutput === state.originalSource;
     check('sourceExact', sourceExact ? 'pass' : 'fail', sourceExact ? 'Yamalar çıkarıldığında çıktı giriş kaynağıyla karakter karakter aynı.' : 'Yamalar çıkarıldığında kaynak birebir geri alınamıyor.');
-    if (!sourceExact) errors.push('Çıktıdan V4.4 yamaları çıkarıldığında orijinal kaynak birebir geri alınamadı.');
+    if (!sourceExact) errors.push('Çıktıdan V4.5 yamaları çıkarıldığında orijinal kaynak birebir geri alınamadı.');
 
     const originalScripts = fullScriptBlocks(state.originalSource);
     const preservedScripts = fullScriptBlocks(strippedOutput);
-    const runtimeExpected = Boolean(runtimeOperations().length || state.layoutProtection);
+    const runtimeExpected = Boolean(runtimeOperations().length || effectiveLayoutProtection());
     const runtimeCount = countOutputBlock(output, PATCH_RUNTIME_ID, 'script');
     const scriptsExact = JSON.stringify(originalScripts) === JSON.stringify(preservedScripts) && runtimeCount === (runtimeExpected ? 1 : 0);
     check('scripts', scriptsExact ? 'pass' : 'fail', scriptsExact
-      ? originalScripts.length + ' orijinal script değişmeden korundu; V4.4 çalışma zamanı sayısı doğru.'
-      : 'Script blokları veya V4.4 çalışma zamanı sayısı beklenenle eşleşmiyor.');
+      ? originalScripts.length + ' orijinal script değişmeden korundu; V4.5 çalışma zamanı sayısı doğru.'
+      : 'Script blokları veya V4.5 çalışma zamanı sayısı beklenenle eşleşmiyor.');
     if (!scriptsExact) errors.push('Script bütünlüğü veya ek çalışma zamanı sayısı uyuşmuyor.');
 
     const embedded = extractEmbeddedOperations(output);
@@ -4486,7 +4505,7 @@ Ctrl + S        Nihai HTML indir</div>
     let runtimeValid = true;
     try { if (runtimeExpected) new Function(buildRuntimeScript()); } catch (error) {
       runtimeValid = false;
-      errors.push('V4.4 çalışma zamanı derlenemedi: ' + error.message);
+      errors.push('V4.5 çalışma zamanı derlenemedi: ' + error.message);
     }
     check('runtime', runtimeValid ? 'pass' : 'fail', runtimeValid ? 'Eklenen JavaScript çalışma zamanı sözdizimi doğrulandı.' : 'Çalışma zamanı JavaScript sözdizimi hatalı.');
 
@@ -4509,9 +4528,9 @@ Ctrl + S        Nihai HTML indir</div>
       ? 'Görünür taşma, çakışma veya kayıtlı çalışma hatası bulunmadı.'
       : [duplicates.length + ' tekrar ID', state.frameErrors.length + ' çalışma hatası', layout.overflow + ' taşma', layout.collision + ' korunan çakışma', placementRisks + ' serbest taşıma riski'].join(' · '));
 
-    const styleExpected = Boolean(state.operations.some(op => op.enabled && (op.type === 'style' || op.type === 'hide')) || state.layoutProtection);
+    const styleExpected = Boolean(state.operations.some(op => op.enabled && (op.type === 'style' || op.type === 'hide')) || effectiveLayoutProtection());
     const styleCount = countOutputBlock(output, PATCH_STYLE_ID, 'style');
-    if (styleCount !== (styleExpected ? 1 : 0)) errors.push('V4.4 CSS yama bloğu sayısı beklenenle eşleşmiyor.');
+    if (styleCount !== (styleExpected ? 1 : 0)) errors.push('V4.5 CSS yama bloğu sayısı beklenenle eşleşmiyor.');
     const ok = errors.length === 0;
     check('release', ok ? 'pass' : 'fail', ok ? 'Kritik kontroller geçti; kontrollü indirme açık.' : errors.length + ' kritik hata nedeniyle indirme kapalı.');
 
@@ -4551,7 +4570,7 @@ Ctrl + S        Nihai HTML indir</div>
 
   function reportText() {
     const lines = [
-      'REGNUM EVRENSEL HTML EDİTÖRÜ V4.4',
+      'REGNUM EVRENSEL HTML EDİTÖRÜ V4.5',
       'DEĞİŞİKLİK RAPORU',
       '',
       'Dosya: ' + state.sourceName,
@@ -4876,12 +4895,12 @@ Ctrl + S        Nihai HTML indir</div>
       let operation = state.operations.find(op => op.type === 'hide' && op.selector === item.selector);
       if (!operation) {
         operation = {
-          id:operationId(),type:'hide',selector:item.selector,scope:'all',
+          id:operationId(),type:'hide',selector:item.selector,scope:'all',hideMode:$('#hideMode').value,
           context:'Çoklu/tekli güvenli gizleme',group:state.activeGroup||'Genel',
           enabled:true,createdAt:new Date().toISOString()
         };
         state.operations.push(operation);
-      } else operation.enabled = true;
+      } else { operation.enabled = true; operation.hideMode = $('#hideMode').value; }
     });
     pushHistory();
     renderOperations();
@@ -4902,7 +4921,7 @@ Ctrl + S        Nihai HTML indir</div>
     for(let i=1;i<=12;i++){
       const option=document.createElement('option');option.value=String(i);option.textContent=i+'/12 kolon';$('#gridSpan').appendChild(option);
     }
-    Logger.ok('Regnum Evrensel HTML Editörü V4.4 başlatıldı.');
+    Logger.ok('Regnum Evrensel HTML Editörü V4.5 başlatıldı.');
     Logger.info('Canlı DOM ağacı, kılavuzlu taşıma, güvenli öznitelikler ve kontrollü çıktı kapısı hazır.');
     renderGroupControls();
     updateMultiSelectButton();
