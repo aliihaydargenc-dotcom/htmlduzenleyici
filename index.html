@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <title>Regnum Evrensel HTML Editörü V4.3</title>
+  <title>Regnum Evrensel HTML Editörü V4.4</title>
   <style>
     :root {
       --bg: #09120f;
@@ -713,6 +713,85 @@
       .left-closed .side.left { transform: translateX(-102%); }
       .topbar .brand small { display: none; }
     }
+
+    /* V4.4: readable controls, adaptive workspace and quieter visual hierarchy. */
+    :root { --bg:#101916; --surface:#17231f; --surface-2:#1d2d26; --surface-3:#263b31;
+      --line:#364b40; --line-soft:#2b3d33; --muted:#a8bcb0; --side-w:360px; --top-h:auto; }
+    .app { grid-template-rows:auto minmax(0,1fr) var(--log-h); }
+    .app.log-closed { grid-template-rows:auto minmax(0,1fr) 0; }
+    .topbar { flex-wrap:wrap; gap:10px; padding:14px 20px; overflow:visible; background:var(--surface); box-shadow:none; }
+    .brand { margin-right:14px; }
+    .brand strong { font-size:14px; }
+    .brand small { font-size:11px; margin-top:3px; }
+    .brand-mark { width:38px; height:38px; }
+    .toolbar-group { display:flex; align-items:center; gap:7px; }
+    .topbar .btn { min-height:36px; font-size:12px; }
+    .topbar .btn.icon { width:36px; }
+    .toolbar-menu { position:relative; }
+    .toolbar-menu summary { list-style:none; }
+    .toolbar-menu summary::-webkit-details-marker { display:none; }
+    .menu-content { position:absolute; right:0; top:calc(100% + 10px); width:260px; display:grid; gap:8px;
+      padding:14px; border:1px solid var(--line); border-radius:12px; background:var(--surface); box-shadow:var(--shadow); z-index:90; }
+    .menu-content .btn { justify-content:flex-start; }
+    .side-head { min-height:64px; padding:14px 18px; background:transparent; }
+    .side-head strong { font-size:13px; }
+    .side-head span { font-size:11px; }
+    .tabs { padding:0 8px; background:transparent; }
+    .tab { min-height:44px; font-size:11px; padding:10px 8px; }
+    .pane { padding:16px; scrollbar-width:thin; scrollbar-color:var(--line) transparent; }
+    .group { margin-bottom:18px; border-radius:12px; }
+    .group-title { padding:12px 14px; font-size:12px; }
+    .group-body { padding:14px; }
+    .field { margin-bottom:14px; }
+    .field>span { font-size:11px; }
+    input:not([type=range]):not([type=checkbox]):not([type=color]), select { min-height:36px; font-size:12px; }
+    .btn.small { min-height:32px; font-size:11px; }
+    .hint,.empty-list,.tool-status,.selected-meta,.risk,.check-item p,.release-card span { font-size:11px; line-height:1.65; }
+    .selected-card { padding:14px; font-size:12px; }
+    .selector-box,.context { font-size:11px; }
+    .outline-search { top:-16px; margin:-16px -16px 12px; padding:14px 16px; background:var(--surface); }
+    .canvas-toolbar { flex-wrap:wrap; gap:8px; padding:10px 16px; }
+    .workspace-breadcrumb { min-width:0; }
+    .status-badge { font-size:10px; }
+    .canvas { padding:24px; }
+    .frame-shell { border-radius:12px; min-height:280px; min-width:0; }
+    .welcome { padding:28px; background:radial-gradient(ellipse at 50% 20%,#233c30, #111d17 75%); overflow:auto; }
+    .welcome-card { max-width:540px; }
+    .welcome h1 { font:400 clamp(24px,3vw,38px)/1.2 Georgia,serif; }
+    .welcome p { font-size:14px; line-height:1.8; margin:20px auto 26px; }
+    .welcome .btn { min-height:44px; padding:10px 22px; font-size:13px; }
+    .welcome-steps { display:flex; justify-content:center; flex-wrap:wrap; gap:18px; margin-top:30px; color:var(--muted); font-size:12px; }
+    .welcome-steps b { color:var(--gold); margin-right:5px; }
+    :focus-visible { outline:2px solid var(--green); outline-offset:3px; }
+    .advanced { margin-bottom:18px; }
+    .advanced>summary { padding:14px; font-size:12px; cursor:pointer; }
+    .panel-shade { display:none; }
+    @media (max-width:1100px) {
+      .app,.app.left-closed,.app.right-closed,.app.left-closed.right-closed { grid-template-rows:auto minmax(0,1fr) var(--log-h); }
+      .app.log-closed { grid-template-rows:auto minmax(0,1fr) 0; }
+      .side.left { top:var(--header-height,116px); }
+      .canvas { padding:16px; }
+    }
+    @media (max-width:760px) {
+      .app,.app.left-closed,.app.right-closed,.app.left-closed.right-closed {
+        grid-template-columns:minmax(0,1fr); grid-template-areas:'top' 'main' 'log'; }
+      .topbar { gap:8px; padding:10px 12px; }
+      .brand { flex:1; margin:0; }
+      .brand strong { font-size:12px; }
+      .topbar>.spacer { display:none; }
+      .toolbar-group { gap:5px; }
+      .topbar .btn { font-size:11px; padding:7px 9px; }
+      .side.right { position:fixed; right:0; top:var(--header-height,116px); bottom:0; width:min(360px,92vw); z-index:60; box-shadow:var(--shadow); }
+      .right-closed .side.right { transform:translateX(102%); }
+      .app:not(.left-closed) .panel-shade,.app:not(.right-closed) .panel-shade {
+        display:block; position:fixed; inset:var(--header-height,116px) 0 0; background:#0007; z-index:50; border:0; }
+      .canvas { padding:8px; }
+      .canvas-toolbar { padding:8px; }
+      .welcome { padding:20px; }
+      .welcome p { font-size:12px; }
+      #releaseStatus,#selectionStatus { display:none; }
+    }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none!important; scroll-behavior:auto!important; } }
   </style>
 </head>
 <body>
@@ -720,30 +799,20 @@
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark">R</div>
-        <div><strong>Evrensel HTML Editörü</strong><small>Kılavuzlu taşıma V4.3</small></div>
+        <div><strong>Evrensel HTML Editörü</strong><small>Kılavuzlu taşıma V4.4</small></div>
       </div>
-      <div class="sep"></div>
       <input id="htmlFileInput" type="file" accept=".html,.htm,text/html" hidden>
-      <button class="btn primary" id="openHtmlButton">HTML Aç</button>
-      <button class="btn" id="pasteHtmlButton">Kaynak Yapıştır</button>
-      <button class="btn active" id="designModeButton" disabled>Seçim Modu Açık</button>
-      <button class="btn" id="selectParentButton" disabled>Üst Öğeyi Seç</button>
-      <button class="btn" id="commandPaletteButton" title="Öğe veya komut bul (Ctrl+K)">⌕ Hızlı Bul</button>
-      <div class="sep"></div>
-      <button class="btn" id="undoButton" title="Son işlemi geri al (Ctrl+Z)" disabled>↶ Geri</button>
-      <button class="btn" id="redoButton" title="Geri alınan işlemi yinele (Ctrl+Y)" disabled>↷ İleri</button>
-      <button class="btn verify" id="validateButton" disabled>Nihai Kontrol</button>
-      <button class="btn active" id="autoLayoutButton" disabled>Alan Koruma Açık</button>
+      <div class="toolbar-group" aria-label="Dosya"><button class="btn primary" id="openHtmlButton">HTML Aç</button><button class="btn gold" id="exportHtmlButton" disabled>Nihai HTML İndir</button></div>
       <div class="spacer"></div>
-      <button class="btn gold" id="exportHtmlButton" disabled>Nihai HTML İndir</button>
-      <button class="btn icon" id="toggleLeftButton" title="Sol panel">◧</button>
-      <button class="btn icon" id="toggleRightButton" title="Sağ panel">◨</button>
-      <button class="btn icon" id="toggleLogButton" title="Konsol">⌄</button>
-      <button class="btn icon" id="shortcutsButton" title="Klavye kısayolları">⌨</button>
-      <button class="btn icon" id="helpButton" title="Kullanım yardımı">?</button>
+      <div class="toolbar-group" aria-label="Geçmiş"><button class="btn" id="undoButton" title="Son işlemi geri al (Ctrl+Z)" disabled>↶ Geri</button><button class="btn" id="redoButton" title="Geri alınan işlemi yinele (Ctrl+Y)" disabled>↷ İleri</button></div>
+      <div class="toolbar-group" aria-label="Çalışma alanı"><button class="btn" id="commandPaletteButton" title="Öğe veya komut bul (Ctrl+K)">⌕ Hızlı Bul</button><button class="btn icon" id="toggleLeftButton" title="Sol panel">◧</button><button class="btn icon" id="toggleRightButton" title="Sağ panel">◨</button></div>
+      <details class="toolbar-menu" id="moreMenu"><summary class="btn" aria-label="Diğer araçlar">Diğer ▾</summary>
+        <div class="menu-content"><button class="btn" id="pasteHtmlButton">Kaynak Yapıştır</button><button class="btn verify" id="validateButton" disabled>Nihai Kontrol</button><button class="btn active" id="autoLayoutButton" disabled>Alan Koruma Açık</button><button class="btn icon" id="toggleLogButton" title="Konsol">⌄</button><button class="btn icon" id="shortcutsButton" title="Klavye kısayolları">⌨</button><button class="btn icon" id="helpButton" title="Kullanım yardımı">?</button></div>
+      </details>
     </header>
 
-    <aside class="side left">
+    <button class="panel-shade" id="panelShade" aria-label="Panelleri kapat"></button>
+    <aside class="side left" id="leftPanel">
       <div class="side-head">
         <div><strong>Kaynak ve Bağlam</strong><br><span id="sourceMeta">HTML yüklenmedi</span></div>
         <button class="btn small" id="copyContextButton" disabled>Kopyala</button>
@@ -816,7 +885,7 @@
     </aside>
 
     <main class="main">
-      <div class="canvas-toolbar">
+      <div class="canvas-toolbar"><button class="btn active" id="designModeButton" disabled>Seçim Modu Açık</button><button class="btn" id="selectParentButton" disabled>Üst Öğeyi Seç</button>
         <span class="status-badge" id="frameStatus">HTML bekleniyor</span>
         <div class="viewport-buttons">
           <button class="btn small active" data-viewport="100%">Masaüstü</button>
@@ -835,20 +904,20 @@
       </div>
       <div class="canvas">
         <div class="frame-shell" id="frameShell">
-          <iframe id="targetFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-downloads"></iframe>
+          <iframe title="Düzenlenen HTML önizlemesi" id="targetFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-downloads"></iframe>
           <div class="welcome" id="welcome">
             <div class="welcome-card">
               <div class="welcome-mark">R</div>
               <h1>Kaynak-korumalı düzenleme</h1>
               <p>Bir HTML dosyası açın. Öğeleri görsel alandan seçin; gizleme, boyutlandırma, metin düzenleme ve dinamik taşıma işlemleri orijinal scriptler değiştirilmeden yama olarak kaydedilsin.</p>
-              <button class="btn primary" id="welcomeOpenButton">HTML Dosyası Aç</button>
+              <button class="btn primary" id="welcomeOpenButton">HTML Dosyası Aç</button><div class="welcome-steps"><span><b>01</b> Dosyanı aç</span><span><b>02</b> Görsel olarak düzenle</span><span><b>03</b> Kontrol et ve indir</span></div>
             </div>
           </div>
         </div>
       </div>
     </main>
 
-    <aside class="side right">
+    <aside class="side right" id="rightPanel">
       <div class="side-head">
         <div><strong>Düzenleme Araçları</strong><br><span id="operationCount">0 değişiklik</span></div>
         <button class="btn small" id="clearOperationsButton" disabled>Sıfırla</button>
@@ -929,8 +998,8 @@
           </div>
         </div>
 
-        <div class="group">
-          <div class="group-title">Kutu ve Yerleşim</div>
+        <details class="advanced">
+          <summary>Kutu ve Yerleşim</summary>
           <div class="group-body">
             <label class="field range-field"><span>Canlı genişlik <em id="widthRangeValue" class="range-value">%100</em></span>
               <input id="widthRange" type="range" min="10" max="100" step="1" value="100" disabled>
@@ -977,7 +1046,7 @@
               </label>
             </div>
           </div>
-        </div>
+        </details>
 
         <div class="group" id="tableToolsGroup" hidden>
           <div class="group-title">Tabloya Özel Araçlar</div>
@@ -1126,7 +1195,7 @@
 
       <section class="pane" id="checkPane">
         <div class="group">
-          <div class="group-title">V4.3 İhtiyaç Listesi <span>8 zorunlu kontrol</span></div>
+          <div class="group-title">V4.4 İhtiyaç Listesi <span>8 zorunlu kontrol</span></div>
           <div class="group-body">
             <p class="hint">Nihai dosya ancak kaynak bütünlüğünü bozan kritik bir hata yoksa indirilir. Uyarılar ayrıca gösterilir.</p>
             <div class="checklist" id="needsChecklist"></div>
@@ -1269,11 +1338,11 @@ Ctrl + S        Nihai HTML indir</div>
   const PATCH_STYLE_ID = 'regnum-visual-editor-patches';
   const PATCH_RUNTIME_ID = 'regnum-visual-editor-runtime';
   const PATCH_MANIFEST_MARKER = 'REGNUM_VISUAL_EDITOR_MANIFEST:';
-  const PROJECT_VERSION = '4.3';
+  const PROJECT_VERSION = '4.4';
   const REQUIREMENTS = [
     {key:'source', label:'Geçerli HTML kaynağı', detail:'Dosya adı, kaynak boyutu ve kaynak özeti oluşturulmalı.'},
     {key:'sourceExact', label:'Kaynak birebir korunmalı', detail:'Editör yamaları çıkarıldığında çıktı, giriş kaynağıyla karakter karakter aynı olmalı.'},
-    {key:'scripts', label:'Script bütünlüğü', detail:'Mevcut script blokları değişmeden korunmalı; yalnızca gerekli V4.3 çalışma zamanı eklenmeli.'},
+    {key:'scripts', label:'Script bütünlüğü', detail:'Mevcut script blokları değişmeden korunmalı; yalnızca gerekli V4.4 çalışma zamanı eklenmeli.'},
     {key:'manifest', label:'İşlem manifesti', detail:'Tüm etkin/devre dışı işlemler çıktıdan eksiksiz geri okunabilmeli.'},
     {key:'selectors', label:'Hedef seçiciler', detail:'Geçersiz seçici bulunmamalı; dinamik hedefler uyarı olarak ayrıca gösterilmeli.'},
     {key:'runtime', label:'Çalışma zamanı derlenebilirliği', detail:'Metin, taşıma ve alan koruma kodu JavaScript sözdizimi hatası vermemeli.'},
@@ -1392,8 +1461,14 @@ Ctrl + S        Nihai HTML indir</div>
     }
   }
 
-  function openModal(id) { $('#' + id).hidden = false; }
-  function closeModal(id) { $('#' + id).hidden = true; }
+  const modalFocus = new Map();
+  function openModal(id) {
+    const modal = $('#' + id); modalFocus.set(id, document.activeElement); modal.hidden = false;
+    requestAnimationFrame(() => modal.querySelector('textarea,input,button')?.focus());
+  }
+  function closeModal(id) {
+    $('#' + id).hidden = true; modalFocus.get(id)?.focus(); modalFocus.delete(id);
+  }
 
   function frameWindow() {
     try { return $('#targetFrame').contentWindow; } catch (_) { return null; }
@@ -2858,11 +2933,13 @@ Ctrl + S        Nihai HTML indir</div>
     }
     if (!editing) handleNudgeKey(event);
     if ((event.ctrlKey || event.metaKey) && key === 'z') {
+      if (editing) return;
       event.preventDefault();
-      restoreHistory(state.historyIndex - 1);
+      restoreHistory(state.historyIndex + (event.shiftKey ? 1 : -1));
       return;
     }
     if ((event.ctrlKey || event.metaKey) && key === 'y') {
+      if (editing) return;
       event.preventDefault();
       restoreHistory(state.historyIndex + 1);
       return;
@@ -2871,6 +2948,10 @@ Ctrl + S        Nihai HTML indir</div>
       event.preventDefault();
       $('#exportHtmlButton').click();
       return;
+    }
+    if (event.key === 'Escape' && $$('.modal-backdrop').some(m => !m.hidden)) {
+      $$('.modal-backdrop').filter(m => !m.hidden).forEach(m => closeModal(m.id));
+      event.preventDefault(); return;
     }
     if (editing || event.ctrlKey || event.metaKey || event.altKey) return;
     if (key === 'm') {
@@ -3631,7 +3712,7 @@ Ctrl + S        Nihai HTML indir</div>
   }
 
   function generatePatchCss() {
-    const chunks = ['/* Regnum Evrensel HTML Editörü V4.3 · Kılavuzlu akış, masaüstü ve alan korumalı yamalar */'];
+    const chunks = ['/* Regnum Evrensel HTML Editörü V4.4 · Kılavuzlu akış, masaüstü ve alan korumalı yamalar */'];
     if (state.layoutProtection) {
       chunks.push(
         '[data-rve-layout-guard]{box-sizing:border-box!important;min-width:0!important;max-width:100%!important;}',
@@ -3906,7 +3987,6 @@ Ctrl + S        Nihai HTML indir</div>
   function buildOutput() {
     if (!state.originalSource) return '';
     let output = sourceWithoutPreviousPatches(state.originalSource);
-    if (!state.operations.length && !state.layoutProtection) return output;
     const visualOperations = state.operations.filter(op => op.enabled && (op.type === 'style' || op.type === 'hide'));
     if (visualOperations.length || state.layoutProtection) {
       const css = generatePatchCss();
@@ -4365,7 +4445,7 @@ Ctrl + S        Nihai HTML indir</div>
 
     const sourceExact = strippedOutput === state.originalSource;
     check('sourceExact', sourceExact ? 'pass' : 'fail', sourceExact ? 'Yamalar çıkarıldığında çıktı giriş kaynağıyla karakter karakter aynı.' : 'Yamalar çıkarıldığında kaynak birebir geri alınamıyor.');
-    if (!sourceExact) errors.push('Çıktıdan V4.3 yamaları çıkarıldığında orijinal kaynak birebir geri alınamadı.');
+    if (!sourceExact) errors.push('Çıktıdan V4.4 yamaları çıkarıldığında orijinal kaynak birebir geri alınamadı.');
 
     const originalScripts = fullScriptBlocks(state.originalSource);
     const preservedScripts = fullScriptBlocks(strippedOutput);
@@ -4373,8 +4453,8 @@ Ctrl + S        Nihai HTML indir</div>
     const runtimeCount = countOutputBlock(output, PATCH_RUNTIME_ID, 'script');
     const scriptsExact = JSON.stringify(originalScripts) === JSON.stringify(preservedScripts) && runtimeCount === (runtimeExpected ? 1 : 0);
     check('scripts', scriptsExact ? 'pass' : 'fail', scriptsExact
-      ? originalScripts.length + ' orijinal script değişmeden korundu; V4.3 çalışma zamanı sayısı doğru.'
-      : 'Script blokları veya V4.3 çalışma zamanı sayısı beklenenle eşleşmiyor.');
+      ? originalScripts.length + ' orijinal script değişmeden korundu; V4.4 çalışma zamanı sayısı doğru.'
+      : 'Script blokları veya V4.4 çalışma zamanı sayısı beklenenle eşleşmiyor.');
     if (!scriptsExact) errors.push('Script bütünlüğü veya ek çalışma zamanı sayısı uyuşmuyor.');
 
     const embedded = extractEmbeddedOperations(output);
@@ -4406,7 +4486,7 @@ Ctrl + S        Nihai HTML indir</div>
     let runtimeValid = true;
     try { if (runtimeExpected) new Function(buildRuntimeScript()); } catch (error) {
       runtimeValid = false;
-      errors.push('V4.3 çalışma zamanı derlenemedi: ' + error.message);
+      errors.push('V4.4 çalışma zamanı derlenemedi: ' + error.message);
     }
     check('runtime', runtimeValid ? 'pass' : 'fail', runtimeValid ? 'Eklenen JavaScript çalışma zamanı sözdizimi doğrulandı.' : 'Çalışma zamanı JavaScript sözdizimi hatalı.');
 
@@ -4431,7 +4511,7 @@ Ctrl + S        Nihai HTML indir</div>
 
     const styleExpected = Boolean(state.operations.some(op => op.enabled && (op.type === 'style' || op.type === 'hide')) || state.layoutProtection);
     const styleCount = countOutputBlock(output, PATCH_STYLE_ID, 'style');
-    if (styleCount !== (styleExpected ? 1 : 0)) errors.push('V4.3 CSS yama bloğu sayısı beklenenle eşleşmiyor.');
+    if (styleCount !== (styleExpected ? 1 : 0)) errors.push('V4.4 CSS yama bloğu sayısı beklenenle eşleşmiyor.');
     const ok = errors.length === 0;
     check('release', ok ? 'pass' : 'fail', ok ? 'Kritik kontroller geçti; kontrollü indirme açık.' : errors.length + ' kritik hata nedeniyle indirme kapalı.');
 
@@ -4471,7 +4551,7 @@ Ctrl + S        Nihai HTML indir</div>
 
   function reportText() {
     const lines = [
-      'REGNUM EVRENSEL HTML EDİTÖRÜ V4.3',
+      'REGNUM EVRENSEL HTML EDİTÖRÜ V4.4',
       'DEĞİŞİKLİK RAPORU',
       '',
       'Dosya: ' + state.sourceName,
@@ -4822,7 +4902,7 @@ Ctrl + S        Nihai HTML indir</div>
     for(let i=1;i<=12;i++){
       const option=document.createElement('option');option.value=String(i);option.textContent=i+'/12 kolon';$('#gridSpan').appendChild(option);
     }
-    Logger.ok('Regnum Evrensel HTML Editörü V4.3 başlatıldı.');
+    Logger.ok('Regnum Evrensel HTML Editörü V4.4 başlatıldı.');
     Logger.info('Canlı DOM ağacı, kılavuzlu taşıma, güvenli öznitelikler ve kontrollü çıktı kapısı hazır.');
     renderGroupControls();
     updateMultiSelectButton();
@@ -4875,7 +4955,7 @@ Ctrl + S        Nihai HTML indir</div>
       loadSource($('#pasteSource').value,'yapistirilan-dashboard.html');closeModal('pasteModal');
     });
     $$('[data-close-modal]').forEach(button=>button.addEventListener('click',()=>closeModal(button.dataset.closeModal)));
-    $$('.modal-backdrop').forEach(modal=>modal.addEventListener('click',event=>{if(event.target===modal)modal.hidden=true}));
+    $$('.modal-backdrop').forEach(modal=>modal.addEventListener('click',event=>{if(event.target===modal)closeModal(modal.id)}));
     $('#outlineSearch').addEventListener('input',renderOutline);
     $('#outlineList').addEventListener('click',event=>{
       const toggle=event.target.closest('[data-outline-toggle]');
@@ -5175,6 +5255,38 @@ Ctrl + S        Nihai HTML indir</div>
     $('#clearLogButton').addEventListener('click',()=>$('#logBody').innerHTML='');
 
     document.addEventListener('keydown',handleEditorShortcut);
+    const app = $('#app');
+    if (matchMedia('(max-width:760px)').matches) app.classList.add('right-closed');
+    const syncPanels = () => {
+      [['toggleLeftButton','leftPanel','left-closed'],['toggleRightButton','rightPanel','right-closed']].forEach(([id,panel,cls]) => {
+        const open = !app.classList.contains(cls);
+        $('#'+id).setAttribute('aria-expanded', String(open));
+        $('#'+id).setAttribute('aria-controls', panel);
+        $('#'+panel).inert = !open;
+      });
+      $('.log').inert = app.classList.contains('log-closed');
+    };
+    new MutationObserver(syncPanels).observe(app,{attributes:true,attributeFilter:['class']}); syncPanels();
+    new ResizeObserver(() => document.documentElement.style.setProperty('--header-height',$('.topbar').offsetHeight+'px')).observe($('.topbar'));
+    $('#panelShade').onclick=()=>app.classList.add('left-closed','right-closed');
+    ['toggleLeftButton','toggleRightButton'].forEach(id => $('#'+id).addEventListener('click',()=>{
+      if(matchMedia('(max-width:760px)').matches) app.classList.add(id==='toggleLeftButton'?'right-closed':'left-closed');
+    }));
+    $$('.btn.icon').forEach(button=>button.setAttribute('aria-label',button.title|| (button.hasAttribute('data-close-modal')?'Kapat':button.textContent.trim())));
+    $$('.modal-backdrop').forEach(modal=>{
+      const dialog=modal.querySelector('.modal'); dialog.setAttribute('role','dialog'); dialog.setAttribute('aria-modal','true');
+      const heading=dialog.querySelector('h2'); if(heading){heading.id=modal.id+'Title';dialog.setAttribute('aria-labelledby',heading.id);}
+      modal.addEventListener('keydown',event=>{
+        if(event.key!=='Tab')return;
+        const focusables=Array.from(dialog.querySelectorAll('button,input,select,textarea,[tabindex="0"]')).filter(el=>!el.disabled&&el.getClientRects().length);
+        const first=focusables[0],last=focusables.at(-1);
+        if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
+        else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
+      });
+    });
+    document.addEventListener('click',event=>{
+      if(!event.target.closest('#moreMenu') || event.target.closest('#moreMenu button')) $('#moreMenu').open=false;
+    });
   }
 
   function updatePortalButton() { $('#createPortalButton').disabled=!(state.portalSource&&state.portalTarget); }
