@@ -1,3 +1,13 @@
+# V4.5 — Güvenli Gizle odaklı çıktı
+
+Sadece etkin gizleme işlemleri bulunan projelerde, Alan Koruma açık olsa bile çıktı otomatik yerleşim onarımı veya ek JavaScript içermez. Önizleme ve çıktı aynı gizleme CSS’ini kullanır. Orijinal DOM ve scriptler korunur.
+
+Varsayılan **Düzeni koru** seçeneği `visibility:hidden` kullanır: öğe ve alt öğeleri görünmez olur, kapladığı alan kalır. Grafiklerin ölçüleri ve çevredeki yerleşim korunur. **Alanı da kaldır** seçeneği `display:none` kullanır ve doğal olarak yerleşimi değiştirebilir. Önceki manifestlerde gizleme modu yoksa korumalı davranış kullanılır. Gizleme içeriği dosyadan silmez; veri sansürleme aracı değildir.
+
+Etkin taşıma, stil veya diğer işlemler içeren karma projeler mevcut davranışı sürdürür. Önceki çıktıda kaydedilmiş otomatik onarım işlemleri de etkin stil işlemleridir; bu izolasyondan yararlanmak için orijinal kaynak üzerinde yalnız gizleme uygulayın.
+
+`node checks-v4.5.mjs`: 17 kod kontrolü geçti. Gerçek tarayıcı görsel testi ve kullanıcıya ait bozulmuş çıktı karşılaştırması henüz yapılmadı; her HTML için bozulmazlık garantisi verilmez.
+
 # Regnum Evrensel HTML Editörü V4.4
 
 ## V4.4 — 5 Eylül 2026
