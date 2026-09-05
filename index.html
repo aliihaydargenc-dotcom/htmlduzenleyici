@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <title>Regnum Evrensel HTML Editörü V4.5</title>
+  <title>Regnum Evrensel HTML Editörü V4.6</title>
   <style>
     :root {
       --bg: #09120f;
@@ -714,7 +714,7 @@
       .topbar .brand small { display: none; }
     }
 
-    /* V4.5: readable controls, adaptive workspace and quieter visual hierarchy. */
+    /* V4.6: readable controls, adaptive workspace and quieter visual hierarchy. */
     :root { --bg:#101916; --surface:#17231f; --surface-2:#1d2d26; --surface-3:#263b31;
       --line:#364b40; --line-soft:#2b3d33; --muted:#a8bcb0; --side-w:360px; --top-h:auto; }
     .app { grid-template-rows:auto minmax(0,1fr) var(--log-h); }
@@ -766,6 +766,16 @@
     .advanced { margin-bottom:18px; }
     .advanced>summary { padding:14px; font-size:12px; cursor:pointer; }
     .panel-shade { display:none; }
+    .simple-mode .expert-only { display:none!important; }
+    .outline-label,.operation-head strong,.operation-head span,.operation code,.operation p,
+    .attribute-item code,.attribute-item span,.command-item strong,.command-item span,.workspace-breadcrumb { font-size:12px; }
+    textarea { font-size:12px; }
+    #hideButton { min-height:44px; font-size:14px; }
+    .hidden-entry { padding:12px 0; border-bottom:1px solid var(--line-soft); }
+    .hidden-entry strong,.hidden-entry small { display:block; overflow-wrap:anywhere; }
+    .hidden-entry small { color:var(--muted); margin:6px 0 10px; }
+    #saveStatus { margin-top:8px; color:var(--gold); font-size:12px; }
+
     @media (max-width:1100px) {
       .app,.app.left-closed,.app.right-closed,.app.left-closed.right-closed { grid-template-rows:auto minmax(0,1fr) var(--log-h); }
       .app.log-closed { grid-template-rows:auto minmax(0,1fr) 0; }
@@ -795,11 +805,11 @@
   </style>
 </head>
 <body>
-  <div class="app left-closed log-closed" id="app">
+  <div class="app left-closed log-closed simple-mode" id="app">
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark">R</div>
-        <div><strong>Evrensel HTML Editörü</strong><small>Kılavuzlu taşıma V4.5</small></div>
+        <div><strong>Evrensel HTML Editörü</strong><small>Kılavuzlu taşıma V4.6</small></div>
       </div>
       <input id="htmlFileInput" type="file" accept=".html,.htm,text/html" hidden>
       <div class="toolbar-group" aria-label="Dosya"><button class="btn primary" id="openHtmlButton">HTML Aç</button><button class="btn gold" id="exportHtmlButton" disabled>Nihai HTML İndir</button></div>
@@ -891,8 +901,8 @@
           <button class="btn small active" data-viewport="100%">Masaüstü</button>
         </div>
         <button class="btn small" id="multiSelectButton" disabled>Çoklu Seçim</button>
-        <button class="btn small" id="layoutAuditButton" disabled>Taşmaları Onar</button>
-        <div class="move-mode-switch" aria-label="Taşıma modu">
+        <button class="btn small expert-only" id="layoutAuditButton" disabled>Taşmaları Onar</button>
+        <div class="move-mode-switch expert-only" aria-label="Taşıma modu">
           <button class="btn small active" data-move-mode="flow" title="Gerçek yer tutucu ile akışta taşı">Akış</button>
           <button class="btn small" data-move-mode="grid" title="Grid/flex alanlarına yerleştir">Grid</button>
           <button class="btn small" data-move-mode="free" title="Piksel tabanlı serbest taşı">Serbest</button>
@@ -924,12 +934,17 @@
       </div>
       <div class="tabs" data-tab-group="right">
         <button class="tab active" data-pane="elementPane">Öğe</button>
-        <button class="tab" data-pane="movePane">Taşı</button>
-        <button class="tab" data-pane="excelPane">Excel Test</button>
-        <button class="tab" data-pane="checkPane">Kontrol</button>
+        <button class="tab expert-only" data-pane="movePane">Taşı</button>
+        <button class="tab expert-only" data-pane="excelPane">Excel Test</button>
+        <button class="tab" data-pane="hiddenPane">Gizlenenler</button><button class="tab" data-pane="checkPane">Kontrol</button>
         <button class="tab" data-pane="changesPane">Değişiklikler</button>
       </div>
 
+      <div style="padding:12px 16px;border-bottom:1px solid var(--line)">
+        <button class="btn" id="expertToggle" aria-pressed="false">Gelişmiş araçları aç</button>
+        <div id="saveStatus" role="status" aria-live="polite">HTML bekleniyor</div>
+      </div>
+      <section class="pane" id="hiddenPane"><p class="hint">Gizlediğiniz öğeleri buradan geri gösterebilirsiniz. Değişiklik geri alınabilir.</p><div id="hiddenList"></div></section>
       <section class="pane active" id="elementPane">
         <div class="group">
           <div class="group-title">Seçili Öğe</div>
@@ -940,10 +955,10 @@
             </label>
             <p class="hint">Düzeni koru, öğeyi görünmez yapar ve ölçülerini korur. Yalnız gizleme yapılan çıktıda otomatik yerleşim onarımı çalışmaz. Gizlenen içerik dosyada kalır.</p>
             <div class="button-row" style="margin-top:8px">
-              <button class="btn small grow" id="hideButton" disabled>Güvenli Gizle</button>
-              <button class="btn small grow" id="editTextButton" disabled>Metni Düzenle</button>
+              <button class="btn primary grow" id="hideButton" disabled>Güvenli Gizle</button>
+              <button class="btn small grow expert-only" id="editTextButton" disabled>Metni Düzenle</button>
             </div>
-            <div class="field" style="margin-top:10px">
+            <div class="expert-only"><div class="field" style="margin-top:10px">
               <span>Hızlı genişlik</span>
               <div class="quick-size-grid">
                 <button class="btn small" data-size-preset="auto" disabled>Oto</button>
@@ -967,11 +982,11 @@
               <select id="nudgeStep" aria-label="Taşıma adımı"><option value="1">1 px</option><option value="5">5 px</option><option value="10">10 px</option></select>
               <button class="btn small" id="centerElementButton" disabled>Yatay Ortala</button>
             </div>
-            <p class="hint" style="text-align:center;margin:8px 0 0">Sağ tıklayın veya yeşil <strong>TAŞI</strong> tutamacını hedef konuma sürükleyin.</p>
+            <p class="hint" style="text-align:center;margin:8px 0 0">Sağ tıklayın veya yeşil <strong>TAŞI</strong> tutamacını hedef konuma sürükleyin.</p></div>
           </div>
         </div>
 
-        <details class="advanced" id="attributeEditor">
+        <div class="expert-only" id="expertInspector"><details class="advanced" id="attributeEditor">
           <summary>Güvenli öznitelikler</summary>
           <div class="group-body">
             <p class="hint">title, role, aria-* ve data-* değerleri yama olarak eklenir. id, class, style, bağlantı ve olay öznitelikleri kaynak bağımlılıklarını korumak için kilitlidir.</p>
@@ -1073,7 +1088,7 @@
         </div>
 
         <div class="group">
-          <div class="group-title">Yazı ve Görünüm</div>
+          <div class="group-title">Yazı ve Görünüm</div><p class="hint" style="padding:12px 14px 0">Renk ve ölçü alanlarını doldurun; ardından Boyut ve Görünümü Uygula düğmesine basın. Hızlı boyut ve sürükleme araçları anında uygulanır.</p>
           <div class="group-body">
             <div class="row">
               <label class="field"><span>Yazı boyutu <em>px</em></span><input id="fontSizeValue" type="number" min="1" placeholder="değiştirme"></label>
@@ -1110,6 +1125,7 @@
             </label>
             <button class="btn primary" id="applyStyleButton" disabled style="width:100%">Boyut ve Görünümü Uygula</button>
           </div>
+        </div>
         </div>
       </section>
 
@@ -1199,7 +1215,7 @@
 
       <section class="pane" id="checkPane">
         <div class="group">
-          <div class="group-title">V4.5 İhtiyaç Listesi <span>8 zorunlu kontrol</span></div>
+          <div class="group-title">V4.6 İhtiyaç Listesi <span>8 zorunlu kontrol</span></div>
           <div class="group-body">
             <p class="hint">Nihai dosya ancak kaynak bütünlüğünü bozan kritik bir hata yoksa indirilir. Uyarılar ayrıca gösterilir.</p>
             <div class="checklist" id="needsChecklist"></div>
@@ -1342,11 +1358,11 @@ Ctrl + S        Nihai HTML indir</div>
   const PATCH_STYLE_ID = 'regnum-visual-editor-patches';
   const PATCH_RUNTIME_ID = 'regnum-visual-editor-runtime';
   const PATCH_MANIFEST_MARKER = 'REGNUM_VISUAL_EDITOR_MANIFEST:';
-  const PROJECT_VERSION = '4.5';
+  const PROJECT_VERSION = '4.6';
   const REQUIREMENTS = [
     {key:'source', label:'Geçerli HTML kaynağı', detail:'Dosya adı, kaynak boyutu ve kaynak özeti oluşturulmalı.'},
     {key:'sourceExact', label:'Kaynak birebir korunmalı', detail:'Editör yamaları çıkarıldığında çıktı, giriş kaynağıyla karakter karakter aynı olmalı.'},
-    {key:'scripts', label:'Script bütünlüğü', detail:'Mevcut script blokları değişmeden korunmalı; yalnızca gerekli V4.5 çalışma zamanı eklenmeli.'},
+    {key:'scripts', label:'Script bütünlüğü', detail:'Mevcut script blokları değişmeden korunmalı; yalnızca gerekli V4.6 çalışma zamanı eklenmeli.'},
     {key:'manifest', label:'İşlem manifesti', detail:'Tüm etkin/devre dışı işlemler çıktıdan eksiksiz geri okunabilmeli.'},
     {key:'selectors', label:'Hedef seçiciler', detail:'Geçersiz seçici bulunmamalı; dinamik hedefler uyarı olarak ayrıca gösterilmeli.'},
     {key:'runtime', label:'Çalışma zamanı derlenebilirliği', detail:'Metin, taşıma ve alan koruma kodu JavaScript sözdizimi hatası vermemeli.'},
@@ -1498,6 +1514,7 @@ Ctrl + S        Nihai HTML indir</div>
     state.selectedItems = [];
     $('#selectionStatus').textContent = 'Öğe seçilmedi';
     $('#selectionBreadcrumb').innerHTML = '<span>Bir öğe seçin</span>';
+    $('#hideButton').textContent='Güvenli Gizle';$('#hideMode').value='preserve';
     $('#selectedCard').className = 'selected-card empty';
     $('#selectedCard').textContent = 'Önizlemeden bir başlık, buton, kart, tablo veya grafik alanı seçin.';
     $('#sourceContext').textContent = 'Bir öğe seçin.';
@@ -1561,6 +1578,7 @@ Ctrl + S        Nihai HTML indir</div>
       toast('Geçerli bir HTML kaynağı bulunamadı', 'error');
       return;
     }
+    if (hasUnsavedChanges() && !confirm('İndirilmemiş değişiklikleriniz var. Bunları bırakıp başka HTML açmak istiyor musunuz?')) return;
     const embeddedProject = extractEmbeddedOperations(source);
     const clean = sourceWithoutPreviousPatches(source);
     state.originalSource = clean;
@@ -1625,6 +1643,7 @@ Ctrl + S        Nihai HTML indir</div>
     renderGroupControls();
     updateMultiSelectButton();
     $('#sourceMeta').textContent = state.sourceName + ' · ' + Math.round(clean.length / 1024).toLocaleString('tr-TR') + ' KB · #' + state.sourceHash;
+    downloadedSignature=savedSignature();
     $('#welcome').hidden = true;
     setControlsEnabled(true);
     pushHistory();
@@ -2034,6 +2053,7 @@ Ctrl + S        Nihai HTML indir</div>
     updateSourceContext(state.selectedEl);
     scanElementRisk(state.selectedEl);
     populateInspectorFromElement(state.selectedEl);
+    syncHideSelection();
     renderAttributeEditor();
     renderSelectionBreadcrumb();
     revealOutlineSelection();
@@ -3641,6 +3661,7 @@ Ctrl + S        Nihai HTML indir</div>
     state.historyIndex = state.history.length - 1;
     invalidateValidation();
     updateHistoryButtons();
+    updateSaveStatus();
   }
 
   function restoreHistory(index) {
@@ -3721,7 +3742,7 @@ Ctrl + S        Nihai HTML indir</div>
   }
 
   function generatePatchCss() {
-    const chunks = ['/* Regnum Evrensel HTML Editörü V4.5 · Kılavuzlu akış, masaüstü ve alan korumalı yamalar */'];
+    const chunks = ['/* Regnum Evrensel HTML Editörü V4.6 · Kılavuzlu akış, masaüstü ve alan korumalı yamalar */'];
     if (effectiveLayoutProtection()) {
       chunks.push(
         '[data-rve-layout-guard]{box-sizing:border-box!important;min-width:0!important;max-width:100%!important;}',
@@ -4297,9 +4318,38 @@ Ctrl + S        Nihai HTML indir</div>
     select.value = state.activeGroup;
   }
 
+  function hideDescription(op) {
+    return op.hideMode === 'collapse' ? 'Alanıyla birlikte kaldırıldı' : 'Alanı korunarak gizlendi';
+  }
+  function syncHideSelection() {
+    const op=state.operations.find(op=>op.type==='hide' && op.selector===state.selectedSelector);
+    $('#hideMode').value=op?.hideMode==='collapse'?'collapse':'preserve';
+    $('#hideButton').textContent=op?.enabled?'Gizlemeyi Güncelle':'Güvenli Gizle';
+  }
+  function savedSignature() {
+    return JSON.stringify({operations:state.operations,layoutProtection:state.layoutProtection,desktopStandard:state.desktopStandard,groups:state.groups,activeGroup:state.activeGroup});
+  }
+  let downloadedSignature='';
+  function hasUnsavedChanges() { return !!state.originalSource && savedSignature()!==downloadedSignature; }
+  function updateSaveStatus() {
+    $('#saveStatus').textContent=!state.originalSource?'HTML bekleniyor':hasUnsavedChanges()?'İndirilmemiş değişiklikler var':'Son kayıtla aynı';
+  }
+  function restoreHiddenOperation(id) {
+    const op=state.operations.find(op=>op.id===id && op.type==='hide' && op.enabled);
+    if(!op)return false;
+    op.enabled=false;pushHistory();applyOperationsToPreview();syncHideSelection();
+    toast('Öğe geri gösterildi');return true;
+  }
+  function renderHiddenList() {
+    const operations=state.operations.filter(op=>op.type==='hide'&&op.enabled);
+    $('#hiddenList').innerHTML=operations.length?operations.map(op=>
+      '<div class="hidden-entry"><strong>'+escapeHtml(op.label||op.selector)+'</strong><small>'+escapeHtml(hideDescription(op))+'</small><button class="btn" data-restore-hidden="'+escapeHtml(op.id)+'">Geri Göster</button></div>'
+    ).join(''):'<div class="empty-list">Gizlenen öğe yok.</div>';
+  }
   function renderOperations() {
+    renderHiddenList();updateSaveStatus();
     const list = $('#operationsList');
-    $('#operationCount').textContent = state.operations.length + ' değişiklik';
+    $('#operationCount').textContent = state.operations.filter(op=>op.enabled).length + ' etkin / ' + state.operations.length + ' işlem';
     $('#clearOperationsButton').disabled = state.operations.length === 0;
     $('#copyManifestButton').disabled = state.operations.length === 0;
     $('#downloadReportButton').disabled = state.operations.length === 0;
@@ -4332,7 +4382,7 @@ Ctrl + S        Nihai HTML indir</div>
         const target = op.selector || op.source || '';
         let summary = '';
         if (op.type === 'style') summary = Object.entries(op.declarations).map(([k,v]) => k + ': ' + v).join('; ');
-        if (op.type === 'hide') summary = 'display: none';
+        if (op.type === 'hide') summary = hideDescription(op);
         if (op.type === 'text') summary = '“' + op.value.slice(0,80) + '”';
         if (op.type === 'attribute') summary = op.name + ': ' + (op.value === null ? '(kaldır)' : op.value);
         if (op.type === 'portal') summary = '→ ' + op.target + ' (' + op.position + ')' + (op.trigger ? ' · tetikleyici: ' + op.trigger : '');
@@ -4426,12 +4476,12 @@ Ctrl + S        Nihai HTML indir</div>
     renderNeedsChecklist();
     const summary = $('#verificationSummary');
     summary.className = 'release-card ' + (result.ok ? 'pass' : 'fail');
-    summary.innerHTML = '<strong>' + (result.ok ? 'Nihai çıktı hazır' : 'Nihai çıktı engellendi') + '</strong><span>' +
+    summary.innerHTML = '<strong>' + (result.ok ? 'Kod kontrolleri geçti' : 'Nihai çıktı engellendi') + '</strong><span>' +
       escapeHtml(result.ok
-        ? 'Kaynak birebir korundu · #' + result.outputHash + (result.warnings.length ? ' · ' + result.warnings.length + ' uyarı' : '')
+        ? 'Görsel sonuç ayrıca kontrol edilmeli. Kaynak korundu · #' + result.outputHash + (result.warnings.length ? ' · ' + result.warnings.length + ' uyarı' : '')
         : result.errors.length + ' kritik hata düzeltilmeli') + '</span>';
     $('#releaseStatus').className = 'status-badge ' + (result.ok ? 'ready' : '');
-    $('#releaseStatus').textContent = result.ok ? 'Çıktı doğrulandı' : result.errors.length + ' kritik hata';
+    $('#releaseStatus').textContent = result.ok ? 'Kod kontrolleri geçti' : result.errors.length + ' kritik hata';
     const rows = [
       ...result.errors.map(text => ({type:'fail',label:'Kritik',text})),
       ...result.warnings.map(text => ({type:'warn',label:'Uyarı',text}))
@@ -4464,7 +4514,7 @@ Ctrl + S        Nihai HTML indir</div>
 
     const sourceExact = strippedOutput === state.originalSource;
     check('sourceExact', sourceExact ? 'pass' : 'fail', sourceExact ? 'Yamalar çıkarıldığında çıktı giriş kaynağıyla karakter karakter aynı.' : 'Yamalar çıkarıldığında kaynak birebir geri alınamıyor.');
-    if (!sourceExact) errors.push('Çıktıdan V4.5 yamaları çıkarıldığında orijinal kaynak birebir geri alınamadı.');
+    if (!sourceExact) errors.push('Çıktıdan V4.6 yamaları çıkarıldığında orijinal kaynak birebir geri alınamadı.');
 
     const originalScripts = fullScriptBlocks(state.originalSource);
     const preservedScripts = fullScriptBlocks(strippedOutput);
@@ -4472,8 +4522,8 @@ Ctrl + S        Nihai HTML indir</div>
     const runtimeCount = countOutputBlock(output, PATCH_RUNTIME_ID, 'script');
     const scriptsExact = JSON.stringify(originalScripts) === JSON.stringify(preservedScripts) && runtimeCount === (runtimeExpected ? 1 : 0);
     check('scripts', scriptsExact ? 'pass' : 'fail', scriptsExact
-      ? originalScripts.length + ' orijinal script değişmeden korundu; V4.5 çalışma zamanı sayısı doğru.'
-      : 'Script blokları veya V4.5 çalışma zamanı sayısı beklenenle eşleşmiyor.');
+      ? originalScripts.length + ' orijinal script değişmeden korundu; V4.6 çalışma zamanı sayısı doğru.'
+      : 'Script blokları veya V4.6 çalışma zamanı sayısı beklenenle eşleşmiyor.');
     if (!scriptsExact) errors.push('Script bütünlüğü veya ek çalışma zamanı sayısı uyuşmuyor.');
 
     const embedded = extractEmbeddedOperations(output);
@@ -4505,7 +4555,7 @@ Ctrl + S        Nihai HTML indir</div>
     let runtimeValid = true;
     try { if (runtimeExpected) new Function(buildRuntimeScript()); } catch (error) {
       runtimeValid = false;
-      errors.push('V4.5 çalışma zamanı derlenemedi: ' + error.message);
+      errors.push('V4.6 çalışma zamanı derlenemedi: ' + error.message);
     }
     check('runtime', runtimeValid ? 'pass' : 'fail', runtimeValid ? 'Eklenen JavaScript çalışma zamanı sözdizimi doğrulandı.' : 'Çalışma zamanı JavaScript sözdizimi hatalı.');
 
@@ -4530,7 +4580,7 @@ Ctrl + S        Nihai HTML indir</div>
 
     const styleExpected = Boolean(state.operations.some(op => op.enabled && (op.type === 'style' || op.type === 'hide')) || effectiveLayoutProtection());
     const styleCount = countOutputBlock(output, PATCH_STYLE_ID, 'style');
-    if (styleCount !== (styleExpected ? 1 : 0)) errors.push('V4.5 CSS yama bloğu sayısı beklenenle eşleşmiyor.');
+    if (styleCount !== (styleExpected ? 1 : 0)) errors.push('V4.6 CSS yama bloğu sayısı beklenenle eşleşmiyor.');
     const ok = errors.length === 0;
     check('release', ok ? 'pass' : 'fail', ok ? 'Kritik kontroller geçti; kontrollü indirme açık.' : errors.length + ' kritik hata nedeniyle indirme kapalı.');
 
@@ -4570,7 +4620,7 @@ Ctrl + S        Nihai HTML indir</div>
 
   function reportText() {
     const lines = [
-      'REGNUM EVRENSEL HTML EDİTÖRÜ V4.5',
+      'REGNUM EVRENSEL HTML EDİTÖRÜ V4.6',
       'DEĞİŞİKLİK RAPORU',
       '',
       'Dosya: ' + state.sourceName,
@@ -4895,7 +4945,7 @@ Ctrl + S        Nihai HTML indir</div>
       let operation = state.operations.find(op => op.type === 'hide' && op.selector === item.selector);
       if (!operation) {
         operation = {
-          id:operationId(),type:'hide',selector:item.selector,scope:'all',hideMode:$('#hideMode').value,
+          id:operationId(),type:'hide',label:elementLabel(item.el),selector:item.selector,scope:'all',hideMode:$('#hideMode').value,
           context:'Çoklu/tekli güvenli gizleme',group:state.activeGroup||'Genel',
           enabled:true,createdAt:new Date().toISOString()
         };
@@ -4906,6 +4956,7 @@ Ctrl + S        Nihai HTML indir</div>
     renderOperations();
     applyOperationsToPreview();
     renderGroupControls();
+    syncHideSelection();
     toast(entries.length + ' öğe güvenli biçimde gizlendi');
     Logger.ok('Güvenli gizleme eklendi: '+entries.map(item=>item.selector).join(', '));
   }
@@ -4921,7 +4972,7 @@ Ctrl + S        Nihai HTML indir</div>
     for(let i=1;i<=12;i++){
       const option=document.createElement('option');option.value=String(i);option.textContent=i+'/12 kolon';$('#gridSpan').appendChild(option);
     }
-    Logger.ok('Regnum Evrensel HTML Editörü V4.5 başlatıldı.');
+    Logger.ok('Regnum Evrensel HTML Editörü V4.6 başlatıldı.');
     Logger.info('Canlı DOM ağacı, kılavuzlu taşıma, güvenli öznitelikler ve kontrollü çıktı kapısı hazır.');
     renderGroupControls();
     updateMultiSelectButton();
@@ -4934,19 +4985,8 @@ Ctrl + S        Nihai HTML indir</div>
       loadSource(await file.text(),file.name);
       event.target.value='';
     });
-    $('#colorValue').addEventListener('input', () => {
-      $('#useColor').checked = true;
-      setLivePreviewStyle('rve-live-color-style', appearanceDeclarationsFromControls());
-    });
-    $('#backgroundValue').addEventListener('input', () => {
-      $('#useBackground').checked = true;
-      setLivePreviewStyle('rve-live-color-style', appearanceDeclarationsFromControls());
-    });
-    $('#colorValue').addEventListener('change', commitAppearance);
-    $('#backgroundValue').addEventListener('change', commitAppearance);
-    $('#clearBackgroundImage').addEventListener('change', () => {
-      if ($('#useBackground').checked) commitAppearance();
-    });
+    $('#colorValue').addEventListener('input',()=>$('#useColor').checked=true);
+    $('#backgroundValue').addEventListener('input',()=>$('#useBackground').checked=true);
     $('#sourceContextViewButton').addEventListener('click', () => {
       state.sourceViewMode = 'context';
       $('#sourceContextViewButton').classList.add('active');
@@ -5237,6 +5277,7 @@ Ctrl + S        Nihai HTML indir</div>
         return;
       }
       downloadText(state.sourceName.replace(/\.html?$/i,'')+'_nihai.html',result.output,'text/html;charset=utf-8');
+      downloadedSignature=savedSignature();updateSaveStatus();
       toast(result.warnings.length?'Nihai HTML indirildi; uyarılar raporda mevcut':'Nihai HTML doğrulanarak indirildi');
       Logger.ok('Kontrollü HTML çıktısı oluşturuldu: #'+result.outputHash);
     });
@@ -5273,6 +5314,17 @@ Ctrl + S        Nihai HTML indir</div>
     });
     $('#clearLogButton').addEventListener('click',()=>$('#logBody').innerHTML='');
 
+    $('#hiddenList').addEventListener('click',event=>{
+      const button=event.target.closest('[data-restore-hidden]');if(button)restoreHiddenOperation(button.dataset.restoreHidden);
+    });
+    $('#expertToggle').addEventListener('click',()=>{
+      const simple=$('#app').classList.toggle('simple-mode');
+      $('#expertToggle').setAttribute('aria-pressed',String(!simple));
+      $('#expertToggle').textContent=simple?'Gelişmiş araçları aç':'Sade görünüme dön';
+      if(simple && ['movePane','excelPane'].some(id=>$('#'+id).classList.contains('active')))setActivePane($('[data-pane="elementPane"]'));
+    });
+    window.addEventListener('beforeunload',event=>{if(hasUnsavedChanges()){event.preventDefault();event.returnValue='';}});
+    renderHiddenList();updateSaveStatus();
     document.addEventListener('keydown',handleEditorShortcut);
     const app = $('#app');
     if (matchMedia('(max-width:760px)').matches) app.classList.add('right-closed');
